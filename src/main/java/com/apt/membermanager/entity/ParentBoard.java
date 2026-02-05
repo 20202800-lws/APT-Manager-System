@@ -1,0 +1,35 @@
+package com.apt.membermanager.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+
+@Entity
+@Getter @Setter
+@Table(name = "PARENT_BOARD")
+public class ParentBoard {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long boardId;
+
+    private String title;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "writer_id")
+    private User writer;
+
+    private Integer views = 0;
+    
+    @Column(length = 1)
+    private String isSecret;
+
+    @CreationTimestamp
+    private LocalDateTime regDate;
+}
