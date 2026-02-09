@@ -12,7 +12,7 @@ WEB-INF/jsp
 │ 해결!
 ├── 📂 member (로그인 관련)
 │   ├── 📄 login.jsp               (PGM-MEM-001)
-│   ├── 📄 join.jsp                (PGM-MEM-002)
+│   ├── 📄 singup.jsp              (PGM-MEM-002)
 │   └── 📄 find_account.jsp        (PGM-MEM-003)[아이디/비밀번호 찾기 추가]
 │ 해결!
 ├── 📂 mypage (마이페이지)
