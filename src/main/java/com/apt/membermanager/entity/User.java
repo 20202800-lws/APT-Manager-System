@@ -1,45 +1,58 @@
 package com.apt.membermanager.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.*; 
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "USERS")
 @Getter @Setter
-@Table(name = "USERS") // DB 예약어 피하기 위해 USERS로 지정
 public class User {
 
     @Id
     @Column(name = "user_id", length = 50)
-    private String userId; // 아이디 (PK)
+    private String userId;
 
-    @Column(nullable = false)
-    private String userPw; // 비밀번호
+    @Column(name = "user_pw", nullable = false)
+    private String userPw;
 
-    @Column(nullable = false)
-    private String userName; // 이름
+    @Column(name = "user_name", nullable = false)
+    private String userName;
 
-    private String dong; // 동 (String)
-    private String ho;   // 호수 (String)
+    @Column(name = "dong")
+    private String dong;
 
-    @Column(columnDefinition = "varchar(20) default 'USER'")
-    private String userRole; // 권한 (USER, ADMIN)
+    @Column(name = "ho")
+    private String ho;
 
+    @Column(name = "user_role")
+    private String userRole; 
+
+    @Column(name = "phone")
     private String phone;
+
+    @Column(name = "email")
     private String email;
-    private String birthDate; // 생년월일
     
-    @Column(length = 1)
-    private String genderDigit; // 성별코드
+    @Column(name = "birth_date")
+    private String birthDate;
 
-    @Column(length = 1, columnDefinition = "char(1) default 'N'")
-    private String isApproved; // 승인여부 (Y/N)
+    @Column(name = "gender_digit", length = 1)
+    private String genderDigit;
 
-    @CreationTimestamp // INSERT 시 시간 자동 저장
+    // ★ [수정됨] int -> Boolean
+    // DB의 TINYINT(1)을 자바의 Boolean(true/false)으로 자동 변환해줍니다.
+    @Column(name = "approval_status")
+    @ColumnDefault("false") // DB 기본값 설정 (선택사항)
+    private Boolean approvalStatus; 
+
+    @CreationTimestamp
+    @Column(name = "join_date", updatable = false)
     private LocalDateTime joinDate;
 
+    @Column(name = "withdrawal_date")
     private LocalDateTime withdrawalDate;
-
 }
