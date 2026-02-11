@@ -1,0 +1,290 @@
+@charset "UTF-8";
+
+/* =========================================
+   1. [핵심] 변수 시스템 (Color System)
+   ========================================= */
+:root {
+    /* Brand Colors */
+    --primary: #1A237E;       /* 메인 네이비 */
+    --primary-light: #303F9F; /* 호버용 밝은 네이비 */
+    --secondary: #5C6BC0;     /* 서브 컬러 */
+    
+    /* Status Colors */
+    --danger: #D32F2F;        /* 연체/경고 */
+    --success: #388E3C;       /* 납부완료/긍정 */
+    --warning: #F57C00;       /* 주의 */
+    --info: #0288D1;          /* 정보 */
+    
+    /* Backgrounds & Borders */
+    --bg-body: #F4F6F8;       /* 전체 배경 */
+    --bg-white: #FFFFFF;      /* 카드 배경 */
+    --border-color: #E0E0E0;  /* 테두리 */
+    
+    /* Spacing & Shadows */
+    --radius-md: 12px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* =========================================
+   2. 초기화 & 기본 레이아웃
+   ========================================= */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: 'Noto Sans KR', sans-serif; 
+    background-color: var(--bg-body); 
+    color: #333; 
+}
+
+.admin-container { 
+    display: flex; 
+    min-height: 100vh; 
+}
+
+.main-content { 
+    flex: 1; 
+    padding: 30px; 
+    overflow-y: auto; 
+}
+
+/* 헤더 타이틀 */
+.content-header { margin-bottom: 25px; }
+.content-header h2 { font-size: 1.6rem; font-weight: 700; color: #333; margin-bottom: 5px; }
+.content-header .subtitle { color: #666; font-size: 0.95rem; }
+
+
+/* =========================================
+   3. 통계 카드 그리드 (Grid System)
+   ========================================= */
+.stat-grid-container {
+    display: grid;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 30px;
+    /* 기본적으로 1fr (안전장치) */
+    grid-template-columns: 1fr;
+}
+
+/* [수정] 3칸 그리드 (한 줄에 3개) */
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* [수정] 4칸 그리드 (한 줄에 4개) */
+.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* 카드 디자인 */
+.stat-card {
+    background: var(--bg-white);
+    height: 140px;
+    padding: 25px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+.stat-card h3 { font-size: 0.95rem; color: #888; margin-bottom: 10px; font-weight: 500; }
+.stat-card .number { font-size: 2rem; font-weight: 700; color: #333; }
+.stat-card .desc { font-size: 0.85rem; color: #666; margin-top: 8px; }
+
+/* 왼쪽 포인트 컬러 */
+.border-left-primary { border-left: 5px solid var(--primary); }
+.border-left-success { border-left: 5px solid var(--success); }
+.border-left-danger { border-left: 5px solid var(--danger); }
+.border-left-info { border-left: 5px solid var(--info); }
+
+/* 텍스트 컬러 유틸리티 */
+.text-primary { color: var(--primary) !important; }
+.text-danger { color: var(--danger) !important; }
+.text-success { color: var(--success) !important; }
+.text-info { color: var(--info) !important; }
+
+
+/* =========================================
+   4. 탭 버튼 (Segmented Control 스타일)
+   ========================================= */
+.tab-wrapper {
+    display: flex;
+    justify-content: center; /* [수정] 중앙 정렬 */
+    margin-bottom: 25px;
+    width: 100%;
+}
+
+.tab-container {
+    display: inline-flex;
+    background-color: #E9ECEF; /* 회색 배경 */
+    padding: 5px;
+    border-radius: 12px;
+    gap: 5px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #868E96; /* 비활성 색상 */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+/* 활성 상태 (흰색 박스 + 그림자) */
+.tab-btn.active {
+    background-color: #FFFFFF;
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    font-weight: 700;
+}
+
+/* 구형 하이라이터 제거 */
+.tab-highlighter { display: none; }
+
+
+/* =========================================
+   5. 콘텐츠 박스 & 테이블
+   ========================================= */
+.content-box {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.section-title { font-size: 1.1rem; font-weight: 700; color: #333; }
+.section-actions { display: flex; gap: 8px; }
+
+/* 테이블 스타일 */
+.admin-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+
+.admin-table th {
+    background-color: #F8F9FA;
+    color: #444;
+    font-weight: 600;
+    padding: 15px;
+    border-bottom: 2px solid #ddd;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.admin-table tr:hover td { background-color: #F8F9FA; }
+
+
+/* =========================================
+   6. UI 컴포넌트 (버튼, 입력창, 배지)
+   ========================================= */
+/* 입력창 */
+.form-select, .form-input {
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    outline: none;
+}
+.form-input:focus { border-color: var(--primary); }
+
+/* 버튼 */
+.btn {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 4px;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: 0.2s;
+    font-family: inherit;
+}
+.btn:hover { opacity: 0.9; }
+.btn-xs { height: 28px; padding: 0 10px; font-size: 0.8rem; }
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-secondary { background: white; border: 1px solid #ddd; color: #555; }
+
+/* 배지 (Badges) */
+.badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; display: inline-block;}
+.badge-gray { background: #eee; color: #555; }
+.badge-blue { background: #E3F2FD; color: #1976D2; }
+.badge-red { background: #FFEBEE; color: #C62828; }
+.badge-green { background: #E8F5E9; color: #2E7D32; }
+.badge-success { background: #E8F5E9; color: #2E7D32; }
+.badge-warning { background: #FFF3E0; color: #F57C00; }
+
+/* =========================================
+   7. 모달 (Modal)
+   ========================================= */
+.modal-overlay {
+    display: none; 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5); 
+    z-index: 9999;
+    align-items: center; justify-content: center;
+}
+
+.modal-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    width: 600px; /* 기본값 */
+    max-width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.complaint-info {
+    background: #F8F9FA;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.info-row { display: flex; margin-bottom: 8px; font-size: 0.95rem; }
+.info-label { width: 100px; font-weight: 600; color: #555; }
+.info-value { flex: 1; color: #333; }
+
+/* =========================================
+   8. 반응형 (Mobile)
+   ========================================= */
+@media (max-width: 768px) {
+    .grid-4, .grid-3 {
+        grid-template-columns: 1fr; /* 모바일에서 1줄로 변경 */
+    }
+    .stat-card { height: auto; padding: 20px; }
+    .content-header h2 { font-size: 1.3rem; }
+    .admin-table th, .admin-table td { font-size: 0.8rem; padding: 10px; }
+}
