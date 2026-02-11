@@ -1,7 +1,10 @@
 package com.apt.membermanager.controller;
 
 import com.apt.membermanager.dto.UserSignupDto;
+import com.apt.membermanager.entity.User;
 import com.apt.membermanager.service.MemberService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -9,41 +12,92 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @Controller
 @RequestMapping("/member") // 공통 주소
-@RequiredArgsConstructor   // ★ Service 자동 주입 (이게 없으면 Service가 null이 됩니다!)
+@RequiredArgsConstructor   // Service 자동 주입
 public class MemberController {
 
-    private final MemberService memberService; // ★ 서비스 연결
+    private final MemberService memberService;
 
-    // 1. 로그인 페이지 이동
+    // ==========================
+    // 1. 화면 이동 (GET)
+    // ==========================
+
+    // 로그인 페이지 이동
     @GetMapping("/login")
     public String loginPage() {
-        return "member/login"; // /WEB-INF/views/member/login.jsp
+        return "member/login";
     }
 
-    // 2. 회원가입 페이지 이동
+    // 회원가입 페이지 이동
     @GetMapping("/signup")
     public String signupPage() {
-        return "member/signup"; // /WEB-INF/views/member/signup.jsp
+        return "member/signup";
     }
 
-    // 3. ★ [추가됨] 회원가입 실제 처리 (POST)
-    // <form action="/member/signup" method="post"> 에서 옴
+
+    // ==========================
+    // 2. 기능 처리 (POST)
+    // ==========================
+
+    // [회원가입 처리]
     @PostMapping("/signup")
     public String signup(@ModelAttribute UserSignupDto userSignupDto) {
         log.info("회원가입 요청: {}", userSignupDto);
 
         try {
-            memberService.signup(userSignupDto); // 서비스에게 일 시키기
+            memberService.signup(userSignupDto); 
         } catch (RuntimeException e) {
             log.error("가입 실패: {}", e.getMessage());
-            return "redirect:/member/signup?error"; // 에러 나면 다시 가입창으로
+            return "redirect:/member/signup?error"; 
         }
 
-        // 가입 성공 시 로그인 페이지로 이동
         return "redirect:/member/login"; 
+    }
+
+    // ★ [추가됨] 로그인 실제 처리
+    @PostMapping("/login")
+    public String login(@RequestParam String userId, @RequestParam String userPw,
+                        HttpServletRequest request, RedirectAttributes rttr) {
+        
+        log.info("로그인 시도: {}", userId);
+
+        // 1. 서비스 호출 (ID/PW 검사)
+        User loginUser = memberService.login(userId, userPw);
+
+        // 2. 실패: 아이디 없음 or 비번 틀림
+        if (loginUser == null) {
+            rttr.addFlashAttribute("msg", "아이디 또는 비밀번호가 일치하지 않습니다.");
+            return "redirect:/member/login";
+        }
+
+        // 3. 실패: 승인 대기 중 (approvalStatus가 false/0 인 경우)
+        if (!loginUser.getApprovalStatus()) {
+            rttr.addFlashAttribute("msg", "관리자 승인 대기 중인 계정입니다. 관리사무소에 문의하세요.");
+            return "redirect:/member/login";
+        }
+
+        // 4. 성공: 세션(Session)에 회원 정보 저장
+        HttpSession session = request.getSession();
+        session.setAttribute("loginMember", loginUser); // "loginMember" 라는 이름표로 저장
+        
+        log.info("로그인 성공: {} (권한: {})", loginUser.getUserName(), loginUser.getUserRole());
+
+        return "redirect:/"; // 메인 페이지로 이동
+    }
+
+    // ★ [추가됨] 로그아웃
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false); // 세션이 있으면 가져오고, 없으면 null
+        if (session != null) {
+            session.invalidate(); // 세션 삭제 (로그아웃)
+            log.info("로그아웃 완료");
+        }
+        return "redirect:/";
     }
 }
