@@ -1,45 +1,37 @@
 /* =========================================
-   관리자 게시판 관리 로직
-   Refactored based on ERD: BOARD Table
+   관리자 게시판 관리 로직 (Server Integrated + Pagination)
    ========================================= */
 
 const boardManager = (function() {
 
-    // 1. Mock Data (ERD Mapping Applied)
-    // [Change Log]
-    // postNo -> boardId (PK)
-    // categoryCode -> category
-    // writerName -> userName (Mapped to USERS.user_name)
-    // viewCount -> views
-    // reportCount -> reportCount (DTO Only, Not in ERD)
-    // postStatus -> postStatus (DTO Only, Not in ERD)
-    let boardList = [
-        { boardId: 105, category: 'FREE', title: '단지 내 흡연 관련하여 부탁드립니다.', userName: '102동 505호', regDate: '2024-02-05', views: 45, reportCount: 3, postStatus: 'ACTIVE', content: '복도에서 담배 피우지 말아주세요. 냄새가 너무 들어옵니다.' },
-        { boardId: 104, category: 'SECRET', title: ' 너무 시끄럽네요', userName: '익명', regDate: '2024-02-05', views: 120, reportCount: 0, postStatus: 'ACTIVE', content: '조용히좀해라.' },
-        { boardId: 103, category: 'FREE', title: '관리실 직원분들 칭찬합니다 ^^', userName: '101동 302호', regDate: '2024-02-04', views: 88, reportCount: 0, postStatus: 'ACTIVE', content: '어제 눈 치우시느라 고생 많으셨습니다. 감사합니다.' },
-        { boardId: 102, category: 'CLUB', title: '[등산동호회] 이번 주말 관악산 가실 분', userName: '등산회장', regDate: '2024-02-03', views: 56, reportCount: 0, postStatus: 'ACTIVE', content: '이번주 토요일 오전 9시 정문 집결입니다.' },
-        { boardId: 101, category: 'MARKET', title: '중고 가전 팝니다 (급매)', userName: '외부인', regDate: '2024-02-01', views: 12, reportCount: 5, postStatus: 'BLIND', content: '냉장고 싸게 팝니다. 연락주세요.' } 
-    ];
-
-    // [Mapping Change] currentCategoryCode -> currentCategory
+    // 1. 상태 변수
+    let boardList = [];
     let currentCategory = 'ALL'; 
-    let currentBannedWords = "바보, 멍청이, 사기꾼, 도박, 불법"; 
+    let currentBannedWords = ""; 
+    
+    // [Pagination Added] 현재 페이지 상태 변수 추가
+    let currentPage = 1; 
+    
     const TAB_WIDTH = 140;
 
-    const modalMap = {
-        'bannedModal': document.getElementById('bannedModal'),
-        'detailModal': document.getElementById('detailModal')
+    const API_URL = {
+        LIST: '/api/admin/board/list',      
+        STATS: '/api/admin/board/stats',    
+        DELETE: '/api/admin/board/delete',  
+        STATUS: '/api/admin/board/status',  
+        BANNED: '/api/admin/board/banned'   
     };
 
+    const modalMap = {};
+
     document.addEventListener('DOMContentLoaded', () => {
-        // Init Modals
         modalMap['bannedModal'] = document.getElementById('bannedModal');
         modalMap['detailModal'] = document.getElementById('detailModal');
         
-        updateStats();
-        filterTab('ALL', 0);
+        loadStats();     
+        loadBoardList(); 
+        loadBannedWords(); 
 
-        // Window click for modal close
         window.onclick = function(event) {
             if (event.target.className.includes('modal-overlay')) {
                 closeModal(event.target.id);
@@ -48,23 +40,88 @@ const boardManager = (function() {
     });
 
     /* =========================================
-       2. Logic Functions
+       2. Server Communication Logic
        ========================================= */
-    function updateStats() {
-        document.getElementById('statTotalCount').innerHTML = `${boardList.length}<span class="unit">개</span>`;
-        
-        const today = "2024-02-05"; 
-        const todayCount = boardList.filter(d => d.regDate === today).length;
-        document.getElementById('statTodayCount').innerHTML = `${todayCount}<span class="unit">개</span>`;
 
-        // Using DTO fields (reportCount, postStatus)
-        const reportCount = boardList.filter(d => d.reportCount > 0 || d.postStatus === 'BLIND').length;
-        document.getElementById('statReportCount').innerHTML = `${reportCount}<span class="unit">건</span>`;
+    async function loadBoardList() {
+        const keyword = document.getElementById('searchInput').value;
+        const searchFilter = document.getElementById('searchFilter').value;
+
+        // [Pagination Added] 쿼리 파라미터에 page와 size 추가
+        const params = new URLSearchParams({
+            category: currentCategory,
+            searchType: searchFilter,
+            keyword: keyword,
+            page: currentPage, // 현재 페이지 번호 전달
+            size: 10           // 페이지당 10개
+        });
+
+        try {
+            const response = await fetch(`${API_URL.LIST}?${params.toString()}`);
+            
+            // 여기서 404(Not Found)나 500 에러가 나면 예외 발생
+            if (!response.ok) throw new Error("데이터 로드 실패");
+            
+            // 서버 응답 구조가 { content: [...], totalPages: 5 } 형태라고 가정
+            // 만약 리스트만 온다면 boardList = await response.json(); 그대로 사용
+            const data = await response.json();
+            
+            // 데이터 구조에 맞춰 바인딩 (여기서는 리스트가 바로 온다고 가정)
+            boardList = Array.isArray(data) ? data : data.content || []; 
+            
+            renderTable(boardList);
+            // renderPagination(data.totalPages); // (선택사항) 페이지 버튼 그리기 함수 필요 시 호출
+
+        } catch (error) {
+            console.error("게시글 로드 중 오류:", error);
+            
+            // [Bug Fix] 팝업 대신 테이블에 '로드 실패' 메시지 표시로 변경 (사용자 경험 개선)
+            const tbody = document.getElementById('boardTableBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="padding:30px; color:red;">서버 연결에 실패했습니다.<br>( 데이터를 불러오지 못했습니다)</td></tr>';
+            
+            // alert("목록을 불러오지 못했습니다."); // 너무 자주 뜨면 불편하므로 주석 처리
+        }
     }
 
-    // [Mapping Change] code -> category
+    async function loadStats() {
+        try {
+            const response = await fetch(API_URL.STATS);
+            if (!response.ok) return;
+            const stats = await response.json();
+            
+            document.getElementById('statTotalCount').innerHTML = `${stats.totalCount}<span class="unit">개</span>`;
+            document.getElementById('statTodayCount').innerHTML = `${stats.todayCount}<span class="unit">개</span>`;
+            document.getElementById('statReportCount').innerHTML = `${stats.reportCount}<span class="unit">건</span>`;
+        } catch (e) {
+            console.log("통계 로드 실패");
+        }
+    }
+
+    async function loadBannedWords() {
+        try {
+            const response = await fetch(API_URL.BANNED);
+            if(response.ok) {
+                const data = await response.json();
+                currentBannedWords = data.bannedWords;
+            }
+        } catch(e) {}
+    }
+
+    /* =========================================
+       3. UI & Handler Logic
+       ========================================= */
+
+    // [Pagination Added] 페이지 이동 함수 추가
+    function movePage(pageNum) {
+        if (pageNum < 1) return;
+        // (필요 시 최대 페이지 체크 로직 추가)
+        currentPage = pageNum;
+        loadBoardList(); // 변경된 페이지로 재조회
+    }
+
     function filterTab(category, index) {
         currentCategory = category;
+        currentPage = 1; // [Pagination Added] 탭 변경 시 1페이지로 초기화
         
         const highlighter = document.getElementById('tabHighlighter');
         if(highlighter) highlighter.style.transform = `translateX(${index * TAB_WIDTH}px)`;
@@ -77,44 +134,22 @@ const boardManager = (function() {
         const titles = { 'ALL': '전체 게시글 목록', 'FREE': '자유게시판 목록', 'SECRET': '익명/장터 목록', 'REPORT': '신고 접수 내역' };
         document.getElementById('listTitle').innerText = titles[category] || '게시판 목록';
 
-        searchTable();
+        loadBoardList(); 
     }
 
     function searchTable() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
-        const searchFilter = document.getElementById('searchFilter').value; // 'title' or 'userName'
-        
-        const filtered = boardList.filter(item => {
-            // 1. Tab Filter
-            if (currentCategory === 'REPORT') {
-                if (item.reportCount === 0 && item.postStatus !== 'BLIND') return false;
-            } else if (currentCategory !== 'ALL' && item.category !== currentCategory) {
-                // [Mapping Change] categoryCode -> category
-                return false;
-            }
-            
-            // 2. Search Filter
-            if (keyword) {
-                if(searchFilter === 'title' && !item.title.toLowerCase().includes(keyword)) return false;
-                // [Mapping Change] writerName -> userName
-                if(searchFilter === 'userName' && !item.userName.toLowerCase().includes(keyword)) return false;
-            }
-            
-            return true;
-        });
-
-        renderTable(filtered);
+        currentPage = 1; // [Pagination Added] 검색 시 1페이지로 초기화
+        loadBoardList();
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('boardTableBody');
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="padding:30px; color:#999;">조건에 맞는 게시글이 없습니다.</td></tr>';
             return;
         }
-
+        // ... (기존 렌더링 로직 동일) ...
         tbody.innerHTML = data.map(item => {
-            // [Mapping Change] categoryCode -> category
             let catBadge = '<span class="badge badge-gray">기타</span>';
             if(item.category === 'FREE') catBadge = '<span class="badge badge-blue">자유</span>';
             else if(item.category === 'MARKET') catBadge = '<span class="badge badge-green">장터</span>';
@@ -131,7 +166,6 @@ const boardManager = (function() {
 
             let titleStyle = item.postStatus === 'BLIND' ? 'color:#999; text-decoration:line-through;' : 'color:#333; font-weight:500; cursor:pointer;';
 
-            // [Mapping Change] postNo -> boardId, writerName -> userName, viewCount -> views
             return `
                 <tr>
                     <td style="color:#666;">${item.boardId}</td>
@@ -154,7 +188,7 @@ const boardManager = (function() {
     }
 
     /* =========================================
-       3. Modal Logic
+       4. Modal & Action Logic
        ========================================= */
 
     function openBannedModal() {
@@ -162,23 +196,31 @@ const boardManager = (function() {
         openModalById('bannedModal');
     }
 
-    function saveBannedWords() {
+    async function saveBannedWords() {
+        // ... (기존 로직 동일) ...
         const val = document.getElementById('bannedInput').value;
         if(!val.trim()) { alert("금지어를 입력해주세요."); return; }
         
-        currentBannedWords = val;
-        alert("금지어 설정이 저장되었습니다.");
-        closeModal('bannedModal');
+        try {
+            const response = await fetch(API_URL.BANNED, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bannedWords: val })
+            });
+            if(response.ok) {
+                currentBannedWords = val;
+                alert("금지어 설정이 저장되었습니다.");
+                closeModal('bannedModal');
+            } else { alert("저장 실패"); }
+        } catch(e) { console.error(e); }
     }
 
     function openDetailModal(id) {
-        // [Mapping Change] postNo -> boardId
+        // ... (기존 로직 동일) ...
         const item = boardList.find(d => d.boardId === id);
         if(!item) return;
 
-        // [Mapping Change] targetPostNo -> targetBoardId
         document.getElementById('targetBoardId').value = item.boardId;
-        
         const html = `
             <div class="info-group">
                 <div class="info-label">제목</div>
@@ -202,36 +244,40 @@ const boardManager = (function() {
             </div>
         `;
         document.getElementById('postDetailContent').innerHTML = html;
-
         openModalById('detailModal');
     }
 
-    function executeAction(type) {
-        // [Mapping Change] targetPostNo -> targetBoardId
+    async function executeAction(type) {
+        // ... (기존 로직 동일) ...
         const id = parseInt(document.getElementById('targetBoardId').value);
         const reason = document.getElementById('blindReason').value;
         
         if (type === 'delete') {
-            if(!confirm("정말 삭제하시겠습니까? 복구할 수 없습니다.")) return;
-            // [Mapping Change] postNo -> boardId
-            boardList = boardList.filter(d => d.boardId !== id);
-            alert("게시글이 삭제되었습니다.");
+            if(!confirm("삭제하시겠습니까?")) return;
+            try {
+                const response = await fetch(`${API_URL.DELETE}/${id}`, { method: 'DELETE' });
+                if(response.ok) {
+                    alert("삭제되었습니다.");
+                    closeModal('detailModal');
+                    loadBoardList(); loadStats();
+                } else { alert("삭제 실패"); }
+            } catch(e) { console.error(e); }
         } else {
-            const item = boardList.find(d => d.boardId === id);
-            if(item) {
-                item.postStatus = 'BLIND';
-                alert(`[${reason}] 사유로 블라인드 처리되었습니다.`);
-            }
+            try {
+                const response = await fetch(API_URL.STATUS, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ boardId: id, status: 'BLIND', reason: reason })
+                });
+                if(response.ok) {
+                    alert(`블라인드 처리됨`);
+                    closeModal('detailModal');
+                    loadBoardList(); loadStats();
+                } else { alert("처리 실패"); }
+            } catch(e) { console.error(e); }
         }
-        
-        closeModal('detailModal');
-        updateStats();
-        searchTable();
     }
 
-    /* =========================================
-       4. Common Modal Functions
-       ========================================= */
     function openModalById(modalId) {
         const modal = modalMap[modalId];
         if(modal) {
@@ -255,7 +301,8 @@ const boardManager = (function() {
         saveBannedWords,
         openDetailModal,
         executeAction,
-        closeModal
+        closeModal,
+        movePage // [Pagination Added] 외부에서 호출 가능하도록 반환
     };
 
 })();
