@@ -1,0 +1,1 @@
+//해당 js의 기능이 board_manage에 있습니다.
