@@ -14,13 +14,14 @@ const boardManager = (function() {
     
     const TAB_WIDTH = 140;
 
-    const API_URL = {
+    const API_URL = { 
         LIST: '/api/admin/board/list',      
         STATS: '/api/admin/board/stats',    
         DELETE: '/api/admin/board/delete',  
         STATUS: '/api/admin/board/status',  
         BANNED: '/api/admin/board/banned'   
     };
+	//
 
     const modalMap = {};
 
@@ -77,7 +78,7 @@ const boardManager = (function() {
             
             // [Bug Fix] 팝업 대신 테이블에 '로드 실패' 메시지 표시로 변경 (사용자 경험 개선)
             const tbody = document.getElementById('boardTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" style="padding:30px; color:red;">서버 연결에 실패했습니다.<br>( 데이터를 불러오지 못했습니다)</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="padding:30px; color:red;">데이터를 불러오지 못했습니다.</td></tr>';
             
             // alert("목록을 불러오지 못했습니다."); // 너무 자주 뜨면 불편하므로 주석 처리
         }
