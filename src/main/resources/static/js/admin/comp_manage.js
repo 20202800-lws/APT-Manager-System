@@ -1,131 +1,80 @@
 /* =========================================
-   민원 접수 현황 관리 (Server Integrated)
+   민원 접수 현황 (Admin Complaint Logic)
+   Refactored based on ERD: COMPLAINT Table
    ========================================= */
 
 const complaintManager = (function() {
 
-    // 1. 상태 변수 & API 설정
-    let complaintList = []; // 서버 데이터 담을 변수
-    
-    // 백엔드 API 경로 (Controller와 일치해야 함)
-    const API_URL = {
-        LIST: '/api/admin/complaint/list',      // GET: 목록 조회
-        STATS: '/api/admin/complaint/stats',    // GET: 통계 조회
-        UPDATE: '/api/admin/complaint/process'  // PUT/POST: 답변 및 상태 수정
-    };
-
-    const modal = document.getElementById('complaintModal');
+    // 1. Mock Data (ERD Mapping Applied)
+    // [Change Log]
+    // complaintNo -> compId
+    // categoryCode -> category
+    // writerName -> userName (Mapped to USERS.user_name)
+    // complaintStatus -> compStatus
+    // replyContent -> reply
+    let complaintList = [
+        { compId: 1, category: 'FACILITY', title: '지하주차장 누수', content: '물 떨어짐', userName: '김철수(105-1204)', regDate: '2024-02-04', compStatus: 'PENDING', reply: '' },
+        { compId: 2, category: 'NOISE', title: '층간소음 문의', content: '너무 시끄러움', userName: '이영희(101-502)', regDate: '2024-02-04', compStatus: 'PROCESSING', reply: '전달 완료' },
+        { compId: 3, category: 'ETC', title: '헬스장 건의', content: '시간 조정 요청', userName: '박민수(103-201)', regDate: '2024-02-03', compStatus: 'COMPLETED', reply: '검토 예정' },
+        { compId: 4, category: 'PARKING', title: '불법 주차', content: '외부 차량', userName: '최지훈(102-101)', regDate: '2024-02-02', compStatus: 'PENDING', reply: '' },
+        { compId: 5, category: 'FACILITY', title: '현관문 고장', content: '힌지 파손', userName: '정수진(102-305)', regDate: '2024-02-01', compStatus: 'COMPLETED', reply: '수리 완료' }
+    ];
 
     document.addEventListener('DOMContentLoaded', () => {
-        // 초기 데이터 로드
-        loadStats();
-        loadComplaintList();
-
-        // 모달 외부 클릭 시 닫기
+        updateStats();
+        renderTable(complaintList);
+        
+        // Modal Outside Click Close
+        const modal = document.getElementById('complaintModal');
         window.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
     });
 
     /* =========================================
-       2. Server Communication (Async/Await)
+       2. Logic Functions
        ========================================= */
+    function updateStats() {
+        const setHtml = (id, count) => {
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = `${count}<span class="unit">건</span>`;
+        };
 
-    // [READ] 민원 목록 조회
-    async function loadComplaintList() {
+        // [Mapping Change] complaintStatus -> compStatus
+        setHtml('statPendingCount', complaintList.filter(d => d.compStatus === 'PENDING').length);
+        setHtml('statProcessingCount', complaintList.filter(d => d.compStatus === 'PROCESSING').length);
+        setHtml('statCompletedCount', complaintList.filter(d => d.compStatus === 'COMPLETED').length);
+        setHtml('statTotalCount', complaintList.length);
+    }
+
+    function searchTable() {
         const categoryVal = document.getElementById('categoryFilter').value;
         const statusVal = document.getElementById('statusFilter').value;
-        const keyword = document.getElementById('keyword').value.trim();
+        const keyword = document.getElementById('keyword').value.toLowerCase().trim();
 
-        // 검색 조건 쿼리 스트링 생성
-        const params = new URLSearchParams({
-            category: categoryVal,
-            status: statusVal,
-            keyword: keyword,
-            page: 1,  // 추후 페이지네이션 연동 시 변수 처리
-            size: 10
+        const filtered = complaintList.filter(item => {
+            // [Mapping Change] categoryCode -> category
+            if (categoryVal && item.category !== categoryVal) return false;
+            
+            // [Mapping Change] complaintStatus -> compStatus
+            if (statusVal && item.compStatus !== statusVal) return false;
+            
+            if (keyword) {
+                const matchTitle = item.title.toLowerCase().includes(keyword);
+                // [Mapping Change] writerName -> userName
+                const matchUser = item.userName.toLowerCase().includes(keyword);
+                if (!matchTitle && !matchUser) return false;
+            }
+            return true;
         });
-
-        try {
-            const response = await fetch(`${API_URL.LIST}?${params.toString()}`);
-            if (!response.ok) throw new Error("데이터 로드 실패");
-
-            complaintList = await response.json();
-            renderTable(complaintList);
-        } catch (error) {
-            console.error("민원 목록 로드 중 오류:", error);
-            const tbody = document.getElementById('complaintTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px; text-align:center; color:red;">데이터를 불러오지 못했습니다.</td></tr>';
-        }
-    }
-
-    // [READ] 민원 통계 조회
-    async function loadStats() {
-        try {
-            const response = await fetch(API_URL.STATS);
-            if (response.ok) {
-                const stats = await response.json();
-                // DTO 구조: { pending: 10, processing: 5, completed: 20, total: 35 } 가정
-                setCount('statPendingCount', stats.pending);
-                setCount('statProcessingCount', stats.processing);
-                setCount('statCompletedCount', stats.completed);
-                setCount('statTotalCount', stats.total);
-            }
-        } catch (e) {
-            console.error("통계 로드 실패", e);
-        }
-    }
-
-    // [WRITE] 민원 답변 및 상태 저장
-    async function saveComplaint() {
-        const id = parseInt(document.getElementById('targetCompId').value); // Hidden Input
-        const replyText = document.getElementById('modalReply').value;
-        const statusText = document.getElementById('modalCompStatus').value; // Select Box
-
-        if (!confirm("민원 처리 내용을 저장하시겠습니까?")) return;
-
-        try {
-            const response = await fetch(API_URL.UPDATE, {
-                method: 'PUT', // 또는 POST
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    compId: id,
-                    reply: replyText,
-                    compStatus: statusText
-                })
-            });
-
-            if (response.ok) {
-                alert("정상적으로 처리되었습니다.");
-                closeModal();
-                loadComplaintList(); // 목록 갱신
-                loadStats();         // 통계 갱신
-            } else {
-                alert("저장에 실패했습니다.");
-            }
-        } catch (e) {
-            console.error(e);
-            alert("서버 통신 오류가 발생했습니다.");
-        }
-    }
-
-    /* =========================================
-       3. UI Helper Functions
-       ========================================= */
-    
-    function searchTable() {
-        loadComplaintList(); // 서버에 검색 요청
-    }
-
-    function setCount(id, count) {
-        const el = document.getElementById(id);
-        if(el) el.innerHTML = `${count}<span class="unit">건</span>`;
+        
+        renderTable(filtered);
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('complaintTableBody');
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px; text-align:center; color:#999;">접수된 민원이 없습니다.</td></tr>';
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px; text-align:center; color:#999;">데이터가 없습니다.</td></tr>';
             return;
         }
 
@@ -133,6 +82,7 @@ const complaintManager = (function() {
             let catName = '기타';
             let catClass = 'badge-gray';
             
+            // [Mapping Change] categoryCode -> category
             switch(item.category) {
                 case 'FACILITY': catName = '시설보수'; catClass = 'badge-red'; break;
                 case 'NOISE': catName = '층간소음'; catClass = 'badge-blue'; break;
@@ -141,10 +91,12 @@ const complaintManager = (function() {
             }
 
             let statusBadge = '';
+            // [Mapping Change] complaintStatus -> compStatus
             if(item.compStatus === 'PENDING') statusBadge = '<span class="badge badge-gray">접수</span>';
             else if(item.compStatus === 'PROCESSING') statusBadge = '<span class="badge badge-blue">진행중</span>';
             else if(item.compStatus === 'COMPLETED') statusBadge = '<span class="badge badge-green">완료</span>';
 
+            // [Mapping Change] complaintNo -> compId, writerName -> userName
             return `
                 <tr>
                     <td style="color:#666;">${item.compId}</td>
@@ -167,45 +119,65 @@ const complaintManager = (function() {
     }
 
     /* =========================================
-       4. Modal Logic
+       3. Modal Logic
        ========================================= */
+    const modal = document.getElementById('complaintModal');
 
     function openModal(id) {
-        // 상세 데이터는 목록에 있는 것을 재사용하거나, 필요 시 fetch(`${API_URL.DETAIL}/${id}`) 사용
+        // [Mapping Change] complaintNo -> compId
         const item = complaintList.find(d => d.compId === id);
         if(!item) return;
 
         const catMap = { 'FACILITY': '시설보수', 'NOISE': '층간소음', 'PARKING': '주차문제', 'ETC': '기타' };
 
-        // 데이터 바인딩
-        document.getElementById('targetCompId').value = item.compId;
+        // [Mapping Change] Binding to Modal Inputs
+        document.getElementById('targetCompId').value = item.compId; // Changed ID
         document.getElementById('modalCategory').innerText = catMap[item.category] || item.category;
-        document.getElementById('modalUserName').innerText = item.userName;
+        document.getElementById('modalUserName').innerText = item.userName; // Changed ID
         document.getElementById('modalRegDate').innerText = item.regDate;
         document.getElementById('modalContent').innerText = item.content;
         
-        // 입력 필드 초기화
+        // [Mapping Change] replyContent -> reply, complaintStatus -> compStatus
         document.getElementById('modalReply').value = item.reply || ''; 
         document.getElementById('modalCompStatus').value = item.compStatus;
 
-        if(modal) {
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
-        }
+        if(modal) modal.classList.add('active');
     }
 
     function closeModal() {
-        if(modal) {
-            modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 300);
+        if(modal) modal.classList.remove('active');
+    }
+
+    function saveComplaint() {
+        // [Mapping Change] Collecting Data
+        const id = parseInt(document.getElementById('targetCompId').value);
+        const replyText = document.getElementById('modalReply').value;
+        const statusText = document.getElementById('modalCompStatus').value;
+        
+        const item = complaintList.find(d => d.compId === id);
+        if(item) {
+            // [Mapping Change] Update Object
+            item.reply = replyText;
+            item.compStatus = statusText;
+
+            /* // TODO: Server-side fetch example (Mapping check)
+            fetch('/admin/complaint/update', {
+                method: 'POST',
+                body: JSON.stringify({
+                    compId: id,         // Matches ERD comp_id
+                    reply: replyText,   // Matches ERD reply
+                    compStatus: statusText // Matches ERD comp_status
+                })
+            });
+            */
+            
+            alert("저장되었습니다.");
+            closeModal();
+            updateStats();
+            searchTable(); 
         }
     }
 
-    return { 
-        searchTable, 
-        openModal, 
-        closeModal, 
-        saveComplaint 
-    };
+    return { openModal, closeModal, saveComplaint, searchTable };
 
 })();
