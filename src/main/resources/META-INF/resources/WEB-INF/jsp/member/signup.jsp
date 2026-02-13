@@ -52,7 +52,7 @@
                     <input type="password" id="pw1" name="userPw" placeholder="8자 이상, 숫자/특수문자 포함" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="pw2" placeholder="비밀번호 확인" required>
+                    <input type="password" id="pw2" name="userPwCheck" placeholder="비밀번호 확인" required>
                     <span class="error-msg" id="pwMsg"></span>
                 </div>
 
