@@ -59,7 +59,7 @@ public class MemberController {
         return "redirect:/member/login"; 
     }
 
-    // ★ [추가됨] 로그인 실제 처리
+    // ★ [완성본] 로그인 실제 처리 (관리자 분기 포함)
     @PostMapping("/login")
     public String login(@RequestParam String userId, @RequestParam String userPw,
                         HttpServletRequest request, RedirectAttributes rttr) {
@@ -75,8 +75,9 @@ public class MemberController {
             return "redirect:/member/login";
         }
 
-        // 3. 실패: 승인 대기 중 (approvalStatus가 false/0 인 경우)
-        if (!loginUser.getApprovalStatus()) {
+        // 3. 실패: 일반 주민인데 승인 대기 중인 경우
+        // (주의: 관리자는 승인 여부와 상관없이 프리패스 시킵니다!)
+        if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.getApprovalStatus()) {
             rttr.addFlashAttribute("msg", "관리자 승인 대기 중인 계정입니다. 관리사무소에 문의하세요.");
             return "redirect:/member/login";
         }
@@ -87,7 +88,12 @@ public class MemberController {
         
         log.info("로그인 성공: {} (권한: {})", loginUser.getUserName(), loginUser.getUserRole());
 
-        return "redirect:/"; // 메인 페이지로 이동
+        // 5. 성공 후 도착지 다르게 설정 (관리자 vs 일반 주민)
+        if ("ADMIN".equals(loginUser.getUserRole())) {
+            return "redirect:/admin/main"; // 관리자는 관리자 메인 페이지로!
+        } else {
+            return "redirect:/"; // 일반 주민은 기존 메인 페이지로!
+        }
     }
 
     // ★ [추가됨] 로그아웃

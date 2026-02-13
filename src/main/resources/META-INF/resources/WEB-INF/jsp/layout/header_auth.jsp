@@ -1,5 +1,6 @@
 <!-- 홈페이지, 로그인/회원가입용 헤더 -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <header id="mainHeader">
     <div class="logo" onclick="location.href='/'">APARTNERS</div>
@@ -53,9 +54,31 @@
         </div>
     </nav>
 
-	<div class="nav-right">
-	    <a href="/member/login">로그인</a>
-	    <span>|</span>
-	    <a href="/member/signup">회원가입</a>
-	</div>
+    <div class="nav-right">
+        <c:choose>
+            <%-- 1. 로그인 했을 때 --%>
+            <c:when test="${not empty sessionScope.loginMember}">
+                <span style="font-weight: bold; margin-right: 10px;">
+                    ${sessionScope.loginMember.userName}님
+                </span>
+                
+                <c:if test="${sessionScope.loginMember.userRole == 'ADMIN'}">
+                    <a href="/admin/main">관리자 페이지</a>
+                </c:if>
+                <c:if test="${sessionScope.loginMember.userRole != 'ADMIN'}">
+                    <a href="/member/mypage">마이페이지</a>
+                </c:if>
+                
+                <span>|</span>
+                <a href="/member/logout">로그아웃</a>
+            </c:when>
+
+            <%-- 2. 로그인 안 했을 때 (기존 코드) --%>
+            <c:otherwise>
+                <a href="/member/login">로그인</a>
+                <span>|</span>
+                <a href="/member/signup">회원가입</a>
+            </c:otherwise>
+        </c:choose>
+    </div>
 </header>
