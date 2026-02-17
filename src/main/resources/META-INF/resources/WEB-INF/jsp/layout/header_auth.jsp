@@ -59,7 +59,7 @@
             <%-- 1. 로그인 했을 때 --%>
             <c:when test="${not empty sessionScope.loginMember}">
                 <span style="font-weight: bold; margin-right: 10px;">
-                    ${sessionScope.loginMember.userName}님
+                    ${sessionScope.loginMember.dong}동 ${sessionScope.loginMember.ho}호 ${sessionScope.loginMember.realName}님 환영합니다.
                 </span>
                 
                 <c:if test="${sessionScope.loginMember.userRole == 'ADMIN'}">

@@ -2,12 +2,21 @@ package com.apt.membermanager.controller;
 
 import com.apt.membermanager.dto.UserSignupDto;
 import com.apt.membermanager.entity.User;
+import com.apt.membermanager.service.MemberDetailsService;
 import com.apt.membermanager.service.MemberService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid; 
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,91 +26,114 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
 @Controller
-@RequestMapping("/member") // 공통 주소
-@RequiredArgsConstructor   // Service 자동 주입
+@RequestMapping("/member") 
+@RequiredArgsConstructor   
 public class MemberController {
 
     private final MemberService memberService;
+    
+    // ★ [추가됨] 백엔드 개발자가 만든 클래스와 도구를 주입받습니다!
+    private final MemberDetailsService memberDetailsService;
+    private final PasswordEncoder passwordEncoder;
 
     // ==========================
     // 1. 화면 이동 (GET)
     // ==========================
 
-    // 로그인 페이지 이동
     @GetMapping("/login")
-    public String loginPage() {
-        return "member/login";
-    }
+    public String loginPage(Authentication authentication, HttpServletRequest request) {    
+        HttpSession session = request.getSession(false);
+        if ((authentication != null && authentication.isAuthenticated()) || (session != null && session.getAttribute("loginMember") != null)) {
+            return "redirect:/";
+        }
+        return "member/login"; 
+    } 
 
-    // 회원가입 페이지 이동
     @GetMapping("/signup")
     public String signupPage() {
         return "member/signup";
     }
 
-
     // ==========================
     // 2. 기능 처리 (POST)
     // ==========================
 
-    // [회원가입 처리]
     @PostMapping("/signup")
-    public String signup(@ModelAttribute UserSignupDto userSignupDto) {
+    public String signup(@Valid @ModelAttribute("userSignupDto") UserSignupDto userSignupDto,
+                         BindingResult bindingResult) {
+        
         log.info("회원가입 요청: {}", userSignupDto);
+        
+        if(bindingResult.hasErrors()) {
+            log.warn("검증 오류 발생: {}", bindingResult.getAllErrors());
+            return "member/signup"; 
+        }
 
         try {
+            log.info("회원가입 시작: {}", userSignupDto.getUserId());
             memberService.signup(userSignupDto); 
         } catch (RuntimeException e) {
             log.error("가입 실패: {}", e.getMessage());
             return "redirect:/member/signup?error"; 
         }
 
+        log.info("회원가입 성공: {}", userSignupDto.getUserId());
         return "redirect:/member/login"; 
     }
 
-    // ★ [완성본] 로그인 실제 처리 (관리자 분기 포함)
+    // ★ [수정됨] 선배님의 디테일한 로그인 제어 + 백엔드의 암호화 로직 결합!
     @PostMapping("/login")
     public String login(@RequestParam String userId, @RequestParam String userPw,
                         HttpServletRequest request, RedirectAttributes rttr) {
         
         log.info("로그인 시도: {}", userId);
+        User loginUser = null;
 
-        // 1. 서비스 호출 (ID/PW 검사)
-        User loginUser = memberService.login(userId, userPw);
+        try {
+            // 1. 아이디로 유저 찾기 (백엔드 개발자의 메서드 활용)
+            loginUser = (User) memberDetailsService.loadUserByUsername(userId);
+            
+            // 2. 비밀번호 검증 (암호화된 DB 비밀번호와 사용자가 입력한 비밀번호 비교)
+            if (!passwordEncoder.matches(userPw, loginUser.getPassword())) {
+                loginUser = null; // 비밀번호가 틀리면 null 처리
+            }
+        } catch (UsernameNotFoundException e) {
+            // 아이디가 아예 없는 경우
+            loginUser = null; 
+        }
 
-        // 2. 실패: 아이디 없음 or 비번 틀림
+        // 3. 실패: 아이디 없음 or 비번 틀림
         if (loginUser == null) {
             rttr.addFlashAttribute("msg", "아이디 또는 비밀번호가 일치하지 않습니다.");
             return "redirect:/member/login";
         }
 
-        // 3. 실패: 일반 주민인데 승인 대기 중인 경우
-        // (주의: 관리자는 승인 여부와 상관없이 프리패스 시킵니다!)
+        // 4. 실패: 승인 대기 중인 경우 (관리자는 프리패스)
         if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.getApprovalStatus()) {
             rttr.addFlashAttribute("msg", "관리자 승인 대기 중인 계정입니다. 관리사무소에 문의하세요.");
             return "redirect:/member/login";
         }
 
-        // 4. 성공: 세션(Session)에 회원 정보 저장
+        // 5. 성공: 세션에 회원 정보 저장
         HttpSession session = request.getSession();
-        session.setAttribute("loginMember", loginUser); // "loginMember" 라는 이름표로 저장
+        session.setAttribute("loginMember", loginUser); 
         
-        log.info("로그인 성공: {} (권한: {})", loginUser.getUserName(), loginUser.getUserRole());
+        // (주의: User 엔티티에 getUsername() 인지 getUserName() 인지 백엔드 코드 확인 요망)
+        log.info("로그인 성공: {} (권한: {})", loginUser.getUsername(), loginUser.getUserRole());
 
-        // 5. 성공 후 도착지 다르게 설정 (관리자 vs 일반 주민)
+        // 6. 성공 후 도착지 다르게 설정
         if ("ADMIN".equals(loginUser.getUserRole())) {
-            return "redirect:/admin/main"; // 관리자는 관리자 메인 페이지로!
+            return "redirect:/admin/main"; 
         } else {
-            return "redirect:/"; // 일반 주민은 기존 메인 페이지로!
+            return "redirect:/"; 
         }
     }
 
-    // ★ [추가됨] 로그아웃
     @GetMapping("/logout")
     public String logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false); // 세션이 있으면 가져오고, 없으면 null
+        HttpSession session = request.getSession(false); 
         if (session != null) {
-            session.invalidate(); // 세션 삭제 (로그아웃)
+            session.invalidate(); 
             log.info("로그아웃 완료");
         }
         return "redirect:/";

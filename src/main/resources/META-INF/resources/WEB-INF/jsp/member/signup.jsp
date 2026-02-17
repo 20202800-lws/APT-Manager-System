@@ -52,7 +52,7 @@
                     <input type="password" id="pw1" name="userPw" placeholder="8자 이상, 숫자/특수문자 포함" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" id="pw2" placeholder="비밀번호 확인" required>
+                    <input type="password" id="pw2" name="userPwCheck" placeholder="비밀번호 확인" required>
                     <span class="error-msg" id="pwMsg"></span>
                 </div>
 
@@ -61,7 +61,7 @@
                     <input type="text" id="userName" name="userName" placeholder="실명 입력" required>
                 </div>
 
-                <label class="input-label">생년월일 / 성별코드</label>
+                <label class="input-label">주민등록번호 앞자리 / 성별코드</label>
                 <div class="input-flex">
                     <input type="text" id="birthDate" name="birthDate" placeholder="생년월일 6자리 (예: 990101)" 
                            maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
@@ -70,10 +70,10 @@
                     
                     <div style="flex: 1;"> <select id="genderDigit" name="genderDigit" required>
                             <option value="">선택</option>
-                            <option value="1">1 (남성)</option>
-                            <option value="2">2 (여성)</option>
-                            <option value="3">3 (2000년생~ 남성)</option>
-                            <option value="4">4 (2000년생~ 여성)</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
                         </select>
                     </div>
                     

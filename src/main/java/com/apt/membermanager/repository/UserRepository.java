@@ -9,4 +9,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 	
 	// 아이디 찾기, 로그인 등에서 사용
     Optional<User> findByUserId(String userId);
+    
 }
