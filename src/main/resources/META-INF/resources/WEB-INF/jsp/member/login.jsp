@@ -22,6 +22,8 @@
             </div>
 
             <form id="loginForm" action="/member/login" method="post">
+				<input type="hidden" id="serverMsg" value="${param.msg != null ? param.msg : msg}">
+				
                 <div class="input-group">
                     <input type="text" id="userId" name="userId" placeholder="아이디" required>
                 </div>

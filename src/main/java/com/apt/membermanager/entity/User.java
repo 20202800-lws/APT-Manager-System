@@ -67,6 +67,13 @@ public class User implements UserDetails{
 		// TODO Auto-generated method stub
 		return this.userId;
 	}
+    
+    // ★ [추가됨] 프론트엔드(JSP)에서 실제 이름을 가져올 때, 
+    // 시큐리티의 getUsername()과 톰캣이 헷갈리지 않도록 명확한 통로를 제공
+    public String getRealName() {
+        return this.userName;
+    }
+    
     // ★ [수정됨] int -> Boolean
     // DB의 TINYINT(1)을 자바의 Boolean(true/false)으로 자동 변환해줍니다.
     @Column(name = "approval_status")
