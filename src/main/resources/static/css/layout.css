@@ -33,7 +33,10 @@ header.scrolled:hover { height: 300px; }
 .logo { font-size: 24px; font-weight: 800; cursor: pointer; margin-top: 5px; letter-spacing: 1px; white-space: nowrap; }
 
 .nav-container { 
-    display: flex; gap: 50px; /* 수정된 간격 */ margin-top: 5px; 
+    display: flex; gap: 50px; /* 수정된 간격 */ margin-top: 5px;
+	position: absolute; /* 주변 요소들의 크기에 영향을 받지 않고 공중에 띄움 */
+	left: 50%; /* 화면의 절반(50%) 위치로 이동 */
+	transform: translateX(-50%); /* 자신의 넓이의 절반만큼 왼쪽으로 당겨서 완벽한 정중앙을 맞춤 */
 }
 .nav-column { text-align: center; }
 

@@ -1,34 +1,75 @@
 package com.apt.membermanager.dto;
 
 import com.apt.membermanager.entity.User;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 @Getter @Setter
+@ToString
+@NoArgsConstructor
 public class UserSignupDto {
-    private String userId;
-    private String userPw;
-    private String userName;
-    private String dong;
-    private String ho;
-    private String phone;
-    private String email;
-    private String birthDate; // 생년월일
-    private String genderDigit; // 주민번호 뒷자리 첫글자
 
-    // DTO -> Entity 변환 메서드 (서비스에서 씀)
-    public User toEntity() {
-        User user = new User();
-        user.setUserId(this.userId);
-        user.setUserPw(this.userPw); // 나중에 암호화 필요
-        user.setUserName(this.userName);
-        user.setDong(this.dong);
-        user.setHo(this.ho);
-        user.setPhone(this.phone);
-        user.setEmail(this.email);
-        user.setBirthDate(this.birthDate);
-        user.setGenderDigit(this.genderDigit);
-        user.setIsApproved("N"); // 초기엔 미승인 상태
-        return user;
+	@NotBlank(message = "아이디를 입력하세요")
+	@Size(min=6,message = "아이디는 6자리 이상 입력하세요")
+	@Pattern(regexp = "^[a-zA-Z0-9]*$")
+	private String userId;
+	
+	@NotBlank(message = "비밀번호를 입력하세요")
+	@Size(min = 8,message = "비밀번호는 8자리 이상으로 입력하세요")
+	@Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]*$", message = "비밀번호는 숫자, 특수기호를 모두 포함해야 합니다.")
+    private String userPw;
+	
+	@NotBlank(message = "비밀번호가 일치하지 않습니다.")
+    private String userPwCheck;
+    
+	@NotBlank(message ="이름을 입력하세요" )
+    private String userName;
+	
+	@NotBlank(message = "동을 입력하세요")
+    private String dong;
+	
+	@NotBlank(message = "호수를 입력하세요")
+    private String ho;
+	
+	@NotBlank(message = "전화번호를 입력하세요")
+	@Pattern(regexp = "^01[016789]-\\d{3,4}-\\d{4}$", message = "올바른 전화번호 형식이 아닙니다.")
+    private String phone;
+    
+	@NotBlank(message = "이메일 주소를 입력하세요")
+	@Email(message = "올바른 주소를 입력하세요")
+    private String email;
+    
+	@NotBlank(message = "생년월일을 입력하세요")
+    private String birthDate;
+    
+	@NotBlank(message = "주민번호 뒷자리 첫번째 번호를 입력하세요")
+	@Pattern(regexp = "^[1-4]$")
+    private String genderDigit;
+
+    // ★ DTO -> Entity 변환 (여기가 핵심!)
+    public User toEntity(String encodePw) {
+    	
+    	return User.builder()
+    			.userId(this.userId)
+    			.userPw(encodePw)
+    			.userName(this.userName)
+    			.birthDate(this.birthDate)
+    			.genderDigit(this.genderDigit)
+    			.email(this.email)
+    			.phone(this.phone)
+    			.dong(this.dong)
+    			.ho(this.ho)
+    			// [수정됨] int(0) -> Boolean(false)
+    			// 가입 초기엔 "승인 안 됨(false)" 상태로 설정
+    			.approvalStatus(false)
+    			.userRole("USER")
+    			.build();
     }
 }
