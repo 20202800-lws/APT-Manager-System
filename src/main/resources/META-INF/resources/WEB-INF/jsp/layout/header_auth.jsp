@@ -32,10 +32,10 @@
             </ul>
         </div>
         <div class="nav-column">
-            <a href="#">주차시설</a>
+            <a href="#parking">주차시설</a>
             <ul class="sub-menu">
-                <li><a href="#">세대차량 등록</a></li>
-                <li><a href="#">방문차량 등록</a></li>
+                <li><a href="/parking/my_car">세대차량 등록</a></li>
+                <li><a href="/parking/my_car">방문차량 등록</a></li>
             </ul>
         </div>
         <div class="nav-column">
@@ -46,9 +46,9 @@
             </ul>
         </div>
         <div class="nav-column">
-            <a href="#">소식</a>
+            <a href="#notice">소식</a>
             <ul class="sub-menu">
-                <li><a href="#">공지사항</a></li>
+                <li><a href="/notice/notice_list">공지사항</a></li>
              </ul>
         </div>
     </nav>
