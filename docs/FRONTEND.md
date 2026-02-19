@@ -3,7 +3,7 @@ WEB-INF/jsp
 ├── 📄 home.jsp                   (PGM-COM-001)
 │
 ├── 📂 layout
-│   ├── 📄 header_auth.jsp         (LAY-HDR-001)
+│   ├── 📄 header_auth.jsp         (LAY-HDR-001) 0
 │   ├── 📄 header_intro.jsp        (LAY-HDR-002)
 │   ├── 📄 header_sub.jsp          (LAY-HDR-003)
 │   ├── 📄 lnb.jsp                 (LAY-LNB-001)
@@ -11,8 +11,8 @@ WEB-INF/jsp
 │   └── 📄 footer.jsp              (LAY-FTR-001)
 │ 해결!
 ├── 📂 member (로그인 관련)
-│   ├── 📄 login.jsp               (PGM-MEM-001)
-│   ├── 📄 singup.jsp              (PGM-MEM-002)
+│   ├── 📄 login.jsp               (PGM-MEM-001)  0
+│   ├── 📄 singup.jsp              (PGM-MEM-002)  0
 │   └── 📄 find_account.jsp        (PGM-MEM-003)[아이디/비밀번호 찾기 추가]
 │ 해결!
 ├── 📂 mypage (마이페이지)
@@ -30,7 +30,7 @@ WEB-INF/jsp
 │   └── 📄 floor_plan.jsp          (PGM-INT-003)
 │ 해결!
 ├── 📂 board (게시판)
-│   ├── 📄 free_list.jsp           (PGM-BRD-001)
+│   ├── 📄 free_list.jsp           (PGM-BRD-001) 0
 │   ├── 📄 free_proc.jsp           (PGM-BRD-002)
 │   ├── 📄 anon_list.jsp           (PGM-BRD-003)
 │   ├── 📄 anon_proc.jsp           (PGM-BRD-004)

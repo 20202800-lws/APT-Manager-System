@@ -1,5 +1,5 @@
 /* borad.js - 게시판 관련 스크립트 */
-document.addEventListener('DOMContentLoaded', () => {
+
 let currentBoard = 'free';
 let currentPostIdx = null;
 let boards = {
@@ -218,4 +218,3 @@ document.getElementById('searchInput').addEventListener('keypress', function (e)
 
 window.onload = renderList;
 
-});

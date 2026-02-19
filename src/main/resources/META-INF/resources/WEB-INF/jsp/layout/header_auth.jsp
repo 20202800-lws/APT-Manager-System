@@ -14,21 +14,21 @@
             </ul>
         </div>
         <div class="nav-column">
-            <a href="#">게시판</a>
+            <a href="#board">게시판</a>
             <ul class="sub-menu">
-                <li><a href="#">자유게시판</a></li>
-                <li><a href="#">익명게시판</a></li>
-                <li><a href="#">민원게시판</a></li>
-                <li><a href="#">어린이집</a></li>
+                <li><a href="/board/free_list">자유게시판</a></li>
+                <li><a href="/board/anon_list">익명게시판</a></li>
+                <li><a href="/board/comp_list">민원게시판</a></li>
+                <li><a href="/board/report_pop">어린이집</a></li>
             </ul>
         </div>
         <div class="nav-column">
-            <a href="#">커뮤니티 시설</a>
+            <a href="#facility">커뮤니티 시설</a>
             <ul class="sub-menu">
-                <li><a href="#">헬스장</a></li>
-                <li><a href="#">수영장</a></li>
-                <li><a href="#">스크린골프</a></li>
-                <li><a href="#">게스트하우스</a></li>
+                <li><a href="/facility/info_gym">헬스장</a></li>
+                <li><a href="/facility/info_poll">수영장</a></li>
+                <li><a href="/facility/info_golf">스크린골프</a></li>
+                <li><a href="/facility/info_guest">게스트하우스</a></li>
             </ul>
         </div>
         <div class="nav-column">
@@ -39,10 +39,10 @@
             </ul>
         </div>
         <div class="nav-column">
-            <a href="#">예약 및 관리</a>
+            <a href="#reservation">예약 및 관리</a>
             <ul class="sub-menu">
-                <li><a href="#">시설 예약/신청</a></li>
-                <li><a href="#">예약/수강 내역</a></li>
+                <li><a href="/reservation/fac_book">시설 예약/신청</a></li>
+                <li><a href="/reservation/my_list">예약/수강 내역</a></li>
             </ul>
         </div>
         <div class="nav-column">
