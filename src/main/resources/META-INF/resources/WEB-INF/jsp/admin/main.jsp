@@ -8,7 +8,7 @@
     <title>관리자 대시보드 | APARTNERS</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<c:url value='/resources/css/admin.css'/>">
+    <link rel="stylesheet" href="<c:url value='/css/admin.css'/>">
     
     <style>
         /* 대시보드 전용 레이아웃 */
@@ -24,7 +24,7 @@
 
 <div class="admin-container">
     
-    <jsp:include page="../common/admin_sidebar.jsp" />
+    <jsp:include page="../layout/admin_sidebar.jsp" />
 
     <main class="main-content">
         
@@ -111,8 +111,8 @@
     </main>
 </div>
 
-<script src="<c:url value='/resources/js/admin/admin_common.js'/>"></script>
-<script src="<c:url value='/resources/js/admin/dashboard.js'/>"></script>
+<script src="<c:url value='/js/admin/admin_common.js'/>"></script>
+<script src="<c:url value='/js/admin/dashboard.js'/>"></script>
 
 </body>
 </html>

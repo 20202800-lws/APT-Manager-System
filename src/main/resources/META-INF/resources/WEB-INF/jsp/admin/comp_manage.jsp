@@ -9,7 +9,7 @@
     <title>관리자 | 민원 접수 현황</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<c:url value='/resources/css/admin.css'/>">
+    <link rel="stylesheet" href="<c:url value='/css/admin.css'/>">
 
     <style>
         /* CSS는 이전과 동일하므로 생략, ID 선택자만 JS와 일치시킴 */
@@ -25,6 +25,9 @@
 <body>
 
 <div class="admin-container">
+    
+    <jsp:include page="../layout/admin_sidebar.jsp" />
+
     <main class="main-content">
         <div class="content-header">
             <h2>민원 접수 현황</h2>
@@ -97,7 +100,7 @@
     <div class="modal-container">
         <div class="content-header" style="margin:0; display:flex; justify-content:space-between;">
             <h3>민원 상세 및 답변</h3>
-            <button onclick="complaintManager.closeModal()" style="border:none; bg:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="complaintManager.closeModal()" style="border:none; background:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         
         <input type="hidden" id="targetCompId"> 
@@ -129,6 +132,6 @@
     </div>
 </div>
 
-<script src="<c:url value='/resources/js/admin/complaint.js'/>"></script>
+<script src="<c:url value='/js/admin/complaint.js'/>"></script>
 </body>
 </html>

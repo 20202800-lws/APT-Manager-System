@@ -9,13 +9,13 @@
     <title>관리자 | 게시판 통합 관리</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<c:url value='/resources/css/admin.css'/>">
+    <link rel="stylesheet" href="<c:url value='/css/admin.css'/>">
 </head>
 <body>
 
 <div class="admin-container">
     
-    <jsp:include page="../../common/admin_sidebar.jsp" />
+    <jsp:include page="../layout/admin_sidebar.jsp" />
 
     <main class="main-content">
         
@@ -150,7 +150,7 @@
     </div>
 </div>
 
-<script src="<c:url value='/resources/js/admin/board.js'/>"></script>
+<script src="<c:url value='/js/admin/board.js'/>"></script>
 
 </body>
 </html>
