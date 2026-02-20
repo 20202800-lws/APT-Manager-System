@@ -1,0 +1,80 @@
+
+:root {
+    --brand: #1a0b2e;
+    --accent: #6366f1;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --text: #1e293b;
+    --gray: #64748b;
+    --bg: #f8fafc;
+    --white: #ffffff;
+    --radius: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+.sidebar { width: 260px; background: var(--white); padding: 30px 20px; border-right: 1px solid #e2e8f0; position: fixed; height: 100vh; z-index: 100; }
+.logo { font-size: 20px; font-weight: 800; color: var(--brand); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+.nav-menu { display: flex; flex-direction: column; gap: 10px; }
+.nav-item { padding: 14px 18px; border-radius: 12px; color: var(--gray); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
+.nav-item.active, .nav-item:hover { background: var(--brand); color: var(--white); }
+
+.main-content { margin-left: 260px; flex: 1; padding: 40px 60px; max-width: 1400px; }
+.page-header h2 { font-size: 28px; font-weight: 700; color: var(--brand); margin-bottom: 30px; }
+
+.status-card { background: var(--white); padding: 30px; border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 24px; }
+.card-header { display: flex; justify-content: space-between; margin-bottom: 25px; }
+.live-indicator { font-size: 13px; color: var(--success); font-weight: 600; }
+
+.status-overview { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+.type-status-group { display: flex; gap: 12px; }
+.type-badge { display: flex; flex-direction: column; align-items: center; padding: 12px 20px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; min-width: 100px; }
+.type-badge strong { font-size: 15px; color: var(--brand); }
+
+.total-count { font-size: 48px; font-weight: 800; color: var(--brand); }
+.total-max { font-size: 20px; color: #999; }
+
+.floor-status { display: flex; flex-direction: column; gap: 15px; }
+.floor-item { display: flex; align-items: center; gap: 15px; font-size: 14px; font-weight: 600; }
+.progress-bar-bg { flex: 1; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease-in-out; }
+
+.list-section { background: var(--white); border-radius: var(--radius); padding: 30px; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th { padding: 15px; color: var(--gray); font-size: 13px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+td { padding: 20px 15px; font-size: 14px; border-bottom: 1px solid #f8fafc; }
+
+.badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.badge-h { background: #e0e7ff; color: #4338ca; }
+.badge-v { background: #fef3c7; color: #b45309; }
+.btn-delete { color: var(--danger); background: none; border: 1px solid #fee2e2; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: white; width: 480px; padding: 40px; border-radius: 24px; }
+.modal-header {
+    display: flex;                /* 가로 배치 */
+    justify-content: space-between; /* 제목은 왼쪽 끝, 버튼은 오른쪽 끝으로 밀어냄 */
+    align-items: center;          /* 세로 방향 중앙 정렬 */
+    margin-bottom: 25px;          /* 하단 간격 */
+}
+.close-btn { 
+border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 24px;              /* X 버튼 크기 */
+    color: var(--gray);
+    padding: 0;
+    margin: 0;
+    line-height: 1;}
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--gray); margin-bottom: 8px; }
+.form-input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
+.btn-submit { width: 100%; padding: 14px; background: var(--brand); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+.price-info { margin-bottom: 15px; font-size: 13px; color: var(--accent); font-weight: 600; display: none; }
+
+.alert-box { width: 360px; text-align: center; padding: 30px; }
+.alert-icon { font-size: 40px; margin-bottom: 15px; color: var(--accent); }
+
+

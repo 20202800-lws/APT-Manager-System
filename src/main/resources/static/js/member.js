@@ -82,6 +82,7 @@ function checkId() {
         return;
     }
 
+<<<<<<< HEAD
     // 2. 백엔드로 통신 요청 (Fetch API)
     fetch('/member/checkId?userId=' + userId, {
         method: 'POST'
@@ -172,3 +173,6 @@ function handleSignupSubmit() {
 
     return true; // 폼 전송 진행!
 }
+=======
+
+>>>>>>> refs/remotes/origin/mypage
