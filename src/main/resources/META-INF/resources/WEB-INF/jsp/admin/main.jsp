@@ -42,22 +42,22 @@
             <div class="stat-card border-left-primary">
                 <h3>총 입주 세대</h3>
                 <div class="number text-primary" id="statTotalHouseholdCount">0<span class="unit">세대</span></div>
-                <div class="desc">입주율 <span style="font-weight:700;">98%</span></div>
+              
             </div>
-            <div class="stat-card border-left-warning">
+            <div class="stat-card border-left-danger">
                 <h3>미처리 민원</h3>
-                <div class="number text-warning" id="statUnprocessedMinwon">0<span class="unit">건</span></div>
+                <div class="number text-danger" id="statUnprocessedMinwon">0<span class="unit">건</span></div>
                 <div class="desc" style="color:#d32f2f; font-weight:600;">빠른 확인 요망</div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>관리비 납부율</h3>
                 <div class="number text-success" id="statFeePaymentRate">0<span class="unit">%</span></div>
-                <div class="desc">전월 대비 ▲ 1.2%</div>
+
             </div>
-            <div class="stat-card border-left-danger">
+            <div class="stat-card border-left-warning">
                 <h3>주차 혼잡도</h3>
-                <div class="number text-danger" id="statParkingRate">0<span class="unit">%</span></div>
-                <div class="desc">현재 주차 가능: <span style="font-weight:700;">45대</span></div>
+                <div class="number text-warning" id="statParkingRate">0<span class="unit">%</span></div>
+               </div>
             </div>
         </div>
 

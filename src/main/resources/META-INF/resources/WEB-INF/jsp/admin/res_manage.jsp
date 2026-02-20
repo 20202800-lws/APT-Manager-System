@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %> <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -24,28 +24,27 @@
             
             <div class="content-header">
                 <h2>커뮤니티 시설 관리</h2>
-                <div class="subtitle">📅 2026-02-10 실시간 현황</div>
-            </div>
+                <div class="subtitle">📅 ${todayDate} 실시간 현황</div> </div>
 
             <div class="stat-grid-container grid-4">
                 <div class="stat-card border-left-primary" onclick="facilityManager.openHistory('profit')">
                     <h3>이번 달 수익</h3>
-                    <div class="number">₩4,250,000</div> 
+                    <div class="number">₩${stats.profit}</div> 
                     <div class="desc text-primary">목표 달성중</div>
                 </div>
                 <div class="stat-card border-left-danger" onclick="facilityManager.openHistory('maintenance')">
                     <h3>유지보수 지출</h3>
-                    <div class="number text-danger">₩1,120,000</div>
+                    <div class="number text-danger">₩${stats.maintenance}</div>
                     <div class="desc">전월 대비 감소</div>
                 </div>
                 <div class="stat-card border-left-success" onclick="facilityManager.openHistory('net')">
                     <h3>이번 달 순수익</h3>
-                    <div class="number text-success">₩3,130,000</div>
+                    <div class="number text-success">₩${stats.net}</div>
                     <div class="desc">안정적</div>
                 </div>
                 <div class="stat-card border-left-info" onclick="facilityManager.openHistory('users')">
                     <h3>이용객 수</h3>
-                    <div class="number">1,242명</div>
+                    <div class="number">${stats.users}명</div>
                     <div class="desc">실시간 집계</div>
                 </div>
             </div>
@@ -56,42 +55,50 @@
                 </div>
                 
                 <div class="grid-4" style="display: grid; gap: 20px;">
-                    <div class="fac-item" id="fac-card-POOL" data-fac-id="POOL" data-available="1" 
+                    <div class="fac-item ${facMap['POOL'].available == 0 ? 'on' : ''}" id="fac-card-POOL" data-fac-id="POOL" data-available="${facMap['POOL'].available}" 
                          style="border:1px solid var(--border-color); padding:20px; border-radius:12px;">
                         <h4 style="margin-bottom:10px; font-weight:700;">🏊 수영장</h4>
-                        <input type="text" class="form-input" value="정상 운영 중" style="width:100%; margin-bottom:10px;">
+                        <input type="text" class="form-input" value="${facMap['POOL'].memo}" style="width:100%; margin-bottom:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="badge badge-green tgl-label">운영 중</span>
+                            <span class="badge ${facMap['POOL'].available == 1 ? 'badge-green' : 'badge-red'} tgl-label">
+                                ${facMap['POOL'].available == 1 ? '운영 중' : '점검 중'}
+                            </span>
                             <button class="btn btn-secondary btn-xs" onclick="facilityManager.toggleFac('POOL')">상태변경</button>
                         </div>
                     </div>
 
-                    <div class="fac-item" id="fac-card-GYM" data-fac-id="GYM" data-available="1" 
+                    <div class="fac-item ${facMap['GYM'].available == 0 ? 'on' : ''}" id="fac-card-GYM" data-fac-id="GYM" data-available="${facMap['GYM'].available}" 
                          style="border:1px solid var(--border-color); padding:20px; border-radius:12px;">
                         <h4 style="margin-bottom:10px; font-weight:700;">🏋️ 헬스장</h4>
-                        <input type="text" class="form-input" value="정상 운영 중" style="width:100%; margin-bottom:10px;">
+                        <input type="text" class="form-input" value="${facMap['GYM'].memo}" style="width:100%; margin-bottom:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="badge badge-green tgl-label">운영 중</span>
+                            <span class="badge ${facMap['GYM'].available == 1 ? 'badge-green' : 'badge-red'} tgl-label">
+                                ${facMap['GYM'].available == 1 ? '운영 중' : '점검 중'}
+                            </span>
                             <button class="btn btn-secondary btn-xs" onclick="facilityManager.toggleFac('GYM')">상태변경</button>
                         </div>
                     </div>
 
-                    <div class="fac-item on" id="fac-card-GOLF" data-fac-id="GOLF" data-available="0" 
-                         style="border:1px solid #ffebee; background:#fff5f5; padding:20px; border-radius:12px;">
+                    <div class="fac-item ${facMap['GOLF'].available == 0 ? 'on' : ''}" id="fac-card-GOLF" data-fac-id="GOLF" data-available="${facMap['GOLF'].available}" 
+                         style="border:1px solid var(--border-color); padding:20px; border-radius:12px;">
                         <h4 style="margin-bottom:10px; font-weight:700;">⛳ 골프장</h4>
-                        <input type="text" class="form-input" value="타석 교체 작업" style="width:100%; margin-bottom:10px;">
+                        <input type="text" class="form-input" value="${facMap['GOLF'].memo}" style="width:100%; margin-bottom:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="badge badge-red tgl-label">점검 중</span>
+                            <span class="badge ${facMap['GOLF'].available == 1 ? 'badge-green' : 'badge-red'} tgl-label">
+                                ${facMap['GOLF'].available == 1 ? '운영 중' : '점검 중'}
+                            </span>
                             <button class="btn btn-secondary btn-xs" onclick="facilityManager.toggleFac('GOLF')">상태변경</button>
                         </div>
                     </div>
 
-                    <div class="fac-item" id="fac-card-GUEST" data-fac-id="GUEST" data-available="1" 
+                    <div class="fac-item ${facMap['GUEST'].available == 0 ? 'on' : ''}" id="fac-card-GUEST" data-fac-id="GUEST" data-available="${facMap['GUEST'].available}" 
                          style="border:1px solid var(--border-color); padding:20px; border-radius:12px;">
                         <h4 style="margin-bottom:10px; font-weight:700;">🏠 게스트하우스</h4>
-                        <input type="text" class="form-input" value="정상 운영 중" style="width:100%; margin-bottom:10px;">
+                        <input type="text" class="form-input" value="${facMap['GUEST'].memo}" style="width:100%; margin-bottom:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="badge badge-green tgl-label">운영 중</span>
+                            <span class="badge ${facMap['GUEST'].available == 1 ? 'badge-green' : 'badge-red'} tgl-label">
+                                ${facMap['GUEST'].available == 1 ? '운영 중' : '점검 중'}
+                            </span>
                             <button class="btn btn-secondary btn-xs" onclick="facilityManager.toggleFac('GUEST')">상태변경</button>
                         </div>
                     </div>
@@ -120,28 +127,51 @@
                         </tr>
                     </thead>
                     <tbody id="res-body">
-                        <tr data-res-id="1001" data-fac-id="POOL" data-user-id="user_kim" data-res-status="WAITING">
-                            <td>수영장</td>
-                            <td>김철수</td>
-                            <td>101-1201</td>
-                            <td>07:00 ~ 08:00</td>
-                            <td><span class="badge badge-warning status-badge">● 대기중</span></td>
-                            <td class="action-td">
-                                <button class="btn btn-primary btn-xs" onclick="facilityManager.approveRes(this)">승인</button>
-                                <button class="btn btn-secondary btn-xs" onclick="facilityManager.cancelWithReason(this)">취소</button>
-                            </td>
-                        </tr>
-
-                        <tr data-res-id="1002" data-fac-id="GYM" data-user-id="user_park" data-res-status="APPROVED">
-                            <td>헬스장</td>
-                            <td>박영희</td>
-                            <td>103-505</td>
-                            <td>14:00 ~ 16:00</td>
-                            <td><span class="badge badge-success status-badge">● 승인완료</span></td>
-                            <td class="action-td">
-                                <button class="btn btn-secondary btn-xs text-danger" onclick="facilityManager.cancelWithReason(this)">예약취소</button>
-                            </td>
-                        </tr>
+                        <c:choose>
+                            <c:when test="${not empty resList}">
+                                <c:forEach var="res" items="${resList}">
+                                    <tr data-res-id="${res.resId}" data-fac-id="${res.facId}" data-user-id="${res.userId}" data-res-status="${res.resStatus}">
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${res.facId == 'POOL'}">수영장</c:when>
+                                                <c:when test="${res.facId == 'GYM'}">헬스장</c:when>
+                                                <c:when test="${res.facId == 'GOLF'}">골프장</c:when>
+                                                <c:when test="${res.facId == 'GUEST'}">게스트하우스</c:when>
+                                            </c:choose>
+                                        </td>
+                                        <td>${res.userName}</td>
+                                        <td>${res.dongHo}</td>
+                                        <td>${res.useTime}</td>
+                                        <td>
+                                            <c:if test="${res.resStatus == 'WAITING'}">
+                                                <span class="badge badge-warning status-badge">● 대기중</span>
+                                            </c:if>
+                                            <c:if test="${res.resStatus == 'APPROVED'}">
+                                                <span class="badge badge-success status-badge">● 승인완료</span>
+                                            </c:if>
+                                            <c:if test="${res.resStatus == 'CANCELLED'}">
+                                                <span class="badge badge-red status-badge">● 취소됨</span>
+                                            </c:if>
+                                        </td>
+                                        <td class="action-td">
+                                            <c:if test="${res.resStatus == 'WAITING'}">
+                                                <button class="btn btn-primary btn-xs" onclick="facilityManager.approveRes(this)">승인</button>
+                                                <button class="btn btn-secondary btn-xs" onclick="facilityManager.cancelWithReason(this)">취소</button>
+                                            </c:if>
+                                            <c:if test="${res.resStatus == 'APPROVED'}">
+                                                <button class="btn btn-secondary btn-xs text-danger" onclick="facilityManager.cancelWithReason(this)">예약취소</button>
+                                            </c:if>
+                                            <c:if test="${res.resStatus == 'CANCELLED'}">
+                                                <button class="btn btn-secondary btn-xs" onclick="this.closest('tr').remove()">목록제거</button>
+                                            </c:if>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <tr><td colspan="6" style="text-align:center; padding:20px;">예약 내역이 없습니다.</td></tr>
+                            </c:otherwise>
+                        </c:choose>
                     </tbody>
                 </table>
             </div>

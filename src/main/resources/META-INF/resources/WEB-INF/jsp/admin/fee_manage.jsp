@@ -38,7 +38,6 @@
             <div class="stat-card border-left-primary">
                 <h3>이번 달 총 부과액</h3>
                 <div class="number text-primary" id="statTotalAmount">0<span style="font-size:1rem; color:#888; font-weight:400;">원</span></div>
-                <div class="desc">전월 대비 <span class="text-danger">▲ 2.5%</span></div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>미납 세대 / 금액</h3>

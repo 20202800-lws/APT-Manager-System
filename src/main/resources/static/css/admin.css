@@ -57,29 +57,40 @@ body {
 /* =========================================
    3. 통계 카드 그리드 (Grid System)
    ========================================= */
+/* =========================================
+   3. 통계 카드 그리드 (Grid System)
+   ========================================= */
 .stat-grid-container {
     display: grid;
     gap: 20px;
     width: 100%;
     margin-bottom: 30px;
-    /* 기본적으로 1fr (안전장치) */
-    grid-template-columns: 1fr;
+    /* ❌ 기존: grid-template-columns: 1fr; */
+    /* ✅ 변경: 1열일 때도 minmax 추가 */
+    grid-template-columns: minmax(0, 1fr);
 }
 
 /* [수정] 3칸 그리드 (한 줄에 3개) */
 .grid-3 {
-    grid-template-columns: repeat(3, 1fr);
+    /* ❌ 기존: grid-template-columns: repeat(3, 1fr); */
+    /* ✅ 변경: 콘텐츠가 길어도 강제로 동일 분할 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* [수정] 4칸 그리드 (한 줄에 4개) */
 .grid-4 {
-    grid-template-columns: repeat(4, 1fr);
+    /* ❌ 기존: grid-template-columns: repeat(4, 1fr); */
+    /* ✅ 변경: 콘텐츠가 길어도 강제로 동일 분할 */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 /* 카드 디자인 */
 .stat-card {
     background: var(--bg-white);
-    height: 140px;
+    /* ❌ 기존: height: 140px; (화면이 줄어들어 글자가 밑으로 밀리면 카드를 뚫고 나감) */
+    /* ✅ 변경: min-height로 바꿔서 내용이 많아지면 카드가 자연스럽게 늘어나게 함 */
+    min-height: 140px;
+    height: auto; 
     padding: 25px;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
@@ -88,6 +99,9 @@ body {
     flex-direction: column;
     justify-content: center;
     transition: transform 0.2s;
+    
+    /* ✅ 추가: 카드 내부 글자가 너무 길면 말줄임표(...) 처리하거나 줄바꿈 허용 */
+    word-break: keep-all; 
 }
 .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 
@@ -98,12 +112,14 @@ body {
 /* 왼쪽 포인트 컬러 */
 .border-left-primary { border-left: 5px solid var(--primary); }
 .border-left-success { border-left: 5px solid var(--success); }
+.border-left-warning { border-left: 5px solid var(--warning); }
 .border-left-danger { border-left: 5px solid var(--danger); }
 .border-left-info { border-left: 5px solid var(--info); }
 
 /* 텍스트 컬러 유틸리티 */
 .text-primary { color: var(--primary) !important; }
 .text-danger { color: var(--danger) !important; }
+.text-warning { color: var(--warning) !important; }
 .text-success { color: var(--success) !important; }
 .text-info { color: var(--info) !important; }
 
@@ -288,3 +304,4 @@ body {
     .content-header h2 { font-size: 1.3rem; }
     .admin-table th, .admin-table td { font-size: 0.8rem; padding: 10px; }
 }
+

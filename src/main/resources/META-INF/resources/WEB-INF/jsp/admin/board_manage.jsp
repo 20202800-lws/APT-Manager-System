@@ -33,7 +33,7 @@
             <div class="stat-card border-left-success">
                 <h3>오늘의 새 글</h3>
                 <div class="number text-success" id="statTodayCount">0<span class="unit">개</span></div>
-                <div class="desc">전일 대비 <span class="text-success">▲ 10%</span></div>
+      
             </div>
             <div class="stat-card border-left-danger">
                 <h3>신고 / 블라인드</h3>

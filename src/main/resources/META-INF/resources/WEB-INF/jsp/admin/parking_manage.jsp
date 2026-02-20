@@ -43,12 +43,10 @@
             <div class="stat-card border-left-primary">
                 <h3>입주민 등록 차량</h3>
                 <div class="number text-primary" id="statResidentCount">0<span class="unit">대</span></div>
-                <div class="desc">전월 대비 <span class="text-success">▲ 5대</span></div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>금일 방문 예정</h3>
                 <div class="number text-success" id="statVisitorCount">0<span class="unit">대</span></div>
-                <div class="desc">현재 입차: <span style="font-weight:700;">4대</span></div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>불법/위반 차량</h3>
