@@ -1,5 +1,9 @@
-/* member.js - 로그인/회원가입 관련 스크립트 */
-/* member.js - 통합 버전 */
+/* =========================================
+   member.js - 로그인/회원가입 관련 스크립트 (통합 버전)
+========================================= */
+
+// 전역 변수: 아이디 중복 확인 통과 여부
+let isIdChecked = false;
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -7,86 +11,41 @@ document.addEventListener('DOMContentLoaded', () => {
        1. 서버 메시지 알림 (로그인 실패/승인 대기 등)
        ========================================= */
     const serverMsg = document.getElementById('serverMsg');
-    // 숨겨진 태그가 있고, 그 안에 값이 비어있지 않다면?
     if (serverMsg && serverMsg.value.trim() !== "") {
-        alert(serverMsg.value); // 알림창 띄우기!
+        alert(serverMsg.value);
     }
 
-
     /* =========================================
-       2. 로그인 폼 유효성 검사
+       2. 비밀번호 실시간 검사 (정규식 포함)
        ========================================= */
-    const loginForm = document.getElementById('loginForm');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            const userId = document.getElementById('userId');
-            const userPw = document.getElementById('userPw');
-
-            if (!userId.value.trim()) {
-                e.preventDefault();
-                alert('아이디를 입력해주세요.');
-                userId.focus();
-                return;
-            }
-
-            if (!userPw.value.trim()) {
-                e.preventDefault();
-                alert('비밀번호를 입력해주세요.');
-                userPw.focus();
-                return;
-            }
-        });
-    }
-
-
-    /* =========================================
-       3. 회원가입 관련 로직
-       ========================================= */
-    
-    // [아이디 중복 확인]
-    // window 객체에 등록해야 HTML의 onclick="checkId()"에서 찾을 수 있음
-    window.checkId = function() {
-        const userIdElem = document.getElementById('userId');
-        if(!userIdElem) return;
-
-        const userId = userIdElem.value;
-        if(userId.length < 4) {
-            alert("아이디는 4글자 이상 입력해주세요.");
-            return;
-        }
-        alert("사용 가능한 아이디입니다."); // 나중에 Ajax로 교체 예정
-    };
-
-    // [비밀번호 실시간 검사]
     const pw1 = document.getElementById('pw1');
     const pw2 = document.getElementById('pw2');
     const pwMsg = document.getElementById('pwMsg');
-    
-    // 정규식: 8자 이상, 숫자+특수문자 포함
-    const pwRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
+
+    // ★ [수정됨] 정규식: 8자 이상, 영문 + 숫자 + 특수문자 모두 포함 강제!
+    const pwRegex = /^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
 
     function validatePw() {
-        if(!pw1 || !pw2) return;
+        if (!pw1 || !pw2 || !pwMsg) return;
 
         // 1. 입력 없으면 메시지 삭제
-        if(pw1.value === "") {
+        if (pw1.value === "") {
             pwMsg.textContent = "";
             return;
         }
 
         // 2. 규칙 검사
         if (!pwRegex.test(pw1.value)) {
-            pwMsg.textContent = "비밀번호는 8자 이상, 숫자와 특수문자를 포함해야 합니다.";
+            pwMsg.textContent = "비밀번호는 8자 이상, 영문, 숫자, 특수문자를 모두 포함해야 합니다.";
             pwMsg.style.color = "#e74c3c"; // 빨간색
             return;
         }
 
         // 3. 일치 검사
-        if(pw2.value === "") {
+        if (pw2.value === "") {
             pwMsg.textContent = "비밀번호 확인을 입력해주세요.";
             pwMsg.style.color = "#666";
-        } else if(pw1.value !== pw2.value) {
+        } else if (pw1.value !== pw2.value) {
             pwMsg.textContent = "비밀번호가 일치하지 않습니다.";
             pwMsg.style.color = "#e74c3c";
         } else {
@@ -95,61 +54,121 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if(pw1 && pw2) {
+    if (pw1 && pw2) {
         pw1.addEventListener('input', validatePw);
         pw2.addEventListener('input', validatePw);
     }
+}); // DOMContentLoaded 종료
 
 
-    // [회원가입 폼 제출 시 최종 검사]
-    // ★ 주의: JSP의 form id가 "signupForm"인지 "joinForm"인지 꼭 확인하세요!
-    // 아까 보여주신 JSP 코드는 id="signupForm" 이었습니다.
-    const signupForm = document.getElementById('signupForm') || document.getElementById('joinForm');
+/* =========================================
+   3. 아이디 중복 체크 (Fetch API)
+========================================= */
+function checkId() {
+    const userIdInput = document.getElementById('userId');
+    if (!userIdInput) return;
 
-    if(signupForm) {
-        signupForm.addEventListener('submit', function(e) {
-            
-            // 1. 비밀번호 규칙 재확인
-            if (!pwRegex.test(pw1.value)) {
-                e.preventDefault();
-                alert("비밀번호 규칙을 확인해주세요.\n(8자 이상, 숫자, 특수문자 포함)");
-                pw1.focus();
-                return;
-            }
+    const userId = userIdInput.value.trim();
 
-            // 2. 비밀번호 일치 확인
-            if(pw1.value !== pw2.value) {
-                e.preventDefault();
-                alert("비밀번호가 서로 일치하지 않습니다.");
-                pw2.focus();
-                return;
-            }
-            
-            // 3. 약관 동의 확인
-            const agree = document.getElementById('agree');
-            if(agree && !agree.checked) {
-                e.preventDefault();
-                alert("약관에 동의해주셔야 합니다.");
-                return;
-            }
-
-            // 4. 휴대전화 합치기 로직 (아까 signup.jsp에 있던 것 여기로 이동 가능)
-            const p1 = document.getElementById("phone1");
-            const p2 = document.getElementById("phone2");
-            const p3 = document.getElementById("phone3");
-            const fullPhone = document.getElementById("fullPhone");
-
-            if(p1 && p2 && p3 && fullPhone) {
-                if(!p1.value || !p2.value || !p3.value) {
-                    e.preventDefault();
-                    alert("휴대전화 번호를 모두 입력해주세요.");
-                    return;
-                }
-                fullPhone.value = p1.value + "-" + p2.value + "-" + p3.value;
-            }
-
-            // 여기까지 오면 전송!
-            alert("회원가입 신청이 완료되었습니다.\n관리자 승인 후 이용 가능합니다.");
-        });
+    // 1. 빈 값 및 길이 검사
+    if (userId === '') {
+        alert('아이디를 먼저 입력해주세요.');
+        userIdInput.focus();
+        return;
     }
-});
+    if (userId.length < 6) {
+        alert("아이디는 6글자 이상 입력해주세요.");
+        userIdInput.focus();
+        return;
+    }
+
+    // 2. 백엔드로 통신 요청 (Fetch API)
+    fetch('/member/checkId?userId=' + userId, {
+        method: 'POST'
+    })
+        .then(response => response.text())
+        .then(result => {
+            if (result === 'DUPLICATE') {
+                alert('❌ 이미 사용 중인 아이디입니다. 다른 아이디를 입력해주세요.');
+                userIdInput.value = '';
+                userIdInput.focus();
+                isIdChecked = false;    // 깃발 내림
+            } else if (result === 'AVAILABLE') {
+                alert('✅ 사용 가능한 아이디입니다!');
+                // 입력창을 수정 못하게 막아서 꼼수 방지
+                userIdInput.readOnly = true;
+                userIdInput.style.backgroundColor = '#f5f5f5';
+                isIdChecked = true;     // 깃발 올림
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('서버 통신 중 오류가 발생했습니다. 다시 시도해주세요.');
+        });
+}
+
+
+/* =========================================
+   4. 회원가입 폼 제출 전 최종 검증 (방어막)
+   - JSP의 <form onsubmit="return handleSignupSubmit()"> 에서 호출됨
+========================================= */
+function handleSignupSubmit() {
+
+    // [방어막 1] 아이디 중복 확인 여부 검사
+    if (!isIdChecked) {
+        alert("아이디 중복확인을 먼저 진행해주세요.");
+        document.getElementById('userId').focus();
+        return false; // 폼 전송 중단
+    }
+
+    // [방어막 2] 비밀번호 규칙 재확인
+    const pw1 = document.getElementById('pw1');
+    const pw2 = document.getElementById('pw2');
+    // ★ [수정됨] 여기도 영문 필수 포함 정규식으로 똑같이 맞춰줍니다.
+    const pwRegex = /^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
+
+    if (!pwRegex.test(pw1.value)) {
+        // 메시지도 영문 포함으로 수정
+        alert("비밀번호 규칙을 확인해주세요.\n(8자 이상, 영문, 숫자, 특수문자 모두 포함)");
+        pw1.focus();
+        return false;
+    }
+
+    // [방어막 3] 비밀번호 일치 확인
+    if (pw1.value !== pw2.value) {
+        alert("비밀번호가 일치하지 않습니다.");
+        pw2.focus();
+        return false;
+    }
+
+    // [방어막 4] 생년월일 검증
+    const birth = document.getElementById("birthDate").value;
+    if (birth.length !== 6) {
+        alert("생년월일 6자리를 정확히 입력해주세요.");
+        document.getElementById("birthDate").focus();
+        return false;
+    }
+
+    // [방어막 5] 휴대전화 합치기
+    const p1 = document.getElementById("phone1").value;
+    const p2 = document.getElementById("phone2").value;
+    const p3 = document.getElementById("phone3").value;
+
+    if (!p1 || !p2 || !p3) {
+        alert("휴대전화 번호를 모두 입력해주세요.");
+        return false;
+    }
+    document.getElementById("fullPhone").value = p1 + "-" + p2 + "-" + p3;
+
+    // [방어막 6] 약관 동의 확인
+    const agree = document.getElementById('agree');
+    if (agree && !agree.checked) {
+        alert("약관에 동의해주셔야 합니다.");
+        return false;
+    }
+
+    // 모든 방어막 통과!
+    // alert("회원가입 신청이 완료되었습니다.\n관리자 승인 후 이용 가능합니다."); (서버 컨트롤러에서 처리하는 것이 더 깔끔하므로 주석 처리함)
+
+    return true; // 폼 전송 진행!
+}
