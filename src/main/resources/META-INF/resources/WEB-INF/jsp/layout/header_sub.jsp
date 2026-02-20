@@ -19,7 +19,7 @@
 			
 			<jsp:include page="../layout/header_auth.jsp" />
 			<div class="nav-right">
-				<a href="/mypage/act_main">마이페이지</a>
+				<a href="/mypage/info_view">마이페이지</a>
 				<span>|</span>
 <!--				<button onclick="alert('로그아웃 되었습니다.')">로그아웃</button> -->				<button onclick="logout()">로그아웃</button>
 				<script> function logout() {alert('로그아웃 되었습니다.'); 
