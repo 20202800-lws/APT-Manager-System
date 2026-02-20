@@ -17,6 +17,12 @@ import java.util.List;
 @RequestMapping("/parking")
 @RequiredArgsConstructor
 public class ParkingController {
+	
+	@GetMapping("/my_car")
+    public String myCar() { return "parking/my_car"; }
+
+    @GetMapping("/visit_book")
+    public String visitBook() { return "parking/visit_book"; }
 
     private final ParkingService parkingService;
 

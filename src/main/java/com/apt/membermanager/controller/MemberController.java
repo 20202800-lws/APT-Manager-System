@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Slf4j
@@ -137,5 +138,26 @@ public class MemberController {
             log.info("로그아웃 완료");
         }
         return "redirect:/";
+    }
+
+    // ==========================
+    // 3. 비동기 통신 (AJAX / Fetch) 처리
+    // ==========================
+
+    // ★ [추가됨] 아이디 중복 체크 (화면 이동 없이 데이터만 반환)
+    @ResponseBody // 이 어노테이션이 있어야 JSP 페이지를 찾지 않고 글자(String) 자체를 프론트로 던져줍니다!
+    @PostMapping("/checkId")
+    public String checkId(@RequestParam("userId") String userId) {
+        log.info("아이디 중복 체크 요청: {}", userId);
+        
+        // 주의: 백엔드 MemberService에 checkIdDuplicate(String userId) 메서드가 구현되어 있어야 합니다!
+        // (만약 메서드 이름이 다르다면 백엔드 담당자에게 확인 후 수정해 주세요)
+        boolean isDuplicate = memberService.checkIdDuplicate(userId);
+        
+        if (isDuplicate) {
+            return "DUPLICATE"; // 이미 사용 중인 아이디
+        } else {
+            return "AVAILABLE"; // 사용 가능한 아이디
+        }
     }
 }

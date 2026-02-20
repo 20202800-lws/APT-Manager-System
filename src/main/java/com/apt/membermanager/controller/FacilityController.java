@@ -18,6 +18,18 @@ import java.util.List;
 @RequestMapping("/facility")
 @RequiredArgsConstructor
 public class FacilityController {
+	
+	@GetMapping("/info_gym")
+    public String infoGym() { return "facility/info_gym"; }
+
+    @GetMapping("/info_pool")
+    public String infoPool() { return "facility/info_pool"; }
+
+    @GetMapping("/info_golf")
+    public String infoGolf() { return "facility/info_golf"; }
+
+    @GetMapping("/info_guest")
+    public String infoGuest() { return "facility/info_guest"; }
 
     private final FacilityService facilityService;
 

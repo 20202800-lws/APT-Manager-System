@@ -63,4 +63,10 @@ public class MemberService {
         return userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("회원 정보가 없습니다."));
     }
+    
+    // ★ [추가] 아이디 중복 체크 서비스 메서드
+    @Transactional(readOnly = true) // 데이터 변경 없이 읽기만 하므로 속도 향상!
+    public boolean checkIdDuplicate(String userId) {
+        return userRepository.existsByUserId(userId);
+    }
 }
