@@ -29,11 +29,11 @@
                     <input type="password" id="userPw" name="userPw" placeholder="비밀번호" required>
                 </div>
                 
-                <div class="find-links">
-                    <a href="#">아이디 찾기</a>
-                    <span>|</span>
-                    <a href="#">비밀번호 찾기</a>
-                </div>
+				<div class="find-links">
+				    <a href="find_account.jsp?tab=id">아이디 찾기</a>
+				    <span>|</span>
+				    <a href="find_account.jsp?tab=pw">비밀번호 찾기</a>
+				</div>
 
                 <div class="btn-area">
                     <button type="submit" class="btn-login">로그인</button>
