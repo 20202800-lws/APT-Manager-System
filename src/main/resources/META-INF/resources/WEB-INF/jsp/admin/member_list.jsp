@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -27,45 +28,71 @@
         <div class="stat-grid-container grid-4">
             <div class="stat-card border-left-primary">
                 <h3>총 회원 수</h3>
-                <div class="number text-primary" id="statTotalCount">0<span class="unit">명</span></div>
+                <div class="number text-primary" id="statTotalCount">${stats.total}<span class="unit">명</span></div>
                 <div class="desc">전체 가입자</div>
             </div>
             <div class="stat-card border-left-warning">
                 <h3>승인 대기</h3>
-                <div class="number text-warning" id="statWaitCount">0<span class="unit">명</span></div>
+                <div class="number text-warning" id="statWaitCount">${stats.wait}<span class="unit">명</span></div>
                 <div class="desc" style="font-weight:600; color:#d32f2f;">가입 승인 필요</div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>입주민 (정상)</h3>
-                <div class="number text-success" id="statActiveCount">0<span class="unit">명</span></div>
+                <div class="number text-success" id="statActiveCount">${stats.member}<span class="unit">명</span></div>
                 <div class="desc">활동 중인 입주민</div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>관리자</h3>
-                <div class="number text-danger" id="statAdminCount">0<span class="unit">명</span></div>
+                <div class="number text-danger" id="statAdminCount">${stats.admin}<span class="unit">명</span></div>
                 <div class="desc">시스템 관리 권한</div>
             </div>
         </div>
 
         <div class="tab-wrapper">
-            <div class="tab-container">
+            <!--<div class="tab-container">
                 <div class="tab-highlighter" id="tabHighlighter"></div>
                 <button class="tab-btn active" onclick="filterTab('ALL', 0)">전체 회원</button>
                 <button class="tab-btn" onclick="filterTab('WAIT', 1)">승인 대기</button>
                 <button class="tab-btn" onclick="filterTab('ACT', 2)">입주민</button>
                 <button class="tab-btn" onclick="filterTab('ADM', 3)">관리자</button>
-            </div>
+            </div>-->
+			
+			<div class="tab-container">
+			    <div class="tab-highlighter" id="tabHighlighter"></div>
+			    <%-- param.tab 값이 없거나 ALL이면 '전체' 활성화 --%>
+			    <button class="tab-btn ${empty param.tab || param.tab == 'ALL' ? 'active' : ''}" 
+			            onclick="filterTab('ALL')">전체 회원</button>
+			            
+			    <button class="tab-btn ${param.tab == 'WAIT' ? 'active' : ''}" 
+			            onclick="filterTab('WAIT')">승인 대기</button>
+			            
+			    <button class="tab-btn ${param.tab == 'MEMBER' ? 'active' : ''}" 
+			            onclick="filterTab('MEMBER')">입주민</button>
+			            
+			    <button class="tab-btn ${param.tab == 'ADMIN' ? 'active' : ''}" 
+			            onclick="filterTab('ADMIN')">관리자</button>
+			</div>
         </div>
 
         <div class="content-box">
             <div class="section-header">
                 <h3 class="section-title" id="tableTitle">전체 회원 목록</h3>
                 <div class="section-actions">
-                    <input type="text" class="form-input" id="searchInput" placeholder="이름, 동/호수, 전화번호" onkeyup="searchTable()">
+                    <!--<input type="text" class="form-input" id="searchInput" placeholder="이름, 동/호수, 전화번호" onkeyup="searchTable()">-->
+					<select class="form-select" id="searchType">
+					     <option value="name">이름</option>
+					     <option value="address">동/호수</option>
+					     <option value="phone">전화번호</option>
+					</select>
+					<input type="text" class="form-input" id="searchInput" 
+					placeholder="이름, 동/호수, 전화번호" 
+					value="${kwName}" 
+					onkeyup="if(window.event.keyCode==13){searchTable()}">
                     <button class="btn btn-primary" onclick="searchTable()"><i class="fa-solid fa-search"></i></button>
                 </div>
+				
             </div>
-
+			
             <table class="admin-table">
                 <colgroup>
                     <col width="10%"> <col width="15%"> <col width="15%"> <col width="20%"> <col width="20%"> <col width="10%"> <col width="10%"> 
@@ -81,16 +108,108 @@
                         <th>관리</th>
                     </tr>
                 </thead>
-                <tbody id="memberTableBody">
-                </tbody>
+                <!--<tbody id="memberTableBody">
+				<c:forEach var="member" items="${memberBean}">
+					
+				<tr>
+					<td>${member.status}</td>
+					<td>${member.dong}동 ${member.ho}호</td>
+					<td>${member.userName}</td>
+					<td>${member.phone}</td>
+					<td>${member.email}</td>
+					<td>${member.joinDate}</td>
+					<td>관리</td>		
+				</tr>
+				</c:forEach>			
+                </tbody>-->
+				
+				<tbody id="memberTableBody">
+				    
+				    <c:choose>
+				        <c:when test="${not empty paging.content}">
+				         
+				            <c:forEach var="member" items="${paging.content}">
+				                <tr>
+				                   
+				                    <td>
+				                        <span class="badge">
+				                            <c:out value="${member.status}" />
+				                        </span>
+				                    </td>
+				                    
+				                    
+				                    <td>
+				                        <c:out value="${member.dong}" />동 
+				                        <c:out value="${member.ho}" />호
+				                    </td>
+				                    
+				                    
+				                    <td>
+				                        <strong><c:out value="${member.userName}" /></strong>
+				                    </td>
+				                    
+				                    
+				                    <td><c:out value="${member.phone}" /></td>
+				                    <td><c:out value="${member.email}" /></td>
+				                    
+				                   
+				                    <td><c:out value="${member.joinDate}" /></td>
+				                    
+				                    
+				                    <td>
+				                        <button type="button" class="btn btn-xs btn-outline">
+				                            관리
+				                        </button>
+				                    </td>
+				                </tr>
+				            </c:forEach>
+				        </c:when>
+				        
+				        
+				        <c:otherwise>
+				            <tr>
+				                <td colspan="7" style="text-align:center; padding:100px; color:#888;">
+				                    검색 결과가 없습니다.
+				                </td>
+				            </tr>
+				        </c:otherwise>
+				    </c:choose>
+				</tbody>
             </table>
 
-            <div style="margin-top:20px; text-align:center;">
+			<div class="pagination-container" style="margin-top:20px; text-align:center;">
+			    <button type="button" class="btn btn-secondary btn-xs" 
+			            onclick="goPage(0)" 
+			            <c:if test="${paging.first}">disabled="disabled"</c:if>>처음</button>
+
+			    <button type="button" class="btn btn-secondary btn-xs" 
+			            onclick="goPage(${paging.number - 1})" 
+			            <c:if test="${paging.first}">disabled="disabled"</c:if>>이전</button>
+
+			    <span style="margin: 0 15px; font-weight: bold;">
+			        ${paging.number + 1} / ${paging.totalPages}
+			    </span>
+
+			    <button type="button" class="btn btn-secondary btn-xs" 
+			            onclick="goPage(${paging.number + 1})" 
+			            <c:if test="${paging.last}">disabled="disabled"</c:if>>다음</button>
+
+			    <button type="button" class="btn btn-secondary btn-xs" 
+			            onclick="goPage(${paging.totalPages - 1})" 
+			            <c:if test="${paging.last}">disabled="disabled"</c:if>>끝</button>
+			</div>
+
+			<!-- 전체 개수 확인용 (테스트용) -->
+			<p style="text-align:center; font-size:12px; color:#999; margin-top:10px;">
+			총 회원 수: ${paging.totalElements}명
+			</p>
+			
+            <!--<div style="margin-top:20px; text-align:center;">
                 <button class="btn btn-secondary btn-xs" disabled>&lt;</button>
                 <button class="btn btn-primary btn-xs">1</button>
                 <button class="btn btn-secondary btn-xs">2</button>
                 <button class="btn btn-secondary btn-xs">&gt;</button>
-            </div>
+            </div>-->
         </div>
 
     </main>
@@ -159,7 +278,77 @@
 
 <script src="<c:url value='/js/admin/admin_common.js'/>"></script>
 
-<script>
+<script> function navigate(tabValue, pageNum, searchType, keyword) {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+	urlParams.delete('kwName');
+	urlParams.delete('kwAddress');
+	urlParams.delete('kwPhone');
+	
+    // 1. 탭 값 처리 (tabValue가 인자로 들어오면 변경, 없으면 기존 유지)
+    if (tabValue !== undefined) {
+        urlParams.set('tab', tabValue);
+    }
+    
+    // 2. 페이지 번호 처리
+    if (pageNum !== undefined) {
+        urlParams.set('page', pageNum);
+    }
+    
+    // 3. 검색어 유지
+	
+    if (keyword) {
+		if(searchType == 'name') urlParams.set('kwName', keyword);
+		else if(searchType =='address') urlParams.set('kwAddress',keyword);
+		else if(searchType =='phone') urlParams.set('kwPhone',keyword);
+    }
+
+    // 4. 서버로 요청 발생 (페이지 새로고침)
+    window.location.href = window.location.pathname + '?' + urlParams.toString();
+}
+
+function filterTab(code) { 
+    navigate(code, 0); // 탭 바꿀 땐 항상 0페이지부터
+}
+
+function searchTable() { 
+	const searchType = document.getElementById('searchType').value;
+	const keyword = document.getElementById('searchInput').value;
+	
+	
+	navigate(undefined, 0,searchType,keyword); 
+}
+
+function goPage(pageNum) { 
+    navigate(undefined, pageNum); 
+}
+
+// [추가] 페이지 로드 시 하이라이터 위치 조정 (선택 사항)
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+	if(urlParams.has('kwName')){
+		document.getElementById('searchType').value = 'name';
+		document.getElementById('searchInput').value = urlParams.get('kwName');
+	}else if(urlParams.has('kwAddress')){
+		document.getElementById('searchType').value = 'address';
+		document.getElementById('searchInput').value = urlParams.get('kwAddress');
+	}else if(urlParams.has('kwPhone')){
+		document.getElementById('searchType').value = 'phone';
+		document.getElementById('searchInput').value = urlParams.get('kwPhone');
+	}
+	
+    const currentTab = urlParams.get('tab') || 'ALL';
+    const tabs = { 'ALL': 0, 'WAIT': 1, 'MEMBER': 2, 'ADMIN': 3 };
+    const index = tabs[currentTab];
+    
+    const highlighter = document.getElementById('tabHighlighter');
+    if (highlighter) {
+        highlighter.style.transform = `translateX(${index * 140}px)`; // TAB_WIDTH가 140일 경우
+    }
+});
+</script>
+
+<!--<script>
 /* =========================================
    1. 데이터 (Mock Data - MemberVO 구조)
    ========================================= */
@@ -390,7 +579,7 @@ window.onclick = function(event) {
         closeModal();
     }
 }
-</script>
+</script>-->
 
 </body>
 </html>
