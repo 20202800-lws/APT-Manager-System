@@ -1,0 +1,447 @@
+/* [1] 기본 초기화 및 변수 */
+:root {
+	--primary: #1a0b2e;
+	--accent: #d4af37;
+	--bg: #f8fafc;
+	--text: #1e293b;
+	--gray: #64748b;
+	--light-gray: #e2e8f0;
+	--danger: #ef4444;
+	--success: #10b981;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: 'Pretendard', sans-serif;
+}
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	padding: 40px 20px;
+	line-height: 1.5;
+}
+
+a {
+	text-decoration: none;
+	color: inherit;
+}
+
+/* [2] 레이아웃 */
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	display: flex;
+	gap: 30px;
+	align-items: flex-start;
+}
+
+/* 사이드바 스타일 (깔끔하게 고정) */
+.sidebar {
+	width: 240px;
+	background: #fff;
+	padding: 25px;
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar h2 {
+	font-size: 18px;
+	margin-bottom: 20px;
+	color: var(--primary);
+}
+
+.menu-list {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.menu-item {
+	padding: 12px 15px;
+	color: var(--gray);
+	font-weight: 600;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: 0.3s;
+}
+
+.menu-item:hover,
+.menu-item.active {
+	background: var(--primary);
+	color: #fff;
+}
+
+/* [사이드바] 하위 메뉴 초기 상태: 숨김 및 투명도 0 */
+.sub-menu-side {
+	max-height: 0;
+	/* 높이를 0으로 설정 */
+	overflow: hidden;
+	/* 넘치는 내용 숨김 */
+	opacity: 0;
+	/* 투명하게 설정 */
+	padding-left: 15px;
+	background: #fff;
+	transition: all 0.3s ease-in-out;
+	/* 부드러운 전환 효과 */
+}
+
+/* [사이드바] 활동 내역(dropdown-grp)에 마우스를 올렸을 때 */
+.dropdown-grp:hover .sub-menu-side {
+	max-height: 100px;
+	/* 메뉴가 펼쳐질 충분한 높이 */
+	opacity: 1;
+	/* 선명하게 노출 */
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
+
+/* 서브 아이템 스타일 유지 */
+.sub-item {
+	display: block;
+	padding: 8px 12px;
+	color: #888;
+	font-size: 14px;
+	border-radius: 6px;
+	transition: 0.2s;
+}
+
+.sub-item:hover {
+	color: var(--primary);
+	background: #f1f5f9;
+}
+
+/* 메인 컨텐츠 영역 */
+.content-area {
+	flex: 1;
+	background: #fff;
+	padding: 35px;
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	min-height: 600px;
+}
+
+/* [3] 헤더 영역 수정 - 첫 번째 사진 스타일 복제 */
+.activity-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	/* 제목 바닥선에 맞춤 */
+	margin-bottom: 25px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid #333;
+	/* 첫 번째 사진처럼 더 진하고 얇은 선 */
+}
+
+.activity-header h3 {
+	font-size: 20px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* 월 선택 박스를 "총 N건" 텍스트 위치처럼 스타일링 */
+.select-month select {
+	border: 1px solid #ddd;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--gray);
+	background-color: #fff;
+	cursor: pointer;
+	outline: none;
+	transition: 0.2s;
+}
+
+.select-month select:hover {
+	border-color: var(--primary);
+	color: var(--primary);
+}
+
+/* 상단 배너 디자인 보정 (글자가 박스에 너무 붙지 않게) */
+.fee-summary-banner {
+	margin-top: 10px;
+	box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 상단 배너 */
+.fee-summary-banner {
+	background: var(--primary);
+	color: #fff;
+	padding: 30px;
+	border-radius: 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 30px;
+}
+
+.banner-txt h2 {
+	font-size: 32px;
+	margin: 10px 0;
+}
+
+.banner-txt h2 span {
+	font-size: 18px;
+	font-weight: normal;
+	margin-left: 5px;
+}
+
+/* 상태 배지 */
+.status-badge {
+	padding: 5px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.status-badge.paid {
+	background: #10b981;
+	color: #fff;
+}
+
+.status-badge.unpaid {
+	background: #ef4444;
+	color: #fff;
+}
+
+/* [4] 그래프 스타일 (핵심: 여기가 깨졌을 것) */
+.graph-section {
+	background: #f8fafc;
+	padding: 25px;
+	border-radius: 12px;
+	margin-bottom: 30px;
+}
+
+.graph-header {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 20px;
+}
+
+.tab-btn {
+	padding: 6px 15px;
+	border: 1px solid #ddd;
+	background: #fff;
+	cursor: pointer;
+	border-radius: 6px;
+	font-size: 13px;
+}
+
+.tab-btn.active {
+	background: var(--primary);
+	color: #fff;
+	border-color: var(--primary);
+}
+
+.graph-container {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-around;
+	height: 180px;
+	padding-top: 30px;
+	border-bottom: 2px solid #e2e8f0;
+}
+
+.bar-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 50px;
+	height: 100%;
+	justify-content: flex-end;
+	gap: 10px;
+}
+
+.bar {
+	width: 30px;
+	background: #cbd5e1;
+	border-radius: 4px 4px 0 0;
+	position: relative;
+	transition: height 0.5s ease;
+	cursor: pointer;
+}
+
+.bar:hover::after {
+	content: attr(data-value);
+	position: absolute;
+	top: -25px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-size: 11px;
+	font-weight: bold;
+	color: var(--primary);
+	white-space: nowrap;
+}
+
+/* 그래프 색상 */
+.bar.electric {
+	background: #3b82f6;
+}
+
+.bar.heating {
+	background: #f97316;
+}
+
+.bar.total {
+	background: #8b5cf6;
+}
+
+.bar.current {
+	filter: brightness(1.2);
+	border: 2px solid var(--primary);
+}
+
+.bar-label {
+	font-size: 12px;
+	color: var(--gray);
+	margin-bottom: -25px;
+}
+
+/* [5] 테이블 및 활동 내역 리스트 */
+.luxury-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 15px;
+}
+
+.luxury-table th {
+	padding: 12px;
+	background: #f1f5f9;
+	text-align: left;
+	font-size: 13px;
+	color: var(--gray);
+	border-bottom: 2px solid #e2e8f0;
+}
+
+.luxury-table td {
+	padding: 15px 12px;
+	border-bottom: 1px solid #f1f5f9;
+	font-size: 14px;
+}
+
+.total-row {
+	background: #f8fafc;
+	font-weight: bold;
+	font-size: 16px;
+}
+
+.activity-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	list-style: none;
+}
+
+.list-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 18px;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	transition: 0.2s;
+}
+
+.list-item:hover {
+	border-color: var(--primary);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.item-info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.subject {
+	font-weight: 600;
+	color: var(--text);
+	font-size: 16px;
+}
+
+.date {
+	font-size: 12px;
+	color: #94a3b8;
+}
+
+.btn-delete {
+	background: #fee2e2;
+	color: #ef4444;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+/* [6] 납부 섹션 카드 */
+.payment-card {
+	border: 1px solid #e2e8f0;
+	padding: 30px;
+	border-radius: 12px;
+}
+
+.pay-info {
+	background: #f8fafc;
+	padding: 20px;
+	border-radius: 8px;
+	margin: 20px 0;
+}
+
+.pay-row {
+	display: flex;
+	justify-content: space-between;
+	padding: 10px 0;
+	border-bottom: 1px dashed #ddd;
+}
+
+.method-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+
+.method-box {
+	border: 1px solid #ddd;
+	padding: 15px;
+	text-align: center;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.btn-primary-pay {
+	width: 100%;
+	padding: 18px;
+	background: var(--primary);
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.btn-primary-pay:disabled {
+	background: #ccc;
+	cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
