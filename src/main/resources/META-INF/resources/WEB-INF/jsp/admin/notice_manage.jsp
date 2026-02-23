@@ -45,15 +45,15 @@
             <div class="section-header">
                 <h3 class="section-title">공지사항 목록</h3>
                 <div class="section-actions">
-                    <select class="form-select" id="searchFilter" onchange="searchTable()">
+                    <select class="form-select" id="searchFilter" onchange="noticeManager.searchTable(true)">
                         <option value="all">전체 상태</option>
                         <option value="public">공개</option>
                         <option value="private">비공개</option>
                     </select>
-                    <input type="text" class="form-input" id="searchKeyword" placeholder="제목 검색" onkeyup="searchTable()">
-                    <button class="btn btn-primary" onclick="searchTable()"><i class="fa-solid fa-search"></i></button>
+                    <input type="text" class="form-input" id="searchKeyword" placeholder="제목 검색" onkeyup="noticeManager.searchTable(true)">
+                    <button class="btn btn-primary" onclick="noticeManager.searchTable(true)"><i class="fa-solid fa-search"></i></button>
                     
-                    <button class="btn btn-dark" onclick="openModal('create')">
+                    <button class="btn btn-dark" onclick="noticeManager.openModal('create')">
                         <i class="fa-solid fa-pen-to-square"></i> 공지 등록
                     </button>
                 </div>
@@ -74,15 +74,10 @@
                     </tr>
                 </thead>
                 <tbody id="noticeTableBody">
-                    </tbody>
+                </tbody>
             </table>
 
-            <div style="margin-top:20px; text-align:center;">
-                <button class="btn btn-secondary btn-xs" disabled>&lt;</button>
-                <button class="btn btn-primary btn-xs">1</button>
-                <button class="btn btn-secondary btn-xs">2</button>
-                <button class="btn btn-secondary btn-xs">&gt;</button>
-            </div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
         </div>
 
     </main>
@@ -92,7 +87,7 @@
     <div class="modal-container" style="width: 700px;">
         <div class="content-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="font-size:1.3rem; font-weight:700;" id="modalTitle">공지사항 등록</h3>
-            <button onclick="closeModal()" style="border:none; background:none; font-size:1.2rem; cursor:pointer; color:#666;">
+            <button onclick="noticeManager.closeModal()" style="border:none; background:none; font-size:1.2rem; cursor:pointer; color:#666;">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -125,12 +120,33 @@
             </div>
 
             <div style="margin-top:25px; display:flex; justify-content:flex-end; gap:10px;">
-                <button class="btn btn-secondary" onclick="closeModal()">취소</button>
-                <button class="btn btn-primary" onclick="saveNotice()">저장하기</button>
+                <button class="btn btn-secondary" onclick="noticeManager.closeModal()">취소</button>
+                <button class="btn btn-primary" onclick="noticeManager.saveNotice()">저장하기</button>
             </div>
         </form>
     </div>
 </div>
+
+<script src="<c:url value='/js/admin/admin_common.js'/>"></script>
+
+<script>
+    window.globalNoticeList = [];
+
+    <c:if test="${not empty noticeList}">
+        <c:forEach var="item" items="${noticeList}">
+            window.globalNoticeList.push({
+                noticeId: parseInt('${item.noticeId}'),
+                writerId: '${item.writerId}',
+                title: '${item.title}',
+                content: '${item.content}', // 목록에서 내용의 일부를 툴팁으로 보여주거나 할 때 유용함
+                views: parseInt('${item.views}') || 0,
+                regDate: '${item.regDate}',
+                isImportant: ${item.isImportant == true}, // DB/VO에 추가되었다고 가정
+                isVisible: ${item.isVisible != false} // 기본값 true 설정
+            });
+        </c:forEach>
+    </c:if>
+</script>
 
 <script src="<c:url value='/js/admin/notice.js'/>"></script>
 

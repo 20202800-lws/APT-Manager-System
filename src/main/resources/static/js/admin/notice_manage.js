@@ -1,180 +1,222 @@
 /* =========================================
-   1. Mock Data (ERD NOTICE Table 기준)
+   관리자 | 공지사항 관리 로직 (페이징 연동 완료)
    ========================================= */
-// DB 컬럼: notice_id, writer_id, title, content, views, reg_date
-// [참고] isImportant, isVisible은 ERD에 없으나 UI 구현을 위해 임시 사용
-let noticeList = [
-    { 
-        noticeId: 10, 
-        writerId: 'admin01', 
-        title: '[긴급] 102동 승강기 점검 안내', 
-        content: '승강기 점검 내용...', 
-        views: 152, 
-        regDate: '2024-02-10 09:00',
-        isImportant: true, // DB 컬럼 추가 필요
-        isVisible: true    // DB 컬럼 추가 필요
-    },
-    { 
-        noticeId: 9, 
-        writerId: 'manager02', 
-        title: '분리수거 규정 변경 안내', 
-        content: '변경된 규정...', 
-        views: 84, 
-        regDate: '2024-02-08 14:30',
-        isImportant: false,
-        isVisible: true
-    },
-    { 
-        noticeId: 8, 
-        writerId: 'admin01', 
-        title: '커뮤니티 센터 휴관 공지', 
-        content: '내부 수리 중...', 
-        views: 12, 
-        regDate: '2024-02-05 11:20',
-        isImportant: false,
-        isVisible: false // 비공개
-    }
-];
 
-/* =========================================
-   2. 초기화 및 렌더링
-   ========================================= */
-document.addEventListener('DOMContentLoaded', () => {
-    updateStats();
-    renderTable(noticeList);
-});
+const noticeManager = (function() {
 
-// 통계 갱신
-function updateStats() {
-    // ERD 매핑: noticeList.length -> count(*)
-    document.getElementById('statTotal').innerHTML = `${noticeList.length}<span class="unit">건</span>`;
-    
-    // [주의] 아래 로직은 DB에 isImportant/isVisible 컬럼이 추가되어야 정상 작동함
-    const importantCount = noticeList.filter(n => n.isImportant).length;
-    const hiddenCount = noticeList.filter(n => !n.isVisible).length;
+    // 1. 데이터 초기화 (JSP 전역 변수에서 호출)
+    let noticeList = window.globalNoticeList || [];
+    let currentFilteredList = [];
 
-    document.getElementById('statImportant').innerHTML = `${importantCount}<span class="unit">건</span>`;
-    document.getElementById('statHidden').innerHTML = `${hiddenCount}<span class="unit">건</span>`;
-}
+    // 2. 페이징 관련 변수
+    let currentPage = 1;
+    const rowsPerPage = 10; 
 
-// 테이블 렌더링 (DTO: NoticeVO 기준)
-function renderTable(data) {
-    const tbody = document.getElementById('noticeTableBody');
-    
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="padding:30px; color:#999;">등록된 공지사항이 없습니다.</td></tr>';
-        return;
-    }
+    // 3. 초기 실행 (DOM 로드 후 안전하게 실행)
+    document.addEventListener('DOMContentLoaded', () => {
+        updateStats();
+        searchTable(true); // 초기 렌더링 시 조건 없는 검색(전체) & 1페이지로 시작
 
-    tbody.innerHTML = data.map(item => {
-        // [UI] 중요 공지 강조 스타일 (DB 컬럼 부재로 임시 로직)
-        const titlePrefix = item.isImportant ? '<span style="color:var(--danger); font-weight:700;">[필독]</span> ' : '';
-        const statusBadge = item.isVisible ? '<span class="badge badge-green">공개</span>' : '<span class="badge badge-gray">비공개</span>';
-        
-        return `
-            <tr>
-                <td>${item.noticeId}</td>
-                <td style="text-align:left; cursor:pointer;" onclick="openModal('edit', ${item.noticeId})">
-                    ${titlePrefix}${item.title}
-                </td>
-                <td>${item.writerId}</td>
-                <td>${item.regDate}</td>
-                <td>${item.views}</td>
-                <td>${statusBadge}</td>
-            </tr>
-        `;
-    }).join('');
-}
-
-/* =========================================
-   3. 검색 및 필터 기능
-   ========================================= */
-function searchTable() {
-    const filter = document.getElementById('searchFilter').value; // 'all', 'public', 'private'
-    const keyword = document.getElementById('searchKeyword').value.toLowerCase();
-
-    const filtered = noticeList.filter(item => {
-        // 1. 상태 필터 (DB 컬럼 부재로 가상 필터링)
-        let statusMatch = true;
-        if (filter === 'public') statusMatch = item.isVisible === true;
-        if (filter === 'private') statusMatch = item.isVisible === false;
-
-        // 2. 검색어 필터 (대상: title)
-        const keywordMatch = item.title.toLowerCase().includes(keyword);
-
-        return statusMatch && keywordMatch;
+        // 모달 외부 클릭 시 닫기
+        const modal = document.getElementById('noticeModal');
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) closeModal();
+        });
     });
 
-    renderTable(filtered);
-}
+    /* =========================================
+       로직 함수
+       ========================================= */
 
-/* =========================================
-   4. 모달 및 저장 로직 (DTO 매핑)
-   ========================================= */
-const modal = document.getElementById('noticeModal');
-
-function openModal(type, id = null) {
-    modal.style.display = 'flex';
-    
-    if (type === 'create') {
-        document.getElementById('modalTitle').innerText = '공지사항 등록';
-        document.getElementById('noticeForm').reset();
-        document.getElementById('modalNoticeId').value = ''; // Empty for insert
-    } else {
-        document.getElementById('modalTitle').innerText = '공지사항 수정';
-        // 데이터 조회 (실제로는 AJAX fetch('/admin/notice/detail?noticeId=' + id))
-        const item = noticeList.find(n => n.noticeId === id);
-        if (item) {
-            // ERD -> Form 매핑
-            document.getElementById('modalNoticeId').value = item.noticeId;
-            document.getElementById('inputTitle').value = item.title;
-            document.getElementById('inputContent').value = item.content;
-            
-            // [주의] DB 컬럼 없음
-            document.getElementById('checkImportant').checked = item.isImportant;
-            document.getElementById('checkVisible').checked = item.isVisible;
-        }
-    }
-}
-
-function closeModal() {
-    modal.style.display = 'none';
-}
-
-function saveNotice() {
-    // 폼 데이터 수집 (DTO 매핑)
-    const noticeId = document.getElementById('modalNoticeId').value;
-    
-    // NoticeVO 구조 생성
-    const saveData = {
-        noticeId: noticeId ? parseInt(noticeId) : null, // PK
-        title: document.getElementById('inputTitle').value,
-        content: document.getElementById('inputContent').value,
-        writerId: 'admin01', // 세션에서 가져왔다고 가정
+    // 통계 갱신
+    function updateStats() {
+        const statTotal = document.getElementById('statTotal');
+        if(statTotal) statTotal.innerHTML = `${noticeList.length}<span class="unit">건</span>`;
         
-        // [주의] 이 두 필드는 ERD Notice 테이블에 저장할 공간이 없음. 
-        // DB에 `is_important`, `is_visible` 컬럼 추가 권장.
-        isImportant: document.getElementById('checkImportant').checked,
-        isVisible: document.getElementById('checkVisible').checked
+        const importantCount = noticeList.filter(n => n.isImportant).length;
+        const hiddenCount = noticeList.filter(n => !n.isVisible).length;
+
+        const statImportant = document.getElementById('statImportant');
+        if(statImportant) statImportant.innerHTML = `${importantCount}<span class="unit">건</span>`;
+        
+        const statHidden = document.getElementById('statHidden');
+        if(statHidden) statHidden.innerHTML = `${hiddenCount}<span class="unit">건</span>`;
+    }
+
+    // 검색 및 필터링
+    function searchTable(isResetPage = false) {
+        if (isResetPage) currentPage = 1;
+
+        const filterEl = document.getElementById('searchFilter');
+        const filter = filterEl ? filterEl.value : 'all'; 
+        const keywordInput = document.getElementById('searchKeyword');
+        const keyword = keywordInput ? keywordInput.value.toLowerCase().trim() : '';
+
+        currentFilteredList = noticeList.filter(item => {
+            // 상태 필터
+            let statusMatch = true;
+            if (filter === 'public') statusMatch = item.isVisible === true;
+            if (filter === 'private') statusMatch = item.isVisible === false;
+
+            // 검색어 필터
+            const keywordMatch = item.title.toLowerCase().includes(keyword);
+
+            return statusMatch && keywordMatch;
+        });
+
+        // 중요(필독) 공지가 상단에 오도록 정렬
+        currentFilteredList.sort((a, b) => {
+            if (a.isImportant && !b.isImportant) return -1;
+            if (!a.isImportant && b.isImportant) return 1;
+            return b.noticeId - a.noticeId; // 최신글(ID가 큰 것)이 위로 오도록
+        });
+
+        renderTable();
+    }
+
+    // 테이블 렌더링 (페이징 적용)
+    function renderTable() {
+        const tbody = document.getElementById('noticeTableBody');
+        if (!tbody) return;
+        
+        if (currentFilteredList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:40px; color:#999; text-align:center;">조건에 맞는 공지사항이 없습니다.</td></tr>';
+            renderPagination(0);
+            return;
+        }
+
+        const totalPages = Math.ceil(currentFilteredList.length / rowsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginatedData = currentFilteredList.slice(startIndex, startIndex + rowsPerPage);
+
+        tbody.innerHTML = paginatedData.map(item => {
+            const titlePrefix = item.isImportant ? '<span style="color:var(--danger); font-weight:700; margin-right:5px;">[필독]</span>' : '';
+            const statusBadge = item.isVisible ? '<span class="badge badge-success">공개</span>' : '<span class="badge badge-secondary">비공개</span>';
+            
+            return `
+                <tr>
+                    <td>${item.noticeId}</td>
+                    <td style="text-align:left; font-weight:500; cursor:pointer;" class="td-title" onclick="noticeManager.openModal('edit', ${item.noticeId})">
+                        ${titlePrefix}${item.title}
+                    </td>
+                    <td>${item.writerId}</td>
+                    <td>${item.regDate}</td>
+                    <td>${item.views}</td>
+                    <td>${statusBadge}</td>
+                </tr>
+            `;
+        }).join('');
+
+        renderPagination(currentFilteredList.length);
+    }
+
+    // 페이징 버튼 렌더링
+    function renderPagination(totalCount) {
+        const container = document.getElementById('paginationWrapper');
+        if (!container) return;
+
+        // ★ 수정: 데이터가 0개일 때만 비우고, 1페이지라도 있으면 [1] 버튼 유지
+        if (totalCount === 0) { 
+            container.innerHTML = ''; 
+            return; 
+        }
+
+        const totalPages = Math.ceil(totalCount / rowsPerPage);
+
+        let html = `<button class="btn btn-secondary btn-xs" ${currentPage === 1 ? 'disabled' : `onclick="noticeManager.goToPage(${currentPage - 1})"`}>&lt;</button> `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? 'btn-primary' : 'btn-secondary';
+            html += `<button class="btn ${activeClass} btn-xs" onclick="noticeManager.goToPage(${i})">${i}</button> `;
+        }
+
+        html += `<button class="btn btn-secondary btn-xs" ${currentPage === totalPages ? 'disabled' : `onclick="noticeManager.goToPage(${currentPage + 1})"`}>&gt;</button>`;
+        
+        container.innerHTML = html;
+    }
+
+    // 페이지 이동 함수
+    function goToPage(page) {
+        currentPage = page;
+        renderTable(); // 필터링 조건은 그대로 유지한 채로 리렌더링
+    }
+
+    /* =========================================
+       모달 및 데이터 저장 (CRUD)
+       ========================================= */
+    function openModal(type, id = null) {
+        const modal = document.getElementById('noticeModal');
+        if (!modal) return;
+        
+        if (type === 'create') {
+            document.getElementById('modalTitle').innerText = '공지사항 등록';
+            document.getElementById('noticeForm').reset();
+            document.getElementById('modalNoticeId').value = ''; 
+            document.getElementById('checkVisible').checked = true; // 기본값
+        } else {
+            document.getElementById('modalTitle').innerText = '공지사항 수정';
+            
+            // 실제 서버 연결 시 fetch로 상세 데이터 조회 처리
+            const item = noticeList.find(n => n.noticeId === id);
+            if (item) {
+                document.getElementById('modalNoticeId').value = item.noticeId;
+                document.getElementById('inputTitle').value = item.title;
+                document.getElementById('inputContent').value = item.content || ''; 
+                document.getElementById('checkImportant').checked = item.isImportant;
+                document.getElementById('checkVisible').checked = item.isVisible;
+            }
+        }
+
+        // ★ 수정: admin.css 애니메이션 표준화 (setTimeout 클래스 조작 제거)
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('noticeModal');
+        if (!modal) return;
+        // ★ 수정: 즉시 닫기 처리
+        modal.style.display = 'none';
+    }
+
+    function saveNotice() {
+        const noticeId = document.getElementById('modalNoticeId').value;
+        const titleInput = document.getElementById('inputTitle').value.trim();
+        const contentInput = document.getElementById('inputContent').value.trim();
+
+        if(!titleInput) {
+            alert('제목을 입력해주세요.');
+            return;
+        }
+
+        if(!contentInput) {
+            alert('내용을 입력해주세요.');
+            return;
+        }
+
+        const saveData = {
+            noticeId: noticeId ? parseInt(noticeId) : null,
+            title: titleInput,
+            content: contentInput,
+            isImportant: document.getElementById('checkImportant').checked,
+            isVisible: document.getElementById('checkVisible').checked
+        };
+
+        // 실제 서버 연결 시 이 부분에 fetch(POST/PUT) 로직 구현
+
+        alert('정상적으로 저장되었습니다.');
+        closeModal();
+        searchTable(false); // 저장 후 리스트 갱신 (실제로는 fetch 후 호출)
+    }
+
+    // 외부 노출
+    return {
+        searchTable,
+        goToPage,
+        openModal,
+        closeModal,
+        saveNotice
     };
 
-    if(!saveData.title) {
-        alert('제목을 입력해주세요.');
-        return;
-    }
-
-    console.log('Sending to Server:', JSON.stringify(saveData));
-    
-    /* [AJAX 요청 예시]
-       const url = saveData.noticeId ? '/admin/notice/update' : '/admin/notice/insert';
-       fetch(url, {
-           method: 'POST',
-           headers: {'Content-Type': 'application/json'},
-           body: JSON.stringify(saveData)
-       })...
-    */
-
-    alert('저장되었습니다. (Mock)');
-    closeModal();
-    // 리스트 새로고침 (Mock Data 갱신 생략)
-}
+})();

@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="<c:url value='/css/admin.css'/>">
 
     <style>
-        /* CSS는 이전과 동일하므로 생략, ID 선택자만 JS와 일치시킴 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; }
         .modal-overlay.active { display: flex; }
         .modal-container { width: 600px; background: #fff; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; }
@@ -90,8 +89,10 @@
                     </tr>
                 </thead>
                 <tbody id="complaintTableBody">
-                    </tbody>
+                </tbody>
             </table>
+
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
         </div>
     </main>
 </div>
@@ -100,7 +101,7 @@
     <div class="modal-container">
         <div class="content-header" style="margin:0; display:flex; justify-content:space-between;">
             <h3>민원 상세 및 답변</h3>
-            <button onclick="complaintManager.closeModal()" style="border:none; background:none; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="complaintManager.closeModal()" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
         </div>
         
         <input type="hidden" id="targetCompId"> 
@@ -110,7 +111,7 @@
             <div class="info-row"><div class="info-label">작성자</div><div class="info-value" id="modalUserName"></div></div>
             <div class="info-row"><div class="info-label">접수일</div><div class="info-value" id="modalRegDate"></div></div>
             <div class="info-row" style="margin-top:10px;"><div class="info-label">내용</div></div>
-            <div style="background:#fff; padding:10px; border:1px solid #ddd; min-height:80px;" id="modalContent"></div>
+            <div style="background:#fff; padding:10px; border:1px solid #ddd; min-height:80px; white-space:pre-wrap;" id="modalContent"></div>
         </div>
 
         <div>
@@ -132,6 +133,26 @@
     </div>
 </div>
 
+<script>
+    window.globalComplaintList = [];
+
+    <c:if test="${not empty complaintList}">
+        <c:forEach var="item" items="${complaintList}">
+            window.globalComplaintList.push({
+                compId: parseInt('${item.compId}'),
+                category: '${item.category}',
+                title: '${item.title}',
+                content: '${item.content}',
+                userName: '${item.userName}',
+                regDate: '${item.regDate}',
+                compStatus: '${item.compStatus}',
+                reply: '${item.reply}'
+            });
+        </c:forEach>
+    </c:if>
+</script>
+
 <script src="<c:url value='/js/admin/complaint.js'/>"></script>
+
 </body>
 </html>
