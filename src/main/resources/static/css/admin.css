@@ -119,7 +119,6 @@ body {
 /* 텍스트 컬러 유틸리티 */
 .text-primary { color: var(--primary) !important; }
 .text-danger { color: var(--danger) !important; }
-.text-warning { color: var(--warning) !important; }
 .text-success { color: var(--success) !important; }
 .text-info { color: var(--info) !important; }
 
@@ -304,4 +303,3 @@ body {
     .content-header h2 { font-size: 1.3rem; }
     .admin-table th, .admin-table td { font-size: 0.8rem; padding: 10px; }
 }
-

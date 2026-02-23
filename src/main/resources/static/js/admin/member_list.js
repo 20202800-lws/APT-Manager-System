@@ -1,239 +1,286 @@
-/* =========================================
-   1. 데이터 (Mock Data - UserVO 구조 매핑)
-   ========================================= */
-// [MOD] ERD 컬럼 기준 매핑: user_id, user_name, phone, join_date, approval_status
-let memberList = [
-    { userId: '1', userName: '홍길동', dong: '101', ho: '101', phone: '010-1234-5678', email: 'hong@test.com', joinDate: '2024-02-01', approvalStatus: 'WAIT' },
-    { userId: '2', userName: '김철수', dong: '102', ho: '205', phone: '010-2222-3333', email: 'kim@test.com', joinDate: '2024-01-28', approvalStatus: 'ACT' },
-    { userId: '3', userName: '이영희', dong: '103', ho: '1501', phone: '010-3333-4444', email: 'lee@test.com', joinDate: '2024-01-15', approvalStatus: 'ACT' },
-    { userId: '4', userName: '관리자', dong: '관리실', ho: '-', phone: '010-9999-9999', email: 'admin@apt.com', joinDate: '2023-01-01', approvalStatus: 'ADM' },
-    { userId: '5', userName: '박민수', dong: '101', ho: '303', phone: '010-5555-6666', email: 'park@test.com', joinDate: '2024-02-04', approvalStatus: 'WAIT' }
-];
+/**
+ * admin_member.js
+ * 회원 관리 페이지 로직을 처리하는 스크립트 (페이징 연동 완료)
+ */
 
-let currentFilterCode = 'ALL'; // 현재 탭 상태 (ALL, WAIT, ACT, ADM)
-const TAB_WIDTH = 140; 
-
-// 초기 실행
-document.addEventListener('DOMContentLoaded', () => {
-    updateStats();
-    filterTab('ALL', 0);
-});
-
-/* =========================================
-   2. 통계 업데이트
-   ========================================= */
-function updateStats() {
-    // [MOD] status -> approvalStatus (ERD: approval_status)
-    const counts = {
-        total: memberList.length,
-        wait: memberList.filter(m => m.approvalStatus === 'WAIT').length,
-        active: memberList.filter(m => m.approvalStatus === 'ACT').length,
-        admin: memberList.filter(m => m.approvalStatus === 'ADM').length
-    };
-
-    document.getElementById('statTotalCount').innerHTML = `${counts.total}<span class="unit">명</span>`;
-    document.getElementById('statWaitCount').innerHTML = `${counts.wait}<span class="unit">명</span>`;
-    document.getElementById('statActiveCount').innerHTML = `${counts.active}<span class="unit">명</span>`;
-    document.getElementById('statAdminCount').innerHTML = `${counts.admin}<span class="unit">명</span>`;
-}
-
-/* =========================================
-   3. 탭 및 테이블 필터링
-   ========================================= */
-function filterTab(code, index) {
-    currentFilterCode = code;
-
-    // 1. 하이라이터 이동
-    const highlighter = document.getElementById('tabHighlighter');
-    if (highlighter) {
-        highlighter.style.transform = `translateX(${index * TAB_WIDTH}px)`;
-    }
+const adminMember = (function() {
     
-    // 2. 버튼 활성화
-    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-        if(i === index) btn.classList.add('active');
-        else btn.classList.remove('active');
-    });
-
-    // 3. 타이틀 변경
-    const titles = { 
-        'ALL': '전체 회원 목록', 
-        'WAIT': '가입 승인 대기 목록', 
-        'ACT': '입주민 회원 목록',
-        'ADM': '관리자 목록'
-    };
-    document.getElementById('tableTitle').innerText = titles[code] || '회원 목록';
-
-    searchTable();
-}
-
-function searchTable() {
-    const keyword = document.getElementById('searchInput').value.toLowerCase();
+    // JSP에서 전달받은 전체 데이터
+    let memberList = window.globalMemberList || [];
+    let currentFilteredList = []; // 검색/탭 필터링이 완료된 현재 데이터
     
-    const filtered = memberList.filter(item => {
-        // [MOD] status -> approvalStatus
-        // 1. 탭 필터
-        if (currentFilterCode !== 'ALL' && item.approvalStatus !== currentFilterCode) return false;
-        
-        // 2. 검색 필터
-        if (keyword) {
-            const dongStr = String(item.dong);
-            const hoStr = String(item.ho);
-            
-            // [MOD] memberName -> userName, phoneNumber -> phone
-            return item.userName.toLowerCase().includes(keyword) || 
-                   dongStr.includes(keyword) || 
-                   hoStr.includes(keyword) || 
-                   item.phone.includes(keyword);
-        }
-        return true;
-    });
+    let currentFilterCode = 'ALL'; 
+    const TAB_WIDTH = 140; 
+    let currentUserId = null; 
+    const modal = document.getElementById('memberModal');
 
-    renderTable(filtered);
-}
+    // 페이징 관련 변수
+    let currentPage = 1;
+    const rowsPerPage = 10; 
 
-function renderTable(data) {
-    const tbody = document.getElementById('memberTableBody');
-    
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding:30px; color:#999;">검색 결과가 없습니다.</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = data.map(item => {
-        // 상태별 배지 및 버튼 설정
-        let badgeHtml = '';
-        let btnHtml = '';
-        
-        // [MOD] status -> approvalStatus
-        // [MOD] memberId -> userId (PK 매핑)
-        switch(item.approvalStatus) {
-            case 'WAIT':
-                badgeHtml = '<span class="badge badge-warning">승인대기</span>';
-                btnHtml = `
-                    <button class="btn btn-primary btn-xs" onclick="approveMember('${item.userId}')">승인</button>
-                    <button class="btn btn-secondary btn-xs" onclick="openModal('${item.userId}')"><i class="fa-solid fa-gear"></i></button>
-                `;
-                break;
-            case 'ACT':
-                badgeHtml = '<span class="badge badge-success">입주민</span>';
-                btnHtml = `<button class="btn btn-secondary btn-xs" onclick="openModal('${item.userId}')">상세</button>`;
-                break;
-            case 'ADM':
-                badgeHtml = '<span class="badge badge-dark">관리자</span>';
-                btnHtml = `<button class="btn btn-secondary btn-xs" onclick="openModal('${item.userId}')">관리</button>`;
-                break;
-            default: 
-                badgeHtml = '<span class="badge badge-red">정지</span>';
-                btnHtml = `<button class="btn btn-secondary btn-xs" onclick="openModal('${item.userId}')">상세</button>`;
-        }
-
-        let dongHoText = '';
-        if(isNaN(item.dong)) {
-             dongHoText = item.dong; 
-        } else {
-             dongHoText = `${item.dong}동 ${item.ho}호`;
-        }
-
-        // [MOD] 변수명 매핑 (userName, phone, joinDate)
-        return `
-            <tr>
-                <td>${badgeHtml}</td>
-                <td style="font-weight:600;">${dongHoText}</td>
-                <td>${item.userName}</td>
-                <td>${item.phone}</td>
-                <td style="color:#666;">${item.email}</td>
-                <td>${item.joinDate}</td>
-                <td style="display:flex; justify-content:center; gap:5px;">
-                    ${btnHtml}
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-/* =========================================
-   4. 승인 및 상세 모달 기능
-   ========================================= */
-const modal = document.getElementById('memberModal');
-let currentUserId = null; // [MOD] currentMemberId -> currentUserId
-
-// 바로 승인 (리스트에서 클릭 시)
-function approveMember(id) {
-    // [MOD] memberId -> userId
-    // 데이터 타입(String/Number) 주의: ERD상 user_id는 varchar이므로 문자열 비교 권장
-    const member = memberList.find(m => m.userId === String(id));
-    
-    // [MOD] memberName -> userName
-    if(member && confirm(`${member.userName} 님의 가입을 승인하시겠습니까?`)) {
-        // [MOD] status -> approvalStatus
-        member.approvalStatus = 'ACT'; 
-        
-        updateStats(); 
-        searchTable(); 
-        alert("승인 처리되었습니다.");
-    }
-}
-
-// 모달 열기
-function openModal(id) {
-    // [MOD] memberId -> userId
-    const item = memberList.find(d => d.userId === String(id));
-    if(!item) return;
-
-    currentUserId = id;
-
-    // [MOD] DOM ID 변경 및 데이터 매핑
-    // modalMemberName -> modalUserName (ERD: user_name)
-    document.getElementById('modalUserName').value = item.userName;
-    document.getElementById('modalDong').value = item.dong;
-    document.getElementById('modalHo').value = item.ho;
-    
-    // modalPhoneNumber -> modalPhone (ERD: phone)
-    document.getElementById('modalPhone').value = item.phone;
-    document.getElementById('modalEmail').value = item.email;
-    
-    // modalRegDate -> modalJoinDate (ERD: join_date)
-    document.getElementById('modalJoinDate').innerText = item.joinDate;
-    
-    // modalStatus -> modalApprovalStatus (ERD: approval_status)
-    document.getElementById('modalApprovalStatus').value = item.approvalStatus;
-
-    // 모달 표시
-    modal.style.display = 'flex';
-    setTimeout(() => modal.classList.add('show'), 10);
-}
-
-// 모달 저장 버튼
-function saveMember() {
-    // [MOD] memberId -> userId
-    const item = memberList.find(d => d.userId === String(currentUserId));
-    if(item) {
-        // [MOD] 입력값 업데이트 (JSP ID 매칭 필수)
-        item.userName = document.getElementById('modalUserName').value;
-        item.dong = document.getElementById('modalDong').value;
-        item.ho = document.getElementById('modalHo').value;
-        item.phone = document.getElementById('modalPhone').value;
-        item.approvalStatus = document.getElementById('modalApprovalStatus').value;
-        
-        alert('회원 정보가 수정되었습니다.');
-        closeModal();
+    // 초기화 함수
+    function init() {
         updateStats();
-        searchTable();
-    }
-}
+        filterTab('ALL', 0); // 탭 필터링 실행 -> 내부에서 searchTable 호출 -> 렌더링 진행
 
-function closeModal() {
-    modal.classList.remove('show');
-    setTimeout(() => {
-        modal.style.display = 'none';
-        currentUserId = null; // [MOD] 초기화
-    }, 300);
-}
-
-// 배경 클릭 시 닫기
-window.onclick = function(event) {
-    if (event.target.className.includes('modal-overlay')) {
-        closeModal();
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
     }
-}
+
+    // 통계 업데이트
+    function updateStats() {
+        const counts = {
+            total: memberList.length,
+            wait: memberList.filter(m => m.approvalStatus === 'WAIT').length,
+            active: memberList.filter(m => m.approvalStatus === 'ACT').length,
+            admin: memberList.filter(m => m.approvalStatus === 'ADM').length
+        };
+
+        const totalEl = document.getElementById('statTotalCount');
+        const waitEl = document.getElementById('statWaitCount');
+        const activeEl = document.getElementById('statActiveCount');
+        const adminEl = document.getElementById('statAdminCount');
+
+        if(totalEl) totalEl.innerHTML = `${counts.total}<span class="unit">명</span>`;
+        if(waitEl) waitEl.innerHTML = `${counts.wait}<span class="unit">명</span>`;
+        if(activeEl) activeEl.innerHTML = `${counts.active}<span class="unit">명</span>`;
+        if(adminEl) adminEl.innerHTML = `${counts.admin}<span class="unit">명</span>`;
+    }
+
+    // 탭 필터링
+    function filterTab(code, index) {
+        currentFilterCode = code;
+
+        const highlighter = document.getElementById('tabHighlighter');
+        if (highlighter) {
+            highlighter.style.transform = `translateX(${index * TAB_WIDTH}px)`;
+        }
+        
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            if(i === index) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+
+        const titles = { 
+            'ALL': '전체 회원 목록', 
+            'WAIT': '가입 승인 대기 목록', 
+            'ACT': '입주민 회원 목록',
+            'ADM': '관리자 목록'
+        };
+        const titleEl = document.getElementById('tableTitle');
+        if(titleEl) titleEl.innerText = titles[code] || '회원 목록';
+
+        // 탭이 바뀌면 무조건 1페이지부터 보여줌
+        searchTable(true);
+    }
+
+    // 검색 및 데이터 필터링 (isResetPage: true면 1페이지로 초기화)
+    function searchTable(isResetPage = false) {
+        if (isResetPage) currentPage = 1;
+
+        const searchInput = document.getElementById('searchInput');
+        const keyword = searchInput ? searchInput.value.toLowerCase() : '';
+        
+        currentFilteredList = memberList.filter(item => {
+            if (currentFilterCode !== 'ALL' && item.approvalStatus !== currentFilterCode) return false;
+            
+            if (keyword) {
+                const dongStr = String(item.dong);
+                const hoStr = String(item.ho);
+                
+                return item.userName.toLowerCase().includes(keyword) || 
+                       dongStr.includes(keyword) || 
+                       hoStr.includes(keyword) || 
+                       item.phone.includes(keyword);
+            }
+            return true;
+        });
+
+        renderTable();
+    }
+
+    // 테이블 렌더링 (페이징 적용)
+    function renderTable() {
+        const tbody = document.getElementById('memberTableBody');
+        if(!tbody) return;
+        
+        if (currentFilteredList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px; color:#999; text-align:center;">조건에 맞는 회원이 없습니다.</td></tr>';
+            renderPagination(0);
+            return;
+        }
+
+        const totalPages = Math.ceil(currentFilteredList.length / rowsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginatedData = currentFilteredList.slice(startIndex, startIndex + rowsPerPage);
+
+        let rowsHtml = '';
+        paginatedData.forEach(item => {
+            let badgeHtml = '';
+            let btnHtml = '';
+            
+            switch(item.approvalStatus) {
+                case 'WAIT':
+                    badgeHtml = '<span class="badge badge-warning">승인대기</span>';
+                    btnHtml = `
+                        <button class="btn btn-primary btn-xs" onclick="adminMember.approveMember('${item.userId}')">승인</button>
+                        <button class="btn btn-secondary btn-xs" onclick="adminMember.openModal('${item.userId}')"><i class="fa-solid fa-gear"></i></button>
+                    `;
+                    break;
+                case 'ACT':
+                    badgeHtml = '<span class="badge badge-success">입주민</span>';
+                    btnHtml = `<button class="btn btn-secondary btn-xs" onclick="adminMember.openModal('${item.userId}')">상세</button>`;
+                    break;
+                case 'ADM':
+                    badgeHtml = '<span class="badge badge-dark">관리자</span>';
+                    btnHtml = `<button class="btn btn-secondary btn-xs" onclick="adminMember.openModal('${item.userId}')">관리</button>`;
+                    break;
+                default:
+                    badgeHtml = '<span class="badge badge-red">정지</span>';
+                    btnHtml = `<button class="btn btn-secondary btn-xs" onclick="adminMember.openModal('${item.userId}')">상세</button>`;
+            }
+
+            let dongHoText = isNaN(item.dong) ? item.dong : `${item.dong}동 ${item.ho}호`;
+
+            rowsHtml += `
+                <tr>
+                    <td>${badgeHtml}</td>
+                    <td style="font-weight:600;">${dongHoText}</td>
+                    <td>${item.userName}</td>
+                    <td>${item.phone}</td>
+                    <td style="color:#666;">${item.email}</td>
+                    <td>${item.joinDate}</td>
+                    <td style="display:flex; justify-content:center; gap:5px;">
+                        ${btnHtml}
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = rowsHtml;
+        renderPagination(currentFilteredList.length);
+    }
+
+    // 페이징 버튼 렌더링
+    function renderPagination(totalCount) {
+        const container = document.getElementById('paginationWrapper');
+        if (!container) return;
+
+        const totalPages = Math.ceil(totalCount / rowsPerPage);
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+        let html = `<button class="btn btn-secondary btn-xs" ${currentPage === 1 ? 'disabled' : `onclick="adminMember.goToPage(${currentPage - 1})"`}>&lt;</button> `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? 'btn-primary' : 'btn-secondary';
+            html += `<button class="btn ${activeClass} btn-xs" onclick="adminMember.goToPage(${i})">${i}</button> `;
+        }
+
+        html += `<button class="btn btn-secondary btn-xs" ${currentPage === totalPages ? 'disabled' : `onclick="adminMember.goToPage(${currentPage + 1})"`}>&gt;</button>`;
+        
+        container.innerHTML = html;
+    }
+
+    // 페이지 이동 로직
+    function goToPage(page) {
+        currentPage = page;
+        renderTable();
+    }
+
+    /* =========================================
+       CRUD 비즈니스 로직
+       ========================================= */
+
+    function approveMember(id) {
+        if(confirm('해당 회원의 가입을 승인하시겠습니까?')) {
+            // [TODO: Fetch API를 통한 서버 승인 로직 구현]
+            
+            const member = memberList.find(m => m.userId === id);
+            if(member) {
+                member.approvalStatus = 'ACT'; 
+                updateStats(); 
+                searchTable(false); // 페이지 유지
+                alert("승인 처리되었습니다.");
+            }
+        }
+    }
+
+    function openModal(id) {
+        const item = memberList.find(d => d.userId === id);
+        if(!item || !modal) return;
+
+        currentUserId = id;
+
+        document.getElementById('modalUserName').value = item.userName;
+        document.getElementById('modalDong').value = item.dong;
+        document.getElementById('modalHo').value = item.ho;
+        document.getElementById('modalPhone').value = item.phone;
+        document.getElementById('modalEmail').value = item.email;
+        document.getElementById('modalJoinDate').innerText = item.joinDate;
+        document.getElementById('modalApprovalStatus').value = item.approvalStatus;
+
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+
+    function saveMember() {
+        // [TODO: Fetch API를 통한 서버 업데이트 로직 구현]
+
+        const item = memberList.find(d => d.userId === currentUserId);
+        if(item) {
+            item.userName = document.getElementById('modalUserName').value;
+            item.dong = document.getElementById('modalDong').value;
+            item.ho = document.getElementById('modalHo').value;
+            item.phone = document.getElementById('modalPhone').value;
+            item.approvalStatus = document.getElementById('modalApprovalStatus').value;
+            
+            alert('회원 정보가 수정되었습니다.');
+            closeModal();
+            updateStats();
+            searchTable(false); // 페이지 유지
+        }
+    }
+
+    function deleteMember() {
+        if(confirm('회원을 삭제하시겠습니까? (DB Soft Delete 권장)')) {
+            // [TODO: Fetch API를 통한 서버 삭제 로직 구현]
+            
+            memberList = memberList.filter(m => m.userId !== currentUserId);
+            alert('삭제되었습니다.');
+            closeModal();
+            updateStats();
+            searchTable(false); // 삭제 후 현재 페이지 유지 (데이터 부족 시 윗 페이지로 튕기는 로직은 renderTable 내부에서 처리)
+        }
+    }
+
+    function closeModal() {
+        if(!modal) return;
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            currentUserId = null; 
+        }, 300);
+    }
+
+    // 초기화 실행
+    document.addEventListener('DOMContentLoaded', init);
+
+    // 외부 노출
+    return {
+        filterTab,
+        searchTable,
+        goToPage,
+        approveMember,
+        openModal,
+        saveMember,
+        deleteMember,
+        closeModal
+    };
+
+})();

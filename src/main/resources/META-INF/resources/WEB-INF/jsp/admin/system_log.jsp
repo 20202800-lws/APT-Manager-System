@@ -9,23 +9,20 @@
 
     <div class="content-box">
 
-        <!-- 검색 & 필터 영역 -->
         <div class="section-header">
+            <div class="section-actions" style="display: flex; gap: 10px; align-items: center;">
 
-            <div class="section-actions">
-
-                <!-- 중요도 드롭다운 -->
-                <select id="severityFilter" class="form-select">
-                    <option value="">전체</option>
+                <select id="severityFilter" class="form-select" onchange="searchLogs()">
+                    <option value="ALL">전체</option>
                     <option value="INFO">정보</option>
                     <option value="WARNING">경고</option>
                     <option value="ERROR">에러</option>
                 </select>
 
-                <!-- 검색 -->
                 <input type="text" id="keyword" 
                        class="form-input" 
-                       placeholder="사용자, IP, 내용 검색">
+                       placeholder="사용자, IP, 내용 검색"
+                       onkeyup="if(event.keyCode===13) searchLogs()">
 
                 <button class="btn btn-primary" onclick="searchLogs()">
                     검색
@@ -34,7 +31,6 @@
             </div>
         </div>
 
-        <!-- 로그 테이블 -->
         <table class="admin-table">
             <thead>
                 <tr>
@@ -50,14 +46,28 @@
             </tbody>
         </table>
 
-        <!-- 페이징 -->
-        <div style="margin-top:15px; text-align:center;">
-            <button class="btn btn-secondary btn-xs" onclick="prevPage()">이전</button>
-            <span id="pageInfo"></span>
-            <button class="btn btn-secondary btn-xs" onclick="nextPage()">다음</button>
-        </div>
+        <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
 
     </div>
 </div>
 
+<script>
+    // 서버에서 데이터를 넘겨받을 경우 아래 배열에 바인딩됩니다.
+    window.globalLogList = [];
+
+    //추후 서버 연동 시 아래 주석을 해제하여 사용하세요.
+    <c:if test="${not empty logList}">
+        <c:forEach var="log" items="${logList}">
+            window.globalLogList.push({
+                severity: '${log.severity}',
+                createdAt: '${log.createdAt}',
+                username: '${log.username}',
+                category: '${log.category}',
+                content: '${log.content}',
+                sourceIp: '${log.sourceIp}'
+            });
+        </c:forEach>
+    </c:if>
+   //
+</script>
 <script src="/resources/js/systemLog.js"></script>

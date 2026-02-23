@@ -1,10 +1,11 @@
 /**
  * community_manage.js
- * 커뮤니티 시설 관리 스크립트 (Refactored for Server-Side Rendering & AJAX)
+ * 커뮤니티 시설 관리 스크립트 (페이징 및 JS 렌더링 적용)
  */
 
 const facilityManager = (function() {
     
+    // 모달 관련
     let currentViewType = '';
     const titles = { 
         profit: '💰 월별 수익 내역', 
@@ -13,30 +14,148 @@ const facilityManager = (function() {
         users: '👥 월별 이용객 기록' 
     };
 
+    // 페이징 관련 변수
+    let allResList = window.globalResList || [];
+    let currentFilteredList = [];
+    let currentFacFilter = 'ALL';
+    let currentPage = 1;
+    const rowsPerPage = 10; // 한 페이지당 표시할 예약 수
+
+    // 시설명 맵핑
+    const facNameMap = {
+        'POOL': '수영장',
+        'GYM': '헬스장',
+        'GOLF': '골프장',
+        'GUEST': '게스트하우스'
+    };
+
+    // 초기화 함수
+    document.addEventListener('DOMContentLoaded', () => {
+        filterRes('ALL');
+    });
+
     // =========================================
-    // 1. 예약 관리 로직 (Reservation Logic)
+    // 1. 예약 관리 로직 (페이징 & 렌더링)
     // =========================================
 
-    function approveRes(btn) {
+    // 탭 필터링 로직
+    function filterRes(facId, btn = null) {
+        if (btn) {
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        currentFacFilter = facId;
+        currentPage = 1; // 필터 변경 시 1페이지로 리셋
+
+        if (facId === 'ALL') {
+            currentFilteredList = [...allResList];
+        } else {
+            currentFilteredList = allResList.filter(res => res.facId === facId);
+        }
+
+        renderTable();
+    }
+
+    // 테이블 그리기
+    function renderTable() {
+        const tbody = document.getElementById('res-body');
+        if (!tbody) return;
+
+        if (currentFilteredList.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:#999;">예약 내역이 없습니다.</td></tr>';
+            renderPagination(0);
+            return;
+        }
+
+        // 페이징 인덱스 계산
+        const totalPages = Math.ceil(currentFilteredList.length / rowsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginatedData = currentFilteredList.slice(startIndex, startIndex + rowsPerPage);
+
+        // 테이블 행 생성
+        tbody.innerHTML = paginatedData.map(res => {
+            let statusHtml = '';
+            let actionHtml = '';
+
+            // 상태 배지 및 버튼 로직
+            if (res.resStatus === 'WAITING') {
+                statusHtml = `<span class="badge badge-warning status-badge">● 대기중</span>`;
+                actionHtml = `
+                    <button class="btn btn-primary btn-xs" onclick="facilityManager.approveRes('${res.resId}')">승인</button>
+                    <button class="btn btn-secondary btn-xs" onclick="facilityManager.cancelWithReason('${res.resId}')">취소</button>
+                `;
+            } else if (res.resStatus === 'APPROVED') {
+                statusHtml = `<span class="badge badge-success status-badge">● 승인완료</span>`;
+                actionHtml = `
+                    <button class="btn btn-secondary btn-xs text-danger" onclick="facilityManager.cancelWithReason('${res.resId}')">예약취소</button>
+                `;
+            } else if (res.resStatus === 'CANCELLED') {
+                statusHtml = `<span class="badge badge-red status-badge">● 취소됨 <span style="font-size:0.8em; opacity:0.8;">(${res.reason || ''})</span></span>`;
+                actionHtml = `
+                    <button class="btn btn-secondary btn-xs" onclick="facilityManager.removeRes('${res.resId}')">목록제거</button>
+                `;
+            }
+
+            return `
+                <tr>
+                    <td>${facNameMap[res.facId] || res.facId}</td>
+                    <td>${res.userName}</td>
+                    <td>${res.dongHo}</td>
+                    <td>${res.useTime}</td>
+                    <td>${statusHtml}</td>
+                    <td class="action-td">${actionHtml}</td>
+                </tr>
+            `;
+        }).join('');
+
+        renderPagination(currentFilteredList.length);
+    }
+
+    // 페이징 버튼 생성
+    function renderPagination(totalCount) {
+        const container = document.getElementById('paginationWrapper');
+        if (!container) return;
+
+        const totalPages = Math.ceil(totalCount / rowsPerPage);
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+        let html = `<button class="btn btn-secondary btn-xs" ${currentPage === 1 ? 'disabled' : `onclick="facilityManager.goToPage(${currentPage - 1})"`}>&lt;</button> `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? 'btn-primary' : 'btn-secondary';
+            html += `<button class="btn ${activeClass} btn-xs" onclick="facilityManager.goToPage(${i})">${i}</button> `;
+        }
+
+        html += `<button class="btn btn-secondary btn-xs" ${currentPage === totalPages ? 'disabled' : `onclick="facilityManager.goToPage(${currentPage + 1})"`}>&gt;</button>`;
+        
+        container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        renderTable();
+    }
+
+    // 승인 로직 (JS 배열 업데이트 후 리렌더링)
+    function approveRes(resId) {
         if (confirm("해당 예약을 승인하시겠습니까?")) {
-            const tr = btn.closest('tr');
-            const resId = tr.dataset.resId; 
+            // 서버 통신 부분 (추후 적용)
+            /* fetch... */
             
-            // 실제 서버 연동 시 아래 주석 해제 후 사용
-            /*
-            fetch(`/admin/facility/approve/${resId}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success) updateResStatusUI(tr, 'APPROVED');
-                });
-            */
-            
-            // 낙관적 UI 업데이트 (임시)
-            updateResStatusUI(tr, 'APPROVED');
+            // UI 반영
+            const target = allResList.find(r => r.resId === resId);
+            if (target) {
+                target.resStatus = 'APPROVED';
+                filterRes(currentFacFilter); // 현재 탭 상태 유지하며 리렌더링
+            }
         }
     }
 
-    function cancelWithReason(btn) {
+    // 취소 로직 (JS 배열 업데이트 후 리렌더링)
+    function cancelWithReason(resId) {
         const reason = prompt("취소 사유를 입력해주세요:");
         if (reason !== null) {
             if (reason.trim() === "") {
@@ -44,58 +163,25 @@ const facilityManager = (function() {
                 return;
             }
 
-            const tr = btn.closest('tr');
-            const resId = tr.dataset.resId;
+            // 서버 통신 부분 (추후 적용)
+            /* fetch... */
 
-            // 실제 서버 연동 시 아래 주석 해제 후 사용
-            /*
-            fetch(`/admin/facility/cancel/${resId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reason: reason })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) updateResStatusUI(tr, 'CANCELLED', reason);
-            });
-            */
-
-            // 낙관적 UI 업데이트 (임시)
-            updateResStatusUI(tr, 'CANCELLED', reason);
-        }
-    }
-
-    function updateResStatusUI(tr, status, reason = '') {
-        const statusBadge = tr.querySelector('.status-badge');
-        const actionTd = tr.querySelector('.action-td');
-        
-        tr.dataset.resStatus = status;
-
-        if (status === 'APPROVED') {
-            statusBadge.innerHTML = "● 승인완료";
-            statusBadge.className = "badge badge-success status-badge"; 
-            actionTd.innerHTML = `<button class="btn btn-secondary btn-xs text-danger" onclick="facilityManager.cancelWithReason(this)">예약취소</button>`;
-        } else if (status === 'CANCELLED') {
-            statusBadge.innerHTML = `● 취소됨 <span style="font-size:0.8em; opacity:0.8;">(${reason})</span>`;
-            statusBadge.className = "badge badge-red status-badge";
-            actionTd.innerHTML = `<button class="btn btn-secondary btn-xs" onclick="this.closest('tr').remove()">목록제거</button>`;
-        }
-    }
-
-    function filterRes(facId, btn) {
-        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-
-        const rows = document.querySelectorAll('#res-body tr');
-        rows.forEach(row => { 
-            const rowFacId = row.dataset.facId;
-            if (facId === 'ALL' || rowFacId === facId) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none'; 
+            // UI 반영
+            const target = allResList.find(r => r.resId === resId);
+            if (target) {
+                target.resStatus = 'CANCELLED';
+                target.reason = reason;
+                filterRes(currentFacFilter);
             }
-        });
+        }
     }
+
+    // 목록에서 완전히 제거 (JS 배열에서 삭제)
+    function removeRes(resId) {
+        allResList = allResList.filter(r => r.resId !== resId);
+        filterRes(currentFacFilter);
+    }
+
 
     // =========================================
     // 2. 시설 제어 로직 (Facility Control)
@@ -108,17 +194,6 @@ const facilityManager = (function() {
         const label = item.querySelector('.tgl-label');
         const currentAvailable = parseInt(item.dataset.available, 10);
         const newAvailable = currentAvailable === 1 ? 0 : 1;
-
-        // 실제 서버 연동 부분
-        /*
-        fetch(`/admin/facility/toggle`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ facId: facId, available: newAvailable })
-        }).then(res => {
-            if(res.ok) { // 상태 변경 성공 시 UI 업데이트 }
-        });
-        */
 
         item.dataset.available = newAvailable.toString();
 
@@ -138,7 +213,7 @@ const facilityManager = (function() {
     }
 
     // =========================================
-    // 3. 모달 및 통계 로직 (AJAX Fetch 방식으로 변경)
+    // 3. 모달 및 통계 로직 (AJAX)
     // =========================================
 
     function openHistory(type) {
@@ -158,7 +233,6 @@ const facilityManager = (function() {
         const body = document.getElementById('modal-body');
         if (!body) return;
 
-        // 가짜 데이터 대신 서버에 요청을 보냅니다 (이전 로그 페이지에서 했던 방식과 동일)
         body.innerHTML = '<tr><td colspan="4" style="text-align:center;">데이터를 불러오는 중입니다...</td></tr>';
 
         fetch(`/admin/facility/history?type=${currentViewType}&year=${year}`)
@@ -192,9 +266,11 @@ const facilityManager = (function() {
     }
 
     return {
+        filterRes,
+        goToPage,
         approveRes,
         cancelWithReason,
-        filterRes,
+        removeRes,
         toggleFac,
         openHistory,
         renderHistory,

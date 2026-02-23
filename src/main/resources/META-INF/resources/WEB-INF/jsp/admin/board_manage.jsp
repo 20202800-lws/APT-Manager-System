@@ -85,12 +85,7 @@
                     </tbody>
             </table>
 
-            <div style="margin-top:20px; text-align:center;">
-                <button class="btn btn-secondary btn-xs" disabled>&lt;</button>
-                <button class="btn btn-primary btn-xs">1</button>
-                <button class="btn btn-secondary btn-xs">2</button>
-                <button class="btn btn-secondary btn-xs">&gt;</button>
-            </div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
         </div>
 
     </main>
@@ -146,9 +141,30 @@
                     <i class="fa-solid fa-eye-slash"></i> 블라인드 처리
                  </button>
             </div>
-        </div>
+            </div>
     </div>
 </div>
+
+
+<script>
+    window.globalBoardList = [];
+
+    <c:if test="${not empty boardList}">
+        <c:forEach var="board" items="${boardList}">
+            window.globalBoardList.push({
+                boardId: parseInt('${board.boardId}'),
+                category: '${board.category}',
+                title: '${board.title}',
+                userName: '${board.userName}',
+                regDate: '${board.regDate}',
+                views: parseInt('${board.views}'),
+                reportCount: parseInt('${board.reportCount}'),
+                postStatus: '${board.postStatus}',
+                content: '${board.content}' // 모달창에서 보여줄 내용
+            });
+        </c:forEach>
+    </c:if>
+</script>
 
 <script src="<c:url value='/resources/js/admin/board.js'/>"></script>
 
