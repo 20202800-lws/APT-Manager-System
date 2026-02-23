@@ -1,5 +1,6 @@
 package com.apt.membermanager.service;
 
+import com.apt.membermanager.beans.MemberBean;
 import com.apt.membermanager.dto.UserSignupDto;
 import com.apt.membermanager.entity.User;
 import com.apt.membermanager.repository.UserRepository;
@@ -11,7 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -69,4 +74,21 @@ public class MemberService {
     public boolean checkIdDuplicate(String userId) {
         return userRepository.existsByUserId(userId);
     }
+    
+    //회원목록 조회
+  	 @Transactional(readOnly = true)
+  	 public List<MemberBean> getAllMember() {
+  		 
+  		 return userRepository.findAll().stream().map(MemberBean::fromMember)
+  				 .collect(Collectors.toList());
+  	 }
+  	 
+  	 public Map<String,Long> getMemberStatus(){
+  		 Map<String, Long> status = new HashMap<>();
+  		 status.put("total", userRepository.count());
+  		 status.put("wait", userRepository.countByApprovalStatus(false));
+  		 status.put("admin", userRepository.countByUserRole("ADMIN"));
+  		 return status;
+  	 }
+  	 
 }

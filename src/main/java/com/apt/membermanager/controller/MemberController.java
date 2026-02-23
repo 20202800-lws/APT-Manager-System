@@ -110,7 +110,7 @@ public class MemberController {
         }
 
         // 4. 실패: 승인 대기 중인 경우 (관리자는 프리패스)
-        if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.getApprovalStatus()) {
+        if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.isApprovalStatus()) {
             rttr.addFlashAttribute("msg", "관리자 승인 대기 중인 계정입니다. 관리사무소에 문의하세요.");
             return "redirect:/member/login";
         }

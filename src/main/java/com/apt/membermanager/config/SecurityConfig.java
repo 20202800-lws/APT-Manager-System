@@ -66,7 +66,7 @@ public class SecurityConfig {
                         // ============================================================
                         // ★ [추가됨] 비밀번호까지 다 맞췄는데 미승인 유저라면? 강제 쫓아내기!
                         // ============================================================
-                        if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.getApprovalStatus()) {
+                        if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.isApprovalStatus()) {
                             // 1. 혹시 만들어졌을지 모를 세션을 즉시 파기 (강제 로그아웃)
                             request.getSession().invalidate();
                             // 2. 미승인 에러 메시지 달고 로그인 창으로 다시 튕겨내기

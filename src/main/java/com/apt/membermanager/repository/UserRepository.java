@@ -2,6 +2,8 @@ package com.apt.membermanager.repository;
 
 import com.apt.membermanager.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, String> {
@@ -12,4 +14,12 @@ public interface UserRepository extends JpaRepository<User, String> {
     
     // ★ [추가] 아이디가 존재하는지(중복인지) true/false로 반환
     boolean existsByUserId(String userId);
+    
+    List<User>findAll();
+    
+    long count();
+    
+    long countByApprovalStatus(boolean approvalStatus);
+    
+    long countByUserRole(String userRole);
 }

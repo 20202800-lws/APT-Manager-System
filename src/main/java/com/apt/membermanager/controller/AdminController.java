@@ -1,14 +1,30 @@
 package com.apt.membermanager.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.apt.membermanager.beans.MemberBean;
+import com.apt.membermanager.service.MemberService;
+
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
-    // 1. 관리자 메인 대시보드
+	private final MemberService memberService;
+	
+	
+	
+    public AdminController(MemberService memberService) {
+		this.memberService = memberService;
+	}
+
+	// 1. 관리자 메인 대시보드
     @GetMapping("/main")
     public String main() { 
         return "admin/main"; 
@@ -16,7 +32,13 @@ public class AdminController {
 
     // 2. 입주민(회원) 관리
     @GetMapping("/member_list")
-    public String memberList() { 
+    public String memberList(Model model) { 
+    	List<MemberBean> memberBean = memberService.getAllMember();
+		Map<String, Long> status = memberService.getMemberStatus();
+    	
+    	model.addAttribute("memberBean",memberBean);
+		model.addAttribute("stats",status);
+    	
         return "admin/member_list"; 
     }
 
