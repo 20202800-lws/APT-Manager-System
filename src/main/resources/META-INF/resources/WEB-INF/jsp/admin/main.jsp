@@ -63,7 +63,7 @@
             <div class="dashboard-col content-box">
                 <div class="section-header">
                     <h3 class="section-title">📢 최근 접수된 민원</h3>
-                    <a href="<c:url value='/admin/minwon/list'/>" class="btn btn-secondary btn-xs">더보기 +</a>
+                    <a href="<c:url value='/admin/comp_manage'/>" class="btn btn-secondary btn-xs">더보기 +</a>
                 </div>
                 <table class="admin-table">
                     <colgroup>
@@ -86,7 +86,7 @@
             <div class="dashboard-col content-box">
                 <div class="section-header">
                     <h3 class="section-title">👤 입주 승인 대기</h3>
-                    <a href="<c:url value='/admin/member/list'/>" class="btn btn-secondary btn-xs">관리 이동 <i class="fa-solid fa-arrow-right"></i></a>
+                    <a href="<c:url value='/admin/member_list'/>" class="btn btn-secondary btn-xs">관리 이동 <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
                 <table class="admin-table">
                     <colgroup>
@@ -152,4 +152,4 @@
 <script src="<c:url value='/resources/js/admin/dashboard.js'/>"></script>
 
 </body>
-</html>
+  </html>
