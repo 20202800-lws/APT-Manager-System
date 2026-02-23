@@ -5,24 +5,18 @@
 <head>
     <meta charset="UTF-8">
     <title>세대안내 | APARTNERS</title>
-   <!-- <link rel="stylesheet" href="${pageContext.request.contextPath}/css/intro.css">-->
-
-	<link rel="stylesheet" href="css/intro.css">
-	<link rel="stylesheet" href="/css/layout.css">
-	</head>
+    <link rel="stylesheet" href="/css/intro.css">
+    <link rel="stylesheet" href="/css/layout.css">
+</head>
 <body>
-	<!--header sub로 바꾸기!(이미지도 완성되면)-->
-	<jsp:include page="../layout/header_auth.jsp" />
+    <jsp:include page="../layout/header_intro.jsp">
+        <jsp:param name="pageTitle" value="세대안내" />
+    </jsp:include>
 	
     <div class="container">
-        <aside class="sidebar">
-            <h2>아파트 소개</h2>
-            <ul class="lnb">
-                <li onclick="location.href='layout.jsp'">단지배치도</li>
-                <li class="active" onclick="location.href='guide.jsp'">세대안내</li>
-                <li onclick="location.href='floor_plan.jsp'">평면도</li>
-            </ul>
-        </aside>
+		<jsp:include page="../layout/sidebar_intro.jsp">
+		    <jsp:param name="activeMenu" value="guide" />
+		</jsp:include>
 
         <main class="content-area">
             <section id="guide" class="tab-content active">
@@ -37,8 +31,8 @@
         </main>
     </div>
 	
-	<jsp:include page="../layout/footer.jsp" />
+    <jsp:include page="../layout/footer.jsp" />
 
-	<script src="intro.js"></script>
+    <script src="/js/intro.js"></script>
 </body>
 </html>

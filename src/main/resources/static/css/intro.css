@@ -2,79 +2,164 @@
 
 
 :root {
-    --primary-color: #1a0b2e;
-    --accent-color: #d4af37;
-    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+	--primary-color: #1a0b2e;
+	--accent-color: #d4af37;
+	--transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; list-style: none; text-decoration: none; font-family: 'Pretendard', sans-serif; }
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	list-style: none;
+	text-decoration: none;
+	font-family: 'Pretendard', sans-serif;
+}
 
 /* --- 헤더 스타일 (기존 유지) --- */
-.logo { font-size: 26px; font-weight: 800; cursor: pointer; color: white; }
-.nav-container { display: flex; gap: 40px; }
-.nav-column > a { color: white; font-weight: 600; font-size: 17px; display: block; margin-bottom: 30px; }
-.sub-menu { opacity: 0; visibility: hidden; transition: 0.3s; }
-header:hover .sub-menu { opacity: 1; visibility: visible; }
-.sub-menu li { margin-bottom: 12px; }
-.sub-menu li a { color: rgba(255,255,255,0.7); font-size: 14px; }
-.sub-menu li a:hover { color: var(--accent-color); }
+.logo {
+	font-size: 26px;
+	font-weight: 800;
+	cursor: pointer;
+	color: white;
+}
+
+.nav-container {
+	display: flex;
+	gap: 40px;
+}
+
+.nav-column>a {
+	color: white;
+	font-weight: 600;
+	font-size: 17px;
+	display: block;
+	margin-bottom: 30px;
+}
+
+.sub-menu {
+	opacity: 0;
+	visibility: hidden;
+	transition: 0.3s;
+}
+
+header:hover .sub-menu {
+	opacity: 1;
+	visibility: visible;
+}
+
+.sub-menu li {
+	margin-bottom: 12px;
+}
+
+.sub-menu li a {
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 14px;
+}
+
+.sub-menu li a:hover {
+	color: var(--accent-color);
+}
 
 /* --- 레이아웃 --- */
-.container { max-width: 1200px; margin: 0 auto; padding: 80px 20px; display: flex; gap: 60px; }
-.sidebar { width: 200px; flex-shrink: 0; }
-.sidebar h2 { font-size: 28px; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-
-/* 사이드바 메뉴(LNB) 수정: 클릭 시 페이지 이동이므로 hover 효과 강화 */
-.lnb li { padding: 15px 20px; cursor: pointer; font-weight: 600; color: #666; transition: 0.3s; border-radius: 5px; margin-bottom: 5px; }
-.lnb li:hover { background: #f0f0f0; color: var(--primary-color); }
-/* 현재 활성화된 페이지 표시 */
-.lnb li.active { background: var(--primary-color) !important; color: #fff !important; }
-
-.content-area { flex: 1; }
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 80px 20px;
+	display: flex;
+	gap: 60px;
+}
 
 /* --- 콘텐츠 영역 수정 --- */
 /* 파일이 분리되었으므로, 각 파일의 메인 콘텐츠는 항상 보여야 함 */
-.tab-content { 
-    display: none; 
-}
-/* 클래스에 active가 붙어있으면 보이게 설정 */
-.tab-content.active { 
-    display: block !important; 
-    animation: fadeIn 0.5s forwards; 
+.tab-content {
+	display: none;
 }
 
-.content-header { margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-.content-header h3 { font-size: 24px; color: #333; margin-bottom: 10px; }
-.content-header p { color: #888; font-size: 15px; }
+/* 클래스에 active가 붙어있으면 보이게 설정 */
+.tab-content.active {
+	display: block !important;
+	animation: fadeIn 0.5s forwards;
+}
+
+.content-header {
+	margin-bottom: 30px;
+	border-bottom: 1px solid #eee;
+	padding-bottom: 15px;
+}
+
+.content-header h3 {
+	font-size: 24px;
+	color: #333;
+	margin-bottom: 10px;
+}
+
+.content-header p {
+	color: #888;
+	font-size: 15px;
+}
 
 /* 평면도 타입 선택 버튼 */
-.plan-type-selector { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-.type-btn { 
-    padding: 10px 25px; 
-    border: 1px solid #ddd; 
-    background: #fff; 
-    cursor: pointer; 
-    font-weight: 700; 
-    transition: 0.2s;
-    border-radius: 4px;
+.plan-type-selector {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 20px;
+	flex-wrap: wrap;
 }
-.type-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
-.type-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+
+.type-btn {
+	padding: 10px 25px;
+	border: 1px solid #ddd;
+	background: #fff;
+	cursor: pointer;
+	font-weight: 700;
+	transition: 0.2s;
+	border-radius: 4px;
+}
+
+.type-btn:hover {
+	border-color: var(--primary-color);
+	color: var(--primary-color);
+}
+
+.type-btn.active {
+	background: var(--primary-color);
+	color: #fff;
+	border-color: var(--primary-color);
+}
 
 /* 이미지 박스 */
-.img-box { 
-    padding: 40px 20px; 
-    background: #fff; 
-    border: 1px solid #eee; 
-    text-align: center; 
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+.img-box {
+	padding: 40px 20px;
+	background: #fff;
+	border: 1px solid #eee;
+	text-align: center;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
-.img-box img { max-width: 100%; height: auto; border-radius: 5px; margin-bottom: 20px; }
-.img-box h4 { font-size: 20px; color: var(--primary-color); font-weight: 700; }
+
+.img-box img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 5px;
+	margin-bottom: 20px;
+}
+
+.img-box h4 {
+	font-size: 20px;
+	color: var(--primary-color);
+	font-weight: 700;
+}
 
 /* 애니메이션 */
-@keyframes fadeIn { 
-    from { opacity: 0; transform: translateY(15px); } 
-    to { opacity: 1; transform: translateY(0); } 
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(15px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }

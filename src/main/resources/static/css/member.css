@@ -23,18 +23,12 @@ header:hover {
 	background-color: #f5f6f8;
 }
 
-/* [3] 로그인 박스 (★ 여기가 커졌습니다!) */
+/* [3] 로그인 박스 */
 .login-box {
 	width: 100%;
-
-	/* [수정] 380px -> 500px (훨씬 넉넉하게!) */
 	max-width: 500px;
-
 	background: white;
-
-	/* [수정] 내부 여백도 50px -> 60px 50px로 늘려서 시원하게 */
 	padding: 60px 50px;
-
 	border-radius: 20px;
 	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 	text-align: center;
@@ -44,7 +38,6 @@ header:hover {
 /* 상단 텍스트 */
 .login-header h2 {
 	font-size: 34px;
-	/* [수정] 박스가 커진 만큼 글씨도 살짝 키움 */
 	font-weight: 700;
 	color: #1a0b2e;
 	margin-bottom: 12px;
@@ -62,19 +55,16 @@ header:hover {
 .input-group {
 	width: 100%;
 	margin-bottom: 15px;
-	/* 간격 살짝 늘림 */
 	text-align: left;
 }
 
 .input-group input {
 	width: 100%;
 	height: 52px;
-	/* [수정] 높이도 2px 더 키워서 클릭하기 쉽게 */
 	padding: 0 15px;
 	border: 1px solid #ddd;
 	border-radius: 6px;
 	font-size: 16px;
-	/* 글씨 크기 1px 업 */
 	outline: none;
 	background: #fcfcfc;
 	transition: 0.3s;
@@ -118,14 +108,12 @@ header:hover {
 	display: flex;
 	flex-direction: column;
 	gap: 15px;
-	/* 버튼 사이 간격 늘림 */
 }
 
 /* 로그인 버튼 */
 .btn-login {
 	width: 100%;
 	height: 60px;
-	/* 높이 유지 (충분히 큼) */
 	background: #1a0b2e;
 	color: white;
 	border: none;
@@ -168,12 +156,11 @@ header:hover {
 }
 
 
-/* --- member.css 하단 수정 (튀어나감 방지 완벽 해결판) --- */
+/* --- 회원가입 전용 스타일 --- */
 
 /* [회원가입] 박스 너비 */
 .signup-box-width {
 	max-width: 500px !important;
-	/* 너무 넓지 않게 적당히 조절 */
 }
 
 /* 라벨 스타일 */
@@ -186,33 +173,26 @@ header:hover {
 	color: #333;
 }
 
-/* [핵심] 가로 배치 플렉스 박스 */
+/* 가로 배치 플렉스 박스 */
 .input-flex {
 	display: flex;
 	gap: 8px;
-	/* 간격을 10px -> 8px로 살짝 줄여서 공간 확보 */
 	align-items: center;
 	width: 100%;
 	margin-bottom: 15px;
 	box-sizing: border-box;
-	/* 부모도 박스 사이즈 계산 포함 */
 }
 
-/* .input-flex 안의 input 공통 설정 */
 .input-flex input {
 	flex: 1;
-	/* 남은 공간을 공평하게 나눠 가짐 */
 	min-width: 0;
-	/* ★ 핵심: 내용이 많아도 튀어나가지 않게 강제 축소 허용 */
 	height: 50px;
 	padding: 0 10px;
-	/* 패딩을 조금 줄여서 내부 공간 확보 */
 	border: 1px solid #ddd;
 	border-radius: 6px;
 	outline: none;
 	transition: 0.3s;
 	box-sizing: border-box;
-	/* 테두리 포함 크기 계산 */
 	background: #fcfcfc;
 }
 
@@ -224,17 +204,13 @@ header:hover {
 /* [휴대전화 전용] */
 .phone-group input {
 	text-align: center;
-	/* 숫자 가운데 정렬 */
 	padding: 0 5px;
-	/* 패딩 최소화 */
 }
 
 /* 중복확인 버튼 */
 .btn-check {
 	width: 100px;
-	/* 고정 너비 */
 	flex-shrink: 0;
-	/* ★ 절대 줄어들지 않게 고정 */
 	height: 50px;
 	background: #5a4b6e;
 	color: white;
@@ -255,10 +231,9 @@ header:hover {
 	font-weight: bold;
 	color: #bbb;
 	flex-shrink: 0;
-	/* 줄어들지 않음 */
 }
 
-/* 안내 문구 & 약관 등 나머지 그대로 유지... */
+/* 안내 문구 & 약관 */
 .info-text {
 	font-size: 13px;
 	color: #888;
@@ -287,18 +262,17 @@ header:hover {
 	flex-shrink: 0;
 }
 
-<<<<<<< HEAD
 /* =========================================
-   회원가입 폼 - 공통 Select 박스 스타일
+   [6] 회원가입 폼 - 공통 Select 박스 스타일 (완벽 해결!)
 ========================================= */
-select {
+select, .genderDigit {
 	width: 100%;
 	height: 50px;
 	padding: 0 15px;
 	border: 1px solid #ddd;
 	border-radius: 5px;
-	font-family: 'Pretendard', sans-serif;
-	font-size: 15px;
+	font-family: inherit; /* 입력창과 폰트 통일 */
+	font-size: 16px; /* 입력창과 동일한 사이즈로 픽스! */
 	color: #333;
 	background-color: #fff;
 	appearance: none;
@@ -307,6 +281,7 @@ select {
 	background-position: right 15px center;
 	background-size: 16px;
 }
-=======
-/*아이디 / 비밀번호 찾기*/
->>>>>>> refs/remotes/origin/mypage
+
+/* =========================================
+   [7] 아이디 / 비밀번호 찾기 (작업 대기 중)
+========================================= */
