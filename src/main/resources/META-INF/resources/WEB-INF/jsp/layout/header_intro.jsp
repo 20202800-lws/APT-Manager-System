@@ -18,12 +18,12 @@
         </div>
         
         <div class="nav-column">
-            <a href="/board/free_list">게시판</a>
+            <a href="/board/free">게시판</a>
             <ul class="sub-menu">
-                <li><a href="/board/free_list">자유게시판</a></li>
-                <li><a href="/board/anon_list">익명게시판</a></li>
-                <li><a href="/board/comp_list">민원게시판</a></li>
-                <li><a href="/daycare/notice_list">어린이집</a></li>
+                <li><a href="/board/free">자유게시판</a></li>
+                <li><a href="/board/anon">익명게시판</a></li>
+                <li><a href="/board/comp">민원게시판</a></li>
+                <li><a href="/daycare/notice">어린이집</a></li>
             </ul>
         </div>
         
