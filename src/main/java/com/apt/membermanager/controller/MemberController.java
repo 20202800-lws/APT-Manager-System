@@ -55,13 +55,14 @@ public class MemberController {
         return "member/signup";
     }
 
-    // ==========================
+ // ==========================
     // 2. 기능 처리 (POST)
     // ==========================
 
     @PostMapping("/signup")
     public String signup(@Valid @ModelAttribute("userSignupDto") UserSignupDto userSignupDto,
-                         BindingResult bindingResult) {
+                         BindingResult bindingResult,
+                         RedirectAttributes rttr) { // ★ 알림 메시지를 전달할 RedirectAttributes 추가!
         
         log.info("회원가입 요청: {}", userSignupDto);
         
@@ -75,11 +76,15 @@ public class MemberController {
             memberService.signup(userSignupDto); 
         } catch (RuntimeException e) {
             log.error("가입 실패: {}", e.getMessage());
-            return "redirect:/member/signup?error"; 
+            rttr.addFlashAttribute("msg", "회원가입 처리 중 오류가 발생했습니다.");
+            return "redirect:/member/signup"; 
         }
 
         log.info("회원가입 성공: {}", userSignupDto.getUserId());
-        return "redirect:/member/login"; 
+        
+        // ★ 핵심 로직: 성공 알림 메시지를 일회성으로 담아서 홈("/")으로 보냅니다.
+        rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다! 관리자 승인 후 로그인 및 이용이 가능합니다.");
+        return "redirect:/"; // 로그인 페이지가 아닌 홈으로 이동!
     }
 
     // ★ [수정됨] 선배님의 디테일한 로그인 제어 + 백엔드의 암호화 로직 결합!

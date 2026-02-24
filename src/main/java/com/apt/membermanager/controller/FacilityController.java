@@ -90,4 +90,34 @@ public class FacilityController {
             return "common/alertBack";
         }
     }
+
+
+    @Controller
+    public class CommunityController {
+
+        // 스크린골프 페이지 이동
+        @RequestMapping("/facility/golf")
+        public String goGolf() {
+            return "/facility/golf"; // views 폴더 안의 golf.jsp를 찾아감
+        }
+
+        // 헬스장 페이지 이동
+        @RequestMapping("/gym")
+        public String goGym() {
+            return "gym"; // views 폴더 안의 gym.jsp를 찾아감
+        }
+
+        // 수영장 페이지 이동
+        @RequestMapping("/pool")
+        public String goPool() {
+            return "pool"; // views 폴더 안의 pool.jsp를 찾아감
+        }
+
+        // 게스트하우스 페이지 이동
+        @RequestMapping("/guest")
+        public String goGuest() {
+            return "guest"; // views 폴더 안의 guest.jsp를 찾아감
+        }
+    }
+
 }

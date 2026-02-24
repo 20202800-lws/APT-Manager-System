@@ -1,28 +1,20 @@
 /* =========================================
    민원 접수 현황 (Admin Complaint Logic)
-   Refactored based on ERD: COMPLAINT Table
+   Refactored based on ERD: COMPLAINT Table (데이터 연동 및 페이징)
    ========================================= */
 
 const complaintManager = (function() {
 
-    // 1. Mock Data (ERD Mapping Applied)
-    // [Change Log]
-    // complaintNo -> compId
-    // categoryCode -> category
-    // writerName -> userName (Mapped to USERS.user_name)
-    // complaintStatus -> compStatus
-    // replyContent -> reply
-    let complaintList = [
-        { compId: 1, category: 'FACILITY', title: '지하주차장 누수', content: '물 떨어짐', userName: '김철수(105-1204)', regDate: '2024-02-04', compStatus: 'PENDING', reply: '' },
-        { compId: 2, category: 'NOISE', title: '층간소음 문의', content: '너무 시끄러움', userName: '이영희(101-502)', regDate: '2024-02-04', compStatus: 'PROCESSING', reply: '전달 완료' },
-        { compId: 3, category: 'ETC', title: '헬스장 건의', content: '시간 조정 요청', userName: '박민수(103-201)', regDate: '2024-02-03', compStatus: 'COMPLETED', reply: '검토 예정' },
-        { compId: 4, category: 'PARKING', title: '불법 주차', content: '외부 차량', userName: '최지훈(102-101)', regDate: '2024-02-02', compStatus: 'PENDING', reply: '' },
-        { compId: 5, category: 'FACILITY', title: '현관문 고장', content: '힌지 파손', userName: '정수진(102-305)', regDate: '2024-02-01', compStatus: 'COMPLETED', reply: '수리 완료' }
-    ];
+    // 1. Data Initialization (JSP에서 넘겨받은 전역 데이터 사용)
+    let complaintList = window.globalComplaintList || [];
+
+    // === 페이징 관련 변수 ===
+    let currentPage = 1;
+    const rowsPerPage = 10;
 
     document.addEventListener('DOMContentLoaded', () => {
         updateStats();
-        renderTable(complaintList);
+        searchTable(false); // 초기 렌더링
         
         // Modal Outside Click Close
         const modal = document.getElementById('complaintModal');
@@ -40,28 +32,26 @@ const complaintManager = (function() {
             if(el) el.innerHTML = `${count}<span class="unit">건</span>`;
         };
 
-        // [Mapping Change] complaintStatus -> compStatus
         setHtml('statPendingCount', complaintList.filter(d => d.compStatus === 'PENDING').length);
         setHtml('statProcessingCount', complaintList.filter(d => d.compStatus === 'PROCESSING').length);
         setHtml('statCompletedCount', complaintList.filter(d => d.compStatus === 'COMPLETED').length);
         setHtml('statTotalCount', complaintList.length);
     }
 
-    function searchTable() {
+    // === 페이징 유지를 위한 파라미터 추가 ===
+    function searchTable(isPageMove = false) {
+        if (!isPageMove) currentPage = 1;
+
         const categoryVal = document.getElementById('categoryFilter').value;
         const statusVal = document.getElementById('statusFilter').value;
         const keyword = document.getElementById('keyword').value.toLowerCase().trim();
 
         const filtered = complaintList.filter(item => {
-            // [Mapping Change] categoryCode -> category
             if (categoryVal && item.category !== categoryVal) return false;
-            
-            // [Mapping Change] complaintStatus -> compStatus
             if (statusVal && item.compStatus !== statusVal) return false;
             
             if (keyword) {
                 const matchTitle = item.title.toLowerCase().includes(keyword);
-                // [Mapping Change] writerName -> userName
                 const matchUser = item.userName.toLowerCase().includes(keyword);
                 if (!matchTitle && !matchUser) return false;
             }
@@ -71,18 +61,26 @@ const complaintManager = (function() {
         renderTable(filtered);
     }
 
+    // === 데이터 페이징 자르기 추가 ===
     function renderTable(data) {
         const tbody = document.getElementById('complaintTableBody');
         if (data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="padding:40px; text-align:center; color:#999;">데이터가 없습니다.</td></tr>';
+            renderPagination(0);
             return;
         }
 
-        tbody.innerHTML = data.map(item => {
+        // 페이징 계산
+        const totalPages = Math.ceil(data.length / rowsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
+
+        tbody.innerHTML = paginatedData.map(item => {
             let catName = '기타';
             let catClass = 'badge-gray';
             
-            // [Mapping Change] categoryCode -> category
             switch(item.category) {
                 case 'FACILITY': catName = '시설보수'; catClass = 'badge-red'; break;
                 case 'NOISE': catName = '층간소음'; catClass = 'badge-blue'; break;
@@ -91,12 +89,10 @@ const complaintManager = (function() {
             }
 
             let statusBadge = '';
-            // [Mapping Change] complaintStatus -> compStatus
             if(item.compStatus === 'PENDING') statusBadge = '<span class="badge badge-gray">접수</span>';
             else if(item.compStatus === 'PROCESSING') statusBadge = '<span class="badge badge-blue">진행중</span>';
             else if(item.compStatus === 'COMPLETED') statusBadge = '<span class="badge badge-green">완료</span>';
 
-            // [Mapping Change] complaintNo -> compId, writerName -> userName
             return `
                 <tr>
                     <td style="color:#666;">${item.compId}</td>
@@ -116,68 +112,90 @@ const complaintManager = (function() {
                 </tr>
             `;
         }).join('');
+
+        renderPagination(data.length);
+    }
+
+    // === 하단 페이징 버튼 생성 함수 ===
+    function renderPagination(totalCount) {
+        const container = document.getElementById('paginationWrapper');
+        if (!container) return;
+
+        // ★ 수정: 데이터가 0개일 때만 숨기고, 1페이지면 [1] 버튼 표시 유지
+        if (totalCount === 0) {
+            container.innerHTML = ''; 
+            return; 
+        }
+
+        const totalPages = Math.ceil(totalCount / rowsPerPage);
+
+        let html = `<button class="btn btn-secondary btn-xs" ${currentPage === 1 ? 'disabled' : `onclick="complaintManager.goToPage(${currentPage - 1})"`}>&lt;</button> `;
+
+        for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? 'btn-primary' : 'btn-secondary';
+            html += `<button class="btn ${activeClass} btn-xs" onclick="complaintManager.goToPage(${i})">${i}</button> `;
+        }
+
+        html += `<button class="btn btn-secondary btn-xs" ${currentPage === totalPages ? 'disabled' : `onclick="complaintManager.goToPage(${currentPage + 1})"`}>&gt;</button>`;
+        
+        container.innerHTML = html;
+    }
+
+    // === 페이지 이동 함수 ===
+    function goToPage(page) {
+        currentPage = page;
+        searchTable(true);
     }
 
     /* =========================================
        3. Modal Logic
        ========================================= */
-    const modal = document.getElementById('complaintModal');
-
     function openModal(id) {
-        // [Mapping Change] complaintNo -> compId
         const item = complaintList.find(d => d.compId === id);
         if(!item) return;
 
         const catMap = { 'FACILITY': '시설보수', 'NOISE': '층간소음', 'PARKING': '주차문제', 'ETC': '기타' };
 
-        // [Mapping Change] Binding to Modal Inputs
-        document.getElementById('targetCompId').value = item.compId; // Changed ID
+        document.getElementById('targetCompId').value = item.compId; 
         document.getElementById('modalCategory').innerText = catMap[item.category] || item.category;
-        document.getElementById('modalUserName').innerText = item.userName; // Changed ID
+        document.getElementById('modalUserName').innerText = item.userName; 
         document.getElementById('modalRegDate').innerText = item.regDate;
         document.getElementById('modalContent').innerText = item.content;
         
-        // [Mapping Change] replyContent -> reply, complaintStatus -> compStatus
         document.getElementById('modalReply').value = item.reply || ''; 
         document.getElementById('modalCompStatus').value = item.compStatus;
 
-        if(modal) modal.classList.add('active');
+        const modal = document.getElementById('complaintModal');
+        // ★ 수정: admin.css 표준 모달 방식으로 변경
+        if(modal) modal.style.display = 'flex';
     }
 
     function closeModal() {
-        if(modal) modal.classList.remove('active');
+        const modal = document.getElementById('complaintModal');
+        // ★ 수정: admin.css 표준 모달 방식으로 변경
+        if(modal) modal.style.display = 'none';
     }
 
     function saveComplaint() {
-        // [Mapping Change] Collecting Data
         const id = parseInt(document.getElementById('targetCompId').value);
         const replyText = document.getElementById('modalReply').value;
         const statusText = document.getElementById('modalCompStatus').value;
         
         const item = complaintList.find(d => d.compId === id);
         if(item) {
-            // [Mapping Change] Update Object
+            // [실제 연동 시 여기서 AJAX 요청 전송]
             item.reply = replyText;
             item.compStatus = statusText;
-
-            /* // TODO: Server-side fetch example (Mapping check)
-            fetch('/admin/complaint/update', {
-                method: 'POST',
-                body: JSON.stringify({
-                    compId: id,         // Matches ERD comp_id
-                    reply: replyText,   // Matches ERD reply
-                    compStatus: statusText // Matches ERD comp_status
-                })
-            });
-            */
             
-            alert("저장되었습니다.");
+            alert("답변 및 상태가 저장되었습니다.");
             closeModal();
             updateStats();
-            searchTable(); 
+            searchTable(true); // 저장 후 현재 페이지 유지
         }
     }
 
-    return { openModal, closeModal, saveComplaint, searchTable };
+    return { 
+        openModal, closeModal, saveComplaint, searchTable, goToPage 
+    };
 
 })();
