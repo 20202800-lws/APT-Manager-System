@@ -41,7 +41,7 @@
             <a href="/parking/my_car">주차시설</a>
             <ul class="sub-menu">
                 <li><a href="/parking/my_car">세대차량 등록</a></li>
-                <li><a href="/parking/visit_book">방문차량 등록</a></li>
+                <li><a href="/parking/visit_car">방문차량 등록</a></li>
             </ul>
         </div>
         

@@ -28,6 +28,7 @@ public class ParkingService {
 
     // 내 차 목록 보기
     public List<Vehicle> getMyCarList(String userId) {
+        // (참고) 최신순으로 보고 싶다면 레포지토리에 findByUser_UserIdOrderByRegDateDesc 추가 추천!
         return vehicleRepository.findByUser_UserId(userId);
     }
 
@@ -37,7 +38,12 @@ public class ParkingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("회원 정보가 없습니다."));
 
-        // [검증] 이미 등록된 차량인지 확인
+        // [방어 로직 1] 전화번호 하이픈 포함 형식 검증 (프론트에서 뚫려도 서버에서 차단)
+        if (phone == null || !phone.matches("^\\d{2,3}-\\d{3,4}-\\d{4}$")) {
+            throw new RuntimeException("전화번호 형식이 올바르지 않습니다. (예: 010-1234-5678)");
+        }
+
+        // [방어 로직 2] 이미 등록된 차량인지 확인
         if (vehicleRepository.existsById(carNumber)) {
             throw new RuntimeException("이미 등록된 차량 번호입니다.");
         }
@@ -46,6 +52,9 @@ public class ParkingService {
         vehicle.setCarNumber(carNumber);
         vehicle.setUser(user); // 소유주 연결
         vehicle.setPhone(phone); // 비상 연락처
+        
+        // ★ 관리자 승인 로직을 위해 무조건 '승인대기' 상태로 저장
+        vehicle.setStatus("승인대기"); 
 
         vehicleRepository.save(vehicle);
     }
@@ -71,10 +80,10 @@ public class ParkingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("회원 정보가 없습니다."));
 
-        // 날짜 변환 (String "2026-02-05" -> LocalDate)
-        LocalDate visitDate = LocalDate.parse(dto.getVisitDate());
+        // DTO 최적화로 인해 파싱 없이 바로 LocalDate로 받음
+        LocalDate visitDate = dto.getVisitDate();
 
-        // [검증] 과거 날짜 예약 불가
+        // [방어 로직 3] 과거 날짜 예약 불가
         if (visitDate.isBefore(LocalDate.now())) {
             throw new RuntimeException("지난 날짜는 예약할 수 없습니다.");
         }
@@ -84,7 +93,9 @@ public class ParkingService {
         visit.setCarNumber(dto.getCarNumber());
         visit.setVisitPurpose(dto.getVisitPurpose()); // "친척 방문", "AS 기사님" 등
         visit.setVisitDate(visitDate);
-        visit.setVisitStatus("WAIT"); // 초기 상태는 대기중 (관리자 승인 필요 시 변경 가능)
+        
+        // ★ 무분별한 방문을 막기 위해 초기 상태를 '승인대기'로 설정 (관리자가 추후 승인)
+        visit.setVisitStatus("승인대기"); 
 
         visitVehicleRepository.save(visit);
     }
