@@ -169,7 +169,7 @@ CREATE TABLE DAYCARE_NOTICE (
     FOREIGN KEY (writer_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
--- 14. 차량 정보 (VEHICLE) ★ status 컬럼 통합 완료
+-- 14. 차량 정보 (VEHICLE)
 CREATE TABLE VEHICLE (
     car_number VARCHAR(20) PRIMARY KEY COMMENT '차량번호',
     user_id VARCHAR(50) COMMENT '소유주',
@@ -191,20 +191,17 @@ CREATE TABLE VISIT_VEHICLE (
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- 16. 시설 예약 (FACILITY_RES)
+-- 16. 시설 예약 (FACILITY_RES) - ★ 최신 유연한 구조로 교체 완료
 CREATE TABLE FACILITY_RES (
     res_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '예약번호',
     user_id VARCHAR(50) COMMENT '예약자',
-    fac_id VARCHAR(20) COMMENT '시설ID',
-    res_date DATE COMMENT '예약날짜',
-    start_time INT COMMENT '시작시간',
-    end_time INT COMMENT '종료시간',
-    people_count INT COMMENT '인원',
-    total_price INT COMMENT '금액',
-    res_status VARCHAR(20) COMMENT '상태',
+    facility_type VARCHAR(50) COMMENT '시설 종류(수영장, 스크린골프 등)',
+    detail_info VARCHAR(200) COMMENT '상세 내역(3번 타석, A타입 등)',
+    reserve_date VARCHAR(100) COMMENT '이용 날짜 및 기간',
+    price VARCHAR(50) COMMENT '결제 금액',
+    res_status VARCHAR(20) DEFAULT '예약완료' COMMENT '상태',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '신청일',
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL,
-    FOREIGN KEY (fac_id) REFERENCES FACILITY(fac_id) ON DELETE SET NULL
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
 -- 17. 프로그램 신청 (PROGRAM_APPLY)
@@ -240,24 +237,17 @@ CREATE TABLE NOTIFICATIONS (
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- ==========================================
 -- 20. 시스템 활동 로그 (SYSTEM_LOG) - 관리자 감사용
--- ==========================================
 CREATE TABLE SYSTEM_LOG (
     log_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '로그번호',
     admin_id VARCHAR(50) COMMENT '처리자(관리자) ID',
-    
-    module_name VARCHAR(50) NOT NULL COMMENT '작업 메뉴 (예: 주차관리, 회원관리, 게시판 등)',
-    action_type VARCHAR(20) NOT NULL COMMENT '작업 유형 (예: APPROVE, REJECT, UPDATE, DELETE)',
-    
-    target_id VARCHAR(100) COMMENT '대상이 된 식별자 (예: 변경된 차량번호, 탈퇴된 회원ID, 삭제된 글번호 등)',
-    action_desc TEXT NOT NULL COMMENT '상세 작업 내용 (예: "12가3456 차량 승인 완료")',
-    
-    ip_address VARCHAR(50) COMMENT '처리자 접속 IP (보안 추적용)',
+    module_name VARCHAR(50) NOT NULL COMMENT '작업 메뉴',
+    action_type VARCHAR(20) NOT NULL COMMENT '작업 유형',
+    target_id VARCHAR(100) COMMENT '대상이 된 식별자',
+    action_desc TEXT NOT NULL COMMENT '상세 작업 내용',
+    ip_address VARCHAR(50) COMMENT '처리자 접속 IP',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '처리 일시',
-    
-    -- 관리자가 탈퇴하더라도 로그는 남아있어야 하므로 ON DELETE SET NULL 처리
     FOREIGN KEY (admin_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
-COMMIT;
+COMMIT;ㄴ
