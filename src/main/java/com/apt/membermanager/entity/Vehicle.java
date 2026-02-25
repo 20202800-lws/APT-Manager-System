@@ -21,6 +21,10 @@ public class Vehicle {
 
     private String phone;
 
+    // ★ 추가: 세대 차량 승인 상태 (승인대기, 등록완료, 반려 등)
+    @Column(length = 20)
+    private String status; 
+
     @CreationTimestamp
     private LocalDateTime regDate;
 }

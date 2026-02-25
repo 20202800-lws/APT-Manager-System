@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>세대 차량 관리 | APARTNERS</title>
+    <title>방문 차량 관리 | APARTNERS</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/layout.css">
@@ -14,7 +14,7 @@
 <body>
     
     <jsp:include page="../layout/header_sub.jsp">
-        <jsp:param name="pageTitle" value="세대 차량 관리" />
+        <jsp:param name="pageTitle" value="방문 차량 관리" />
     </jsp:include>
     
     <div class="page-wrapper" style="min-height: calc(100vh - 80px);">
@@ -23,7 +23,7 @@
 
         <main class="content-area">
             <div class="page-header">
-                <h2>세대 차량 관리</h2>
+                <h2>방문 차량 예약 및 관리</h2>
             </div>
 
             <section class="status-card">
@@ -47,36 +47,34 @@
             <section class="list-section">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
                     <div>
-                        <h3>등록 차량 관리</h3>
-                        <p style="font-size: 13px; color: var(--gray); margin-top: 5px;">* 세대당 1대 무료, 추가 차량은 3만원씩 관리비 청구</p>
+                        <h3>방문 차량 목록</h3>
+                        <p style="font-size: 13px; color: var(--danger); margin-top: 5px;">* 방문차량은 등록된 당일 자정까지만 출차가 가능합니다.</p>
                     </div>
-                    <button class="btn-submit" style="width: auto; padding: 10px 20px;" onclick="openModal()"><i class="fa-solid fa-plus"></i> 차량 등록</button>
+                    <button class="btn-submit" style="width: auto; padding: 10px 20px; background:var(--primary-color);" onclick="openModal()"><i class="fa-solid fa-plus"></i> 방문 예약</button>
                 </div>
                 <table>
                     <thead>
                         <tr>
-                            <th>구분</th><th>차량번호</th><th>소유주/세대</th><th>등록일</th><th>상태</th><th>관리</th>
+                            <th>차량번호</th><th>방문 목적</th><th>방문 예정일</th><th>상태</th><th>관리</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:choose>
-                            <c:when test="${not empty myCars}">
-                                <c:forEach var="car" items="${myCars}" varStatus="status">
+                            <c:when test="${not empty visitCars}">
+                                <c:forEach var="visit" items="${visitCars}">
                                     <tr>
-                                        <td><span class="badge badge-h" style="background:var(--primary-color); color:white; padding:3px 8px; border-radius:4px;">세대</span></td>
-                                        <td style="font-weight:700;">${car.carNumber}</td>
-                                        <td>${sessionScope.loginMember.realName}</td>
-                                        <td>${car.regDate}</td> 
-										<td style="font-weight:600; color:${car.status == '등록완료' ? 'var(--success)' : 'var(--warning)'}">
-										    ${car.status} 
-										    <span style="font-size:12px; color:var(--gray); display:block;">
-										        (${status.index == 0 ? '무료' : '30,000원'})
-										    </span>
-										</td>
+                                        <td style="font-weight:700;">${visit.carNumber}</td>
+                                        <td>${visit.visitPurpose}</td>
+                                        <td>${visit.visitDate}</td>
                                         <td>
-                                            <form action="/parking/delete" method="post" style="display:inline;" onsubmit="return confirm('이 차량을 삭제하시겠습니까?');">
-                                                <input type="hidden" name="carNumber" value="${car.carNumber}">
-                                                <button type="submit" class="btn-delete" style="border:1px solid #ddd; background:white; padding:4px 8px; border-radius:4px; cursor:pointer;">삭제</button>
+                                            <span style="font-weight:600; color: ${visit.visitStatus == '예약완료' ? '#27ae60' : '#666'};">
+                                                ${visit.visitStatus}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <form action="/parking/visit/cancel" method="post" style="display:inline;" onsubmit="return confirm('이 예약을 취소하시겠습니까?');">
+                                                <input type="hidden" name="visitId" value="${visit.visitId}">
+                                                <button type="submit" class="btn-delete" style="border:1px solid #ddd; background:white; padding:4px 8px; border-radius:4px; cursor:pointer;">예약 취소</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -84,7 +82,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="6" style="text-align:center; padding:30px; color:#999;">등록된 차량이 없습니다.</td>
+                                    <td colspan="5" style="text-align:center; padding:30px; color:#999;">예약된 방문 차량이 없습니다.</td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>
@@ -97,19 +95,23 @@
     <div class="modal-overlay" id="parkingModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">세대 차량 등록</h2>
+                <h2 id="modalTitle">방문 차량 예약</h2>
                 <button onclick="closeModal()" style="border:none; background:none; cursor:pointer; font-size:24px; color:var(--gray);">&times;</button>
             </div>
-            <form action="/parking/register" method="post">
+            <form action="/parking/visit" method="post">
                 <div class="form-group">
-                    <label class="form-label">차량번호</label>
+                    <label class="form-label">방문 차량번호</label>
                     <input type="text" class="form-input" name="carNumber" placeholder="예: 12가 3456" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">비상 연락처</label>
-                    <input type="tel" class="form-input" name="phone" placeholder="010-0000-0000" maxlength="13" required>
+                    <label class="form-label">방문 목적</label>
+                    <input type="text" class="form-input" name="visitPurpose" placeholder="예: 지인 방문, 인테리어 공사 등" required>
                 </div>
-                <button type="submit" class="btn-submit">등록하기</button>
+                <div class="form-group">
+                    <label class="form-label">방문 예정일</label>
+                    <input type="date" class="form-input" name="visitDate" required>
+                </div>
+                <button type="submit" class="btn-submit">예약하기</button>
             </form>
         </div>
     </div>
