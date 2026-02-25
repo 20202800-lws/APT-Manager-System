@@ -44,10 +44,13 @@ public class MemberBean {
 		this.userRole = userRole;
 		this.approvalStatus = approvalStatus;
 		
-		if(this.approvalStatus) {
-			this.status = "승인완료";
-		}
-		else {this.status = "승인대기";}
+		if ("ADMIN".equals(userRole)) {
+	        this.status = "ADM";
+	    } else if (this.approvalStatus) {
+	        this.status = "ACT";
+	    } else {
+	        this.status = "WAIT";
+	    }
 		
 		
 		this.joinDate = (join_date != null) ? join_date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")): null;

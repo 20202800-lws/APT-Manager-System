@@ -96,7 +96,7 @@ public class MemberService {
   		 }
   		 
   		 //입주민 탭
-  		 else if("MEMBER".equals(tab)) {
+  		 else if("ACT".equals(tab)) {
   			 status = true;
   			 exRole = "ADMIN";
   		 }

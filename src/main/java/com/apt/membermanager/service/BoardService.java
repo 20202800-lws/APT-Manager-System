@@ -56,12 +56,12 @@ public class BoardService {
     		String keyword,Pageable pageable){
     	
     	String searchKeyword = (keyword == null || keyword
-    			.trim().isEmpty()) ? "%%" : "%" + keyword.trim() + "%";
+    			.trim().isEmpty()) ? "" :keyword.trim();
     	
     	Page<Board> entitiesPage = boardRepository
     			.findByAnonymousAndTitleContaining(anonymous,searchKeyword,pageable);
     	List<BoardListBean> list = entitiesPage.getContent().stream().map(entity->{
-    		long count = commentRepository.countByBoardId(entity.getBoardId());
+    		long count = commentRepository.countByBoard_BoardId(entity.getBoardId());
     		return new BoardListBean(entity,loginId,count);
     	}).collect(Collectors.toList());
     	
@@ -77,7 +77,7 @@ public class BoardService {
 		if (currentId == null || currentId.isEmpty() || !writerId.equals(currentId)) {
 			board.setViews(board.getViews() + 1);
 		}
-		long count = commentRepository.countByBoardId(id);
+		long count = commentRepository.countByBoard_BoardId(id);
 		BoardViewBean viewBean = new BoardViewBean(board,currentId,count);
 		
 		viewBean.setPrev_id(boardRepository.findPrevId(id, board.isAnonymous()));

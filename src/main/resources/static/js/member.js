@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pw2 = document.getElementById('pw2');
     const pwMsg = document.getElementById('pwMsg');
 
-    // ★ [수정됨] 정규식: 8자 이상, 영문 + 숫자 + 특수문자 모두 포함 강제!
+    // 정규식: 8자 이상, 영문 + 숫자 + 특수문자 모두 포함 강제
     const pwRegex = /^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
 
     function validatePw() {
@@ -82,6 +82,14 @@ function checkId() {
         return;
     }
 
+    // ★ [추가됨] 아이디 정규식 검사 (영문과 숫자만 허용, 특수문자 차단)
+    const idRegex = /^[a-zA-Z0-9]+$/;
+    if (!idRegex.test(userId)) {
+        alert("아이디는 영문과 숫자만 사용할 수 있습니다. (특수문자 및 공백 제외)");
+        userIdInput.focus();
+        return;
+    }
+
     // 2. 백엔드로 통신 요청 (Fetch API)
     fetch('/member/checkId?userId=' + userId, {
         method: 'POST'
@@ -114,6 +122,15 @@ function checkId() {
 ========================================= */
 function handleSignupSubmit() {
 
+    // [방어막 0] 아이디 정규식 재확인 (제출 직전)
+    const userId = document.getElementById('userId').value.trim();
+    const idRegex = /^[a-zA-Z0-9]+$/;
+    if (!idRegex.test(userId)) {
+        alert("아이디는 영문과 숫자만 사용할 수 있습니다.");
+        document.getElementById('userId').focus();
+        return false;
+    }
+
     // [방어막 1] 아이디 중복 확인 여부 검사
     if (!isIdChecked) {
         alert("아이디 중복확인을 먼저 진행해주세요.");
@@ -124,11 +141,9 @@ function handleSignupSubmit() {
     // [방어막 2] 비밀번호 규칙 재확인
     const pw1 = document.getElementById('pw1');
     const pw2 = document.getElementById('pw2');
-    // ★ [수정됨] 여기도 영문 필수 포함 정규식으로 똑같이 맞춰줍니다.
     const pwRegex = /^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
 
     if (!pwRegex.test(pw1.value)) {
-        // 메시지도 영문 포함으로 수정
         alert("비밀번호 규칙을 확인해주세요.\n(8자 이상, 영문, 숫자, 특수문자 모두 포함)");
         pw1.focus();
         return false;
@@ -166,9 +181,6 @@ function handleSignupSubmit() {
         alert("약관에 동의해주셔야 합니다.");
         return false;
     }
-
-    // 모든 방어막 통과!
-    // alert("회원가입 신청이 완료되었습니다.\n관리자 승인 후 이용 가능합니다."); (서버 컨트롤러에서 처리하는 것이 더 깔끔하므로 주석 처리함)
 
     return true; // 폼 전송 진행!
 }

@@ -192,3 +192,159 @@ footer {
 	font-weight: 800;
 	color: var(--accent-color);
 }
+
+/* 서브 비주얼(이미지 배너) 영역 설정 */
+.sub-visual {
+    position: relative;
+    width: 100%;
+    height: 350px; /* 원하시는 이미지 높이로 조절하세요 */
+    /* ↓ 실제 사용할 아파트 배경 이미지 경로로 바꿔주세요! */
+    background-image: url('/images/intro/intro_bg.jpg'); 
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 이미지 위에 어두운 막을 씌워 흰 글씨가 잘 보이게 함 */
+.sub-visual-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4); 
+}
+
+/* 중앙 타이틀 텍스트 설정 */
+.sub-visual-text {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: white;
+}
+
+.sub-visual-text h2 {
+    font-size: 45px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* 글씨 그림자 추가 */
+}
+
+/* =========================================
+   게시판/공지사항 전용 서브 비주얼 (intro보다 더 큼)
+========================================= */
+.board-visual {
+    position: relative;
+    width: 100%;
+    /* intro(350px)보다 100px 더 넉넉하게 키움! */
+    height: 450px; 
+    /* ↓ 실제 사용할 조경/공원 배경 이미지 경로로 바꿔주세요! */
+    background-image: url('/images/board/board_bg.jpg'); 
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 글씨가 묻히지 않게 얇은 검은 막 씌우기 */
+.board-visual-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.35); 
+}
+
+/* 타이틀 텍스트 설정 */
+.board-visual-text {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: white;
+}
+
+.board-visual-text h2 {
+    /* 캡처본처럼 폰트도 조금 더 큼직하게! */
+    font-size: 50px; 
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================
+   공통 사이드바 (LNB) 통합 표준 스타일 (오리지널 미세 라운딩)
+========================================= */
+.page-wrapper {
+    display: flex;
+    gap: 50px; 
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+.sidebar {
+    width: 220px;
+    flex-shrink: 0;
+}
+
+/* 사이드바 큰 제목 */
+.sidebar h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #222;
+    text-align: left;
+    padding-bottom: 15px;
+    /* ★ 핵심 수정: 0이었던 하단 여백을 15px로 늘려서 숨통을 틔워줍니다! */
+    margin-bottom: 15px; 
+    border-bottom: 3px solid #1a0b2e; 
+}
+
+/* 메뉴 리스트 뼈대 */
+.sidebar .lnb {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* 개별 메뉴 아이템 */
+.sidebar .lnb li {
+    text-align: left;
+    padding: 16px 20px;
+    margin-bottom: 0; /* 버튼들 사이 여백 없이 딱 붙임 */
+    border-bottom: 1px solid #eee; /* 연한 가로선 */
+    font-size: 16px;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    border-radius: 6px; /* ★ 핵심: 완전 직각이 아닌 미세한 둥근 모서리 */
+    transition: all 0.2s;
+}
+
+/* 마지막 메뉴는 하단 선 제거 */
+.sidebar .lnb li:last-child {
+    border-bottom: none;
+}
+
+/* 마우스 올렸을 때 */
+.sidebar .lnb li:hover {
+    background-color: #f8f9fa;
+    color: #1a0b2e;
+}
+
+/* ★ 현재 위치 (Active) 스타일 */
+.sidebar .lnb li.active {
+    background-color: #1a0b2e; /* 메인 컬러 배경 */
+    color: #ffffff;
+    font-weight: 700;
+    border-bottom: none; /* active 시 하단 선 제거로 깔끔하게 */
+    border-radius: 6px; /* ★ 핵심: 배경색의 모서리도 부드럽게 둥글림 */
+}
+
+/* =========================================
+   공통 본문 영역 (우측 콘텐츠 확장)
+========================================= */
+.content-area {
+    flex: 1; /* 남은 우측 공간을 100% 꽉 채워서 넓게 쓰라는 마법의 코드 */
+    min-width: 0; /* 테이블이나 내용이 길어져도 레이아웃 밖으로 튀어나가지 않게 방어 */
+}

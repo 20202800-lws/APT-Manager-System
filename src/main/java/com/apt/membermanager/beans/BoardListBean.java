@@ -20,7 +20,7 @@ public class BoardListBean {
 	
 	private boolean owner;
 	
-	private String writer;
+	private String author;
 	
 	private String title;
 	
@@ -31,7 +31,15 @@ public class BoardListBean {
 	private String regDate;
 	
 	private long commentCount = 0;
+	
+	private String category;
 
+	private int reportCount = 0;
+	
+	private String postStatus;
+	
+	private String content;
+	
 	public BoardListBean(Board board, String currentId, long commentCount) {
 		super();
 		this.boardId = board.getBoardId();
@@ -41,12 +49,13 @@ public class BoardListBean {
 		this.anonymous = board.isAnonymous();
 		this.views = board.getViews();
 		this.commentCount = commentCount;
-		
+		this.content = board.getContent();
 		if(board.isAnonymous()) {
+			this.category = "SECRET";
 			if(!owner) {
-				this.writer ="익명";
-			}else this.writer="익명(나)";
-		}else this.writer=board.getUser().getRealName();
+				this.author ="익명";
+			}else this.author="익명(나)";
+		}else this.author=board.getUser().getRealName(); this.category = "FREE";
 		
 		if(board.getRegDate()!=null) {
 			if(board.getRegDate().toLocalDate().equals(LocalDate.now())) {
@@ -57,6 +66,8 @@ public class BoardListBean {
 			}
 			
 		}
+		
+		
 	}
 	
 	

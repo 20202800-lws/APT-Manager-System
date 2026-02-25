@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.SecurityFilterChain;
@@ -36,7 +37,12 @@ public class SecurityConfig {
      * * return http.build(); 
      * }
      */
-    
+	@Bean
+	public WebSecurityCustomizer webSecurityCustomizer() {
+	    // static 리소스들은 시큐리티 필터를 아예 거치지 않도록 설정
+	    return (web) -> web.ignoring().requestMatchers("/js/**", "/css/**", "/images/**", "/favicon.ico");
+	}
+	
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception { 
         http

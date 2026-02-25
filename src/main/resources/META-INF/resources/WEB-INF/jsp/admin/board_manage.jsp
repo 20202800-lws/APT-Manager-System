@@ -33,7 +33,6 @@
             <div class="stat-card border-left-success">
                 <h3>오늘의 새 글</h3>
                 <div class="number text-success" id="statTodayCount">0<span class="unit">개</span></div>
-                <div class="desc">전일 대비 <span class="text-success">▲ 10%</span></div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>신고 / 블라인드</h3>
@@ -82,15 +81,10 @@
                     </tr>
                 </thead>
                 <tbody id="boardTableBody">
-                    </tbody>
+                </tbody>
             </table>
 
-            <div style="margin-top:20px; text-align:center;">
-                <button class="btn btn-secondary btn-xs" disabled>&lt;</button>
-                <button class="btn btn-primary btn-xs">1</button>
-                <button class="btn btn-secondary btn-xs">2</button>
-                <button class="btn btn-secondary btn-xs">&gt;</button>
-            </div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
         </div>
 
     </main>
@@ -150,7 +144,27 @@
     </div>
 </div>
 
-<script src="<c:url value='/js/admin/board.js'/>"></script>
+<script>
+    window.globalBoardList = [];
+
+    <c:if test="${not empty paging.content}">
+        <c:forEach var="board" items="${paging.content}">
+            window.globalBoardList.push({
+                boardId: parseInt('${board.boardId}'),
+                category: '${board.category}',
+                title: '${board.title}',
+                userName: '${board.author}',
+                regDate: '${board.regDate}',
+                views: parseInt('${board.views}'),
+                reportCount: parseInt('${board.reportCount}'),
+                postStatus: '${board.postStatus}',
+                content: '${board.content}'
+            });
+        </c:forEach>
+    </c:if>
+</script>
+
+<script src="<c:url value='/js/admin/board_manage.js'/>"></script>
 
 </body>
 </html>

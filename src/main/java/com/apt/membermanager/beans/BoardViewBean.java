@@ -2,8 +2,10 @@ package com.apt.membermanager.beans;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import com.apt.membermanager.entity.Board;
+import com.apt.membermanager.entity.Comment;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,11 +20,11 @@ public class BoardViewBean extends BoardListBean {
 	private Long prev_id;
 	private Long next_id;
 	
-	private String content;
+	
+	private List<String> images;
 
 	public BoardViewBean(Board board, String currentId, long Count) {
 		super(board,currentId,Count);
-		this.content = board.getContent();
 	}
 	
 	

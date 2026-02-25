@@ -24,11 +24,13 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     //오늘쓴 게시글 개수
     long countByRegDateBetween(LocalDateTime start,LocalDateTime end);
     
+	Page<Board> findByTitleContaining(String searchKeyword, Pageable pageable);
+	
 	Page<Board> findByAnonymousAndTitleContaining(boolean anonymous, String searchKeyword, Pageable pageable);
 	
-	@Query("SELECT MAX(b.board_id) FROM Board b WHERE b.board_id < :id AND b.anonymous = :anonymous")
+	@Query("SELECT MAX(b.boardId) FROM Board b WHERE b.boardId < :id AND b.anonymous = :anonymous")
     Long findPrevId(@Param("id") Long id, @Param("anonymous") boolean anonymous);
 
-    @Query("SELECT MIN(b.board_id) FROM Board b WHERE b.board_id > :id AND b.anonymous = :anonymous")
+    @Query("SELECT MIN(b.boardId) FROM Board b WHERE b.boardId > :id AND b.anonymous = :anonymous")
     Long findNextId(@Param("id") Long id, @Param("anonymous") boolean anonymous);
 }
