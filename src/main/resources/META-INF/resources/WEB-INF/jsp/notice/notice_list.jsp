@@ -12,7 +12,7 @@
 <body>
 
 <jsp:include page="../layout/header_sub.jsp">
-    <jsp:param name="pageTitle" value="소식" />
+    <jsp:param name="pageTitle" value="공지사항" />
 </jsp:include>
 
 <div class="page-wrapper">
