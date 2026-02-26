@@ -8,7 +8,6 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
     <link rel="stylesheet" href="/css/layout.css">
     <link rel="stylesheet" href="/css/member.css">
-    
 </head>
 <body>
 
@@ -35,7 +34,7 @@
                 </div>
                 <div class="input-group">
                     <input type="password" id="pw2" name="userPwCheck" placeholder="비밀번호 확인" required>
-                    <span class="error-msg" id="pwMsg"></span>
+                    <span class="error-msg" id="pwMsg" style="display:block; margin-top:5px; font-size:13px;"></span>
                 </div>
 
                 <label class="input-label">성함</label>
@@ -47,10 +46,9 @@
                 <div class="input-flex">
                     <input type="text" id="birthDate" name="birthDate" placeholder="생년월일 6자리 (예: 990101)" 
                            maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
-                    
                     <span>-</span>
-                    
-                    <div style="flex: 1;"> <select id="genderDigit" name="genderDigit" required>
+                    <div style="flex: 1;"> 
+                        <select id="genderDigit" name="genderDigit" required>
                             <option value="">선택</option>
                             <option value="1">1</option>
                             <option value="2">2</option>
@@ -58,13 +56,12 @@
                             <option value="4">4</option>
                         </select>
                     </div>
-                    
                     <input type="text" value="******" disabled style="background-color: #f5f5f5; text-align: center; color: #999; border:none;">
                 </div>
 
-                <label class="input-label">이메일</label>
+                <label class="input-label">이메일 <span style="font-size: 12px; color: #888; font-weight: normal;">(선택)</span></label>
                 <div class="input-group">
-                    <input type="email" name="email" placeholder="example@apt.com (선택)">
+                    <input type="email" id="emailInput" name="email" placeholder="example@naver.com">
                 </div>
 
                 <label class="input-label">휴대전화</label>
@@ -77,7 +74,6 @@
                     <span>-</span>
                     <input type="text" id="phone3" maxlength="4" placeholder="0000" 
                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
-                    
                     <input type="hidden" id="fullPhone" name="phone">
                 </div>
 
@@ -108,5 +104,54 @@
     <script src="/js/common.js"></script>
     <script src="/js/member.js"></script>
 	
+    <script>
+        function handleSignupSubmit() {
+            // 1. 비밀번호 강도 검사
+            const pw1 = document.getElementById('pw1').value;
+            const pw2 = document.getElementById('pw2').value;
+            const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&~^])[A-Za-z\d@$!%*#?&~^]{8,}$/;
+            const pwMsg = document.getElementById('pwMsg');
+            
+            if(!pwRegex.test(pw1)) {
+                alert("비밀번호는 영문, 숫자, 특수문자를 포함하여 8자 이상이어야 합니다.");
+                document.getElementById('pw1').focus();
+                return false;
+            }
+
+            // 2. 비밀번호 일치 여부 검사
+            if(pw1 !== pw2) {
+                pwMsg.innerText = "비밀번호가 일치하지 않습니다.";
+                pwMsg.style.color = "red";
+                document.getElementById('pw2').focus();
+                return false;
+            } else {
+                pwMsg.innerText = "";
+            }
+
+            // 3. 이메일 정규식 검사 (입력된 경우에만 검사!)
+            const emailInput = document.getElementById('emailInput').value;
+            const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.(com|net|org|kr|co\.kr|go\.kr|ac\.kr)$/i;
+            if(emailInput && !emailRegex.test(emailInput)) {
+                alert("유효하지 않은 이메일 형식입니다.\n(예: example@naver.com)");
+                document.getElementById('emailInput').focus();
+                return false;
+            }
+
+            // 4. 분할된 전화번호 하나로 합치기
+            const p1 = document.getElementById('phone1').value;
+            const p2 = document.getElementById('phone2').value;
+            const p3 = document.getElementById('phone3').value;
+            
+            if(p1.length < 3 || p2.length < 3 || p3.length < 4) {
+                alert("올바른 휴대전화 번호를 모두 입력해주세요.");
+                return false;
+            }
+            
+            // 합친 번호를 hidden input(fullPhone)에 꽂아 넣고 서버로 전송!
+            document.getElementById('fullPhone').value = p1 + "-" + p2 + "-" + p3;
+
+            return true; // 모든 관문을 통과하면 전송!
+        }
+    </script>
 </body>
 </html>
