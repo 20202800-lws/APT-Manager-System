@@ -15,6 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CommunityService {
 
     private final BoardRepository boardRepository;
@@ -27,22 +28,21 @@ public class CommunityService {
 
     // 글쓰기
     @Transactional
-    public void writeBoard(String userId, BoardWriteDto dto) {
+    public Long writeBoard(String userId, BoardWriteDto dto,boolean anonymous) {
         // 1. 작성자 찾기
-        User writer = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("작성자 정보가 없습니다."));
 
         // 2. 게시글 생성
-        Board board = new Board();
-        board.setUser(writer); // 작성자 연결
-        board.setTitle(dto.getTitle());
-        board.setContent(dto.getContent());
-        board.setCategory(dto.getCategory());
-        board.setIsAnonymous(dto.getIsAnonymous());
-        board.setViews(0); // 조회수 0부터 시작
+        Board board = Board.builder()
+        		.title(dto.getTitle())
+        		.content(dto.getContent())
+        		.anonymous(anonymous)
+        		.user(user)
+        		.build();
 
         // 3. 저장
-        boardRepository.save(board);
+        return boardRepository.save(board).getBoardId();
     }
 
     // 전체 글 목록 보기 (최신순)

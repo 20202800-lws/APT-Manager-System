@@ -147,13 +147,13 @@
 <script>
     window.globalBoardList = [];
 
-    <c:if test="${not empty boardList}">
-        <c:forEach var="board" items="${boardList}">
+    <c:if test="${not empty paging.content}">
+        <c:forEach var="board" items="${paging.content}">
             window.globalBoardList.push({
                 boardId: parseInt('${board.boardId}'),
                 category: '${board.category}',
                 title: '${board.title}',
-                userName: '${board.userName}',
+                userName: '${board.author}',
                 regDate: '${board.regDate}',
                 views: parseInt('${board.views}'),
                 reportCount: parseInt('${board.reportCount}'),
@@ -164,7 +164,7 @@
     </c:if>
 </script>
 
-<script src="<c:url value='/js/admin/board.js'/>"></script>
+<script src="<c:url value='/js/admin/board_manage.js'/>"></script>
 
 </body>
 </html>

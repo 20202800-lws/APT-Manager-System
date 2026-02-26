@@ -1,13 +1,21 @@
 package com.apt.membermanager.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
+
 @Entity
-@Getter @Setter
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "BOARD")
 public class Board {
 
@@ -26,7 +34,9 @@ public class Board {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    private Integer isAnonymous; // 0: 실명, 1: 익명
+    private boolean anonymous; // 0: 실명, 1: 익명
+    
+    @Builder.Default
     private Integer views = 0;   // 조회수 초기값 0
     private String category;     // 카테고리
 

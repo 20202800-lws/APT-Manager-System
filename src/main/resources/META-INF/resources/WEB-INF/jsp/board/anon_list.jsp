@@ -32,6 +32,7 @@
                             <tr>
                                 <th>번호</th>
                                 <th>제목</th>
+								<th>작성자</th>
                                 <th>날짜</th>
                                 <th>조회수</th>
                             </tr>
@@ -56,5 +57,23 @@
 
     <jsp:include page="../layout/footer.jsp" />
     <script src="<c:url value='/js/board/board_anon.js'/>"></script>
+	<script>
+		    window.globalBoardList = [];
+
+		    <c:if test="${not empty paging.content}">
+		        <c:forEach var="board" items="${paging.content}">
+		            window.globalBoardList.push({
+		                id: `${board.boardId}`,
+		                title: `${board.title}`,
+		                author: `${board.author}`,
+		                date: `${board.regDate}`,
+		                hits: `${board.views}`
+		                
+						
+		            });
+		        </c:forEach>
+		    </c:if>
+			console.log("주입된 데이터 개수: ", window.globalBoardList.length);
+		</script>
 </body>
 </html>
