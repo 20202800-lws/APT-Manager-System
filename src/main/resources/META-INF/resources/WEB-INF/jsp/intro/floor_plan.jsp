@@ -34,8 +34,8 @@
                 </div>
 
                 <div class="img-box">
-                    <img id="planImg" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200" alt="평면도">
-                    <h4 id="planTitle">59㎡ A TYPE</h4>
+					<img id="planImg" src="/images/logo/59A.png" alt="평면도">
+					            <h4 id="planTitle">59㎡ A TYPE</h4>
                 </div>
             </section>
         </main>

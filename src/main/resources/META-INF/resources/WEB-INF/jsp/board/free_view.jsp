@@ -33,6 +33,7 @@
                         작성자: <span style="font-weight:700;">${post.author}</span> | 
                         날짜: <span>${post.regDate}</span> | 
                         조회수: <span>${post.hits}</span>
+<!--신고추가-->	<button type="button" class="btn-report-outline" onclick="openReportModal()">신고</button>
                     </div>
                 </div>
 
@@ -96,7 +97,7 @@
             </div>
         </main>
     </div>
-
+	<script src="<c:url value='/js/board/report.js'/>"></script>
     <jsp:include page="../layout/footer.jsp" />
 
 </body>

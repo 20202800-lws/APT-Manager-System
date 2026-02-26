@@ -4,7 +4,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>세대안내 | APARTNERS</title>
+    <title>단지안내 | APARTNERS</title>
     <link rel="stylesheet" href="/css/intro.css">
     <link rel="stylesheet" href="/css/layout.css">
 </head>
