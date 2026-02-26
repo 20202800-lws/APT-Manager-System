@@ -2,19 +2,41 @@
    /js/board/board_anon.js - 익명게시판 전용
    ========================================= */
 let currentPostIdx = null; let currentPage = 1; const itemsPerPage = 10; let currentImgs = [];
-let boardData = [];
+let boardData = window.globalBoardList;
 
 function getTodayString() {
     const d = new Date(); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+	boardData = window.globalBoardList;
     renderList();
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchPost(); });
 });
 
 function renderList() {
+    const tbody = document.getElementById('boardBody');
+    if(!tbody) return;
+
+    // 백엔드에서 이미 10개씩 끊어서 가져왔다면 slice 제거
+    // 만약 전체 데이터를 다 가져왔다면 기존 slice 유지
+    const displayData = boardData; 
+
+    tbody.innerHTML = displayData.map((p) => {
+        return `
+        <tr onclick="location.href='/board/anon/view/${p.id}'" style="cursor:pointer;">
+            <td>${p.id}</td>
+            <td class="title-cell" style="text-align:left; padding-left:15px;">${p.title}</td>
+            <td>${p.author}</td>
+            <td>${p.date}</td>
+            <td>${p.hits}</td>
+        </tr>
+    `}).join('') || '<tr><td colspan="5" style="text-align:center; padding:50px; color:#999;">등록된 게시글이 없습니다.</td></tr>';
+
+    // 페이징 UI는 백엔드에서 넘어온 paging 객체 정보를 활용해야 합니다.
+}
+/*function renderList() {
     document.getElementById('tableWrapper').style.display = 'block';
     const pagedData = boardData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -31,7 +53,7 @@ function renderList() {
     `}).join('') || '<tr><td colspan="4" style="text-align:center; padding:50px; color:#999;">등록된 게시글이 없습니다.</td></tr>';
 
     renderPaginationUI(boardData.length);
-}
+}*/
 
 function renderPaginationUI(total) {
     const totalPages = Math.ceil(total / itemsPerPage);
@@ -77,6 +99,12 @@ function searchPost() {
     const keyword = document.getElementById('searchInput').value.trim().toLowerCase(); if (!keyword) { renderList(); return; }
     const filtered = boardData.filter(post => post.title.toLowerCase().includes(keyword));
     document.getElementById('boardBody').innerHTML = filtered.map(p => `
-        <tr onclick="showDetail(${boardData.indexOf(p)})" style="cursor:pointer;"><td>${p.id}</td><td class="title-cell" style="text-align:left; padding-left:15px;">${p.title}</td><td>${p.date}</td><td>${p.hits}</td></tr>
-    `).join('') || '<tr><td colspan="4" style="padding:50px; color:#999; text-align:center;">검색 결과가 없습니다.</td></tr>'; document.getElementById('paginationBox').innerHTML = '';
+        <tr onclick="showDetail(${boardData.indexOf(p)})" style="cursor:pointer;">
+				<td>${p.id}</td>
+		           <td class="title-cell" style="text-align:left; padding-left:15px;">${p.title}</td>
+		           <td>${p.author}</td>
+		           <td>${p.date}</td>
+		           <td>${p.hits}</td>
+		</tr>
+    `).join('') || '<tr><td colspan="5" style="padding:50px; color:#999; text-align:center;">검색 결과가 없습니다.</td></tr>'; document.getElementById('paginationBox').innerHTML = '';
 }

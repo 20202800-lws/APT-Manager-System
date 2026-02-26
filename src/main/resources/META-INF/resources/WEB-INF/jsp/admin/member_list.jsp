@@ -152,13 +152,13 @@
     </div>
 </div>
 
-<script src="<c:url value='/js/admin/admin_common.js'/>"></script>
+<!--<script src="<c:url value='/js/admin/admin_common.js'/>"></script>-->
 
 <script>
     window.globalMemberList = [];
 
-    <c:if test="${not empty memberList}">
-        <c:forEach var="member" items="${memberList}">
+    <c:if test="${not empty paging.content}">
+        <c:forEach var="member" items="${paging.content}">
             window.globalMemberList.push({
                 userId: '${member.userId}',
                 userName: '${member.userName}',
@@ -167,13 +167,15 @@
                 phone: '${member.phone}',
                 email: '${member.email}',
                 joinDate: '${member.joinDate}',
-                approvalStatus: '${member.approvalStatus}'
-            });
+				approvalStatus: '${member.userRole}' === 'ADMIN' ? 'ADM' : 
+								                               ('${member.status}' === 'true' || '${member.status}' === 'ACT' ? 'ACT' : 'WAIT')
+				            });
+
         </c:forEach>
     </c:if>
 </script>
 
-<script src="<c:url value='/js/admin/admin_member.js'/>"></script>
+<script src="<c:url value='/js/admin/member_list.js'/>"></script>
 
 </body>
 </html>

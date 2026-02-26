@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/admin")
-public class AdminResController {
+public class AdminNoticeController {
 
-	// 5. 시설 예약 관리
-    @GetMapping("/res_manage")
-    public String resManage() { 
-        return "admin/res_manage"; 
+	// 6. 공지사항 관리
+    @GetMapping("/notice_manage")
+    public String noticeManage() { 
+        return "admin/notice_manage"; 
     }
 }

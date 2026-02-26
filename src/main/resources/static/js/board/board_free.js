@@ -8,7 +8,7 @@ const itemsPerPage = 10;
 let currentImgs = [];
 
 // 백엔드 연동 전 테스트용 임시 데이터 (자유게시판 전용)
-let boardData = [];
+let boardData = window.globalBoardList;
 
 // 오늘 날짜 구하는 헬퍼 함수
 function getTodayString() {
@@ -17,6 +17,7 @@ function getTodayString() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+	boardData = window.globalBoardList;
     renderList();
     
     // 검색창 엔터키 이벤트
@@ -30,6 +31,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* 게시글 목록 렌더링 */
 function renderList() {
+    const tbody = document.getElementById('boardBody');
+    if(!tbody) return;
+
+    // 백엔드에서 이미 10개씩 끊어서 가져왔다면 slice 제거
+    // 만약 전체 데이터를 다 가져왔다면 기존 slice 유지
+    const displayData = boardData; 
+
+    tbody.innerHTML = displayData.map((p) => {
+        return `
+        <tr onclick="location.href='/board/free/view/${p.id}'" style="cursor:pointer;">
+            <td>${p.id}</td>
+            <td class="title-cell" style="text-align:left; padding-left:15px;">${p.title}</td>
+            <td>${p.author}</td>
+            <td>${p.date}</td>
+            <td>${p.hits}</td>
+        </tr>
+    `}).join('') || '<tr><td colspan="5" style="text-align:center; padding:50px; color:#999;">등록된 게시글이 없습니다.</td></tr>';
+
+    // 페이징 UI는 백엔드에서 넘어온 paging 객체 정보를 활용해야 합니다.
+}
+/*function renderList() {
     const tableWrap = document.getElementById('tableWrapper');
     tableWrap.style.display = 'block'; 
 
@@ -48,7 +70,7 @@ function renderList() {
     `}).join('') || '<tr><td colspan="5" style="text-align:center; padding:50px; color:#999;">등록된 게시글이 없습니다.</td></tr>';
 
     renderPaginationUI(boardData.length);
-}
+}*/
 
 /* 페이징 로직 */
 function renderPaginationUI(total) {

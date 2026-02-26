@@ -78,7 +78,7 @@ public class User implements UserDetails{
     // DB의 TINYINT(1)을 자바의 Boolean(true/false)으로 자동 변환해줍니다.
     @Column(name = "approval_status")
     @ColumnDefault("false") // DB 기본값 설정 (선택사항)
-    private Boolean approvalStatus; 
+    private boolean approvalStatus; 
 
     @CreationTimestamp
     @Column(name = "join_date", updatable = false)
