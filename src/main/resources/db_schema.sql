@@ -22,7 +22,8 @@ CREATE TABLE USERS (
     gender_digit CHAR(1) COMMENT '성별코드',
     approval_status TINYINT(1) DEFAULT 0 COMMENT '승인여부(0:대기,1:승인)',
     join_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
-    withdrawal_date DATETIME COMMENT '탈퇴일시'
+    withdrawal_date DATETIME COMMENT '탈퇴일시',
+    profile_img VARCHAR(255) DEFAULT NULL COMMENT '프로필 이미지 경로' -- ★ [추가됨] 프로필 사진 저장용
 );
 
 -- 2. 시설 정보 (FACILITY)

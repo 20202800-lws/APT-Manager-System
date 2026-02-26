@@ -54,6 +54,9 @@ public class User implements UserDetails{
 
     @Column(name = "gender_digit", length = 1)
     private String genderDigit;
+    
+    @Column(name = "profile_img")
+    private String profileImg;
 
     //시큐리티는 이 메소드로 비밀번호를 가져감
     @Override
