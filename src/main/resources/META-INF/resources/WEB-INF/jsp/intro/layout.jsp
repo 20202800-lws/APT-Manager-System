@@ -25,7 +25,7 @@
                     <p>프리미엄 라이프의 시작, 단지 배치도를 확인하세요.</p>
                 </div>
                 <div class="img-box">
-                    <img src="https://images.unsplash.com/photo-1545324418-f1d3c5b53004?auto=format&fit=crop&w=1200" alt="단지배치도">
+                    <img src="/images/logo/apart6.png" alt="단지배치도">
                 </div>
             </section>
         </main>

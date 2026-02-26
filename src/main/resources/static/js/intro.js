@@ -1,11 +1,12 @@
 /*아파트 소개 */
 
 const planData = {
-    '59A': { img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200', title: '59㎡ A TYPE' },
-    '59B': { img: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=1200', title: '59㎡ B TYPE' },
-    '84A': { img: 'https://images.unsplash.com/photo-1600607687940-c52af0424225?w=1200', title: '84㎡ A TYPE' },
-    '84B': { img: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200', title: '84㎡ B TYPE' },
-    '84C': { img: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200', title: '84㎡ C TYPE' }
+    // 로컬 폴더(/images/logo/) 내의 실제 파일명과 정확히 매칭했습니다.
+    '59A': { img: '/images/logo/59A.png', title: '59㎡ A TYPE' },
+    '59B': { img: '/images/logo/59B.png', title: '59㎡ B TYPE' },
+    '84A': { img: '/images/logo/84A.png', title: '84㎡ A TYPE' },
+    '84B': { img: '/images/logo/84B.png', title: '84㎡ B TYPE' },
+    '84C': { img: '/images/logo/84C.png', title: '84㎡ C TYPE' }
 };
 
 function changePlan(type, btn) {

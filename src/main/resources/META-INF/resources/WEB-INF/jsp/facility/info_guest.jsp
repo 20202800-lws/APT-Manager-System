@@ -28,28 +28,35 @@
 
 				<div class="facility-section active" style="margin-top: 0;">
 					<div class="room-type-grid">
-						<div class="room-card">
+						<div class="room-card active" 
+						     onclick="window.open('/images/logo/room4.png', '객실이미지', 'width=800,height=600,top=100,left=200')" 
+						     style="cursor:pointer;">
 							<span class="room-title">A타입 (원룸형)</span>
 							<span class="room-desc">침대 1 + 욕실 1 (8평)</span>
-							<span class="room-price">1박 40,000원</span>
+							<span class="room-price">1박 40,000원~</span>
 						</div>
-						<div class="room-card">
+						<div class="room-card active" 
+						     onclick="window.open('/images/logo/room1.png', '객실이미지2', 'width=800,height=600,top=100,left=200')" 
+						     style="cursor:pointer;">
 							<span class="room-title">B타입 (거실분리형)</span>
-							<span class="room-desc">침대 1 + 거실 + 욕실 1 (15평)</span>
-							<span class="room-price">1박 60,000원</span>
+							<span class="room-desc">침대 1 + 거실 + 욕실 1 + 주방1 (15평)</span>
+							<span class="room-price">1박 60,000원~</span>
 						</div>
-						<div class="room-card">
+						<div class="room-card active" 
+						 onclick="window.open('/images/logo/room2', '객실이미지3', 'width=800,height=600,top=100,left=200')" 
+						     style="cursor:pointer;">
 							<span class="room-title">C타입 (패밀리형)</span>
-							<span class="room-desc">침대 2 + 거실 + 욕실 2 (24평)</span>
-							<span class="room-price">1박 80,000원</span>
+							<span class="room-desc">침대 2 + 거실 + 욕실 2 + 주방1(24평)</span>
+							<span class="room-price">1박 80,000원~</span>
 						</div>
 					</div>
 
 					<div class="content-grid">
-						<div class="img-box">
-							<img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800"
-								alt="게스트하우스">
-						</div>
+					
+								<div class="img-box">
+								    <img id="mainRoomImg" src="/images/logo/room1.png" alt="게스트하우스 메인 이미지">
+								</div>
+						
 						<div class="info-box">
 							<h3>호텔급 숙박 시설</h3>
 							<p>친인척 및 지인 방문 시 편안하게 머무를 수 있는 고품격 게스트하우스입니다. 호텔식 침구류와 어메니티가 제공됩니다.</p>

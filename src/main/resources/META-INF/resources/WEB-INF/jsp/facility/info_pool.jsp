@@ -29,16 +29,17 @@
 				<div class="facility-section active" style="margin-top: 0;">
 					<div class="content-grid">
 						<div class="img-box">
-							<img src="https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?q=80&w=800"
-								alt="수영장">
+							<img id="mainPoolImg" src="/images/logo/swimming.jpg" alt="수영장1">
+							<img id="mainPoolImg" src="/images/logo/swimming.jpg2" alt="수영장2">		
+							<img id="mainPoolImg" src="/images/logo/swimming.jpg3" alt="수영장3">
 						</div>
 						<div class="info-box">
 							<h3>25m 4레인 정규 풀</h3>
-							<p>자연채광이 들어오는 쾌적한 실내 수영장입니다. 유아풀이 별도로 마련되어 있어 가족 단위 이용이 편리합니다.</p>
+							<p>강습이 가능하고 유아풀이 있어 가족단위로 사용 할 수 있는 넓고 쾌적한 실내 수영장입니다. </p>
 							<ul class="info-list">
 								<li><strong>위치:</strong> 커뮤니티센터 B2층</li>
-								<li><strong>시설:</strong> 성인풀(25m x 4레인), 유아풀(수심 0.6m), 자쿠지</li>
-								<li><strong>운영시간:</strong> 06:00 ~ 22:00 (수질정화시간 12:00~13:00)</li>
+								<li><strong>시설:</strong> 성인풀(25m x 4레인) , 유아풀 </li>
+								<li><strong>운영시간:</strong> 06:00 ~ 21:00 (수질정화시간 12:00~13:00 , )</li>
 								<li><strong>수질관리:</strong> 인공 해수풀 시스템</li>
 							</ul>
 							<table class="price-table">
@@ -46,6 +47,7 @@
 									<tr>
 										<th>구분</th>
 										<th>이용요금</th>
+										<td>이용 시간</td>
 										<th>비고</th>
 									</tr>
 								</thead>
@@ -53,11 +55,13 @@
 									<tr>
 										<td>자유수영 (1일)</td>
 										<td>3,000원</td>
-										<td>입주민</td>
+										<td>강습 시간 외 이용 가능</td>
+										<td>입주민 전용</td>
 									</tr>
 									<tr>
 										<td>강습 (주3회)</td>
 										<td>40,000원/월</td>
+										<td>강습시간 : 새벽타임 / 저녁타임</td>
 										<td>초/중/상급</td>
 									</tr>
 								</tbody>

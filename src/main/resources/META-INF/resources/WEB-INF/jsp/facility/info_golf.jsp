@@ -29,7 +29,7 @@
 				<div class="facility-section active" style="margin-top: 0;">
 					<div class="content-grid">
 						<div class="img-box">
-							<img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=800" alt="골프">
+							<img id="mainGolfImg" src="/images/logo/golf3.png" alt="골프장">
 						</div>
 						<div class="info-box">
 							<h3>최신 GDR 시스템 완비</h3>

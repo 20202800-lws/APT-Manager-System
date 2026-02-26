@@ -5,7 +5,7 @@
 			<ul class="lnb">
 				<li class="<%= currentUri.contains(" info_gym") ? "active" : "" %>"
 					onclick="location.href='/facility/info_gym'">
-					<i class="fa-solid fa-dumbbell"></i> 피트니스센터
+					<i class="fa-solid fa-dumbbell"></i> 헬스장
 				</li>
 				<li class="<%= currentUri.contains(" info_pool") ? "active" : "" %>"
 					onclick="location.href='/facility/info_pool'">

@@ -11,9 +11,9 @@ let pendingAction = null;
 
 // [설정] 시설 요금 데이터
 const guestRoomData = {
-    'A': { name: 'A타입 (원룸형)', weekday: 50000, weekend: 70000 },
-    'B': { name: 'B타입 (투룸형)', weekday: 70000, weekend: 90000 },
-    'C': { name: 'C타입 (스위트)', weekday: 100000, weekend: 130000 }
+    'A': { name: 'A타입 (원룸형)', weekday: 40000, weekend: 60000 },
+    'B': { name: 'B타입 (투룸형)', weekday: 60000, weekend: 80000 },
+    'C': { name: 'C타입 (스위트)', weekday: 80000, weekend: 100000 }
 };
 
 const poolPrice = "15,000원";
@@ -87,7 +87,7 @@ function openModal(type) {
             <div class="form-group">
                 <label>이용 기간 선택</label>
                 <select id="gymMonths" onchange="calculateGymPrice()">
-                    <option value="1">1개월</option><option value="2">2개월</option><option value="3">3개월</option>
+                    <option value="1">1개월</option><option value="2">2개월</option><option value="3">3개월</option><option value="3">6개월</option><option value="3">12개월</option>
                 </select>
             </div>
             <div class="total-price">총 이용금액: <span id="gymPriceDisplay">0원</span></div>

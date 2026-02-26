@@ -10,7 +10,7 @@
 </head>
 <body>
     <jsp:include page="../layout/header_intro.jsp">
-        <jsp:param name="pageTitle" value="세대안내" />
+        <jsp:param name="pageTitle" value="단지안내" />
     </jsp:include>
 	
     <div class="container">
@@ -21,12 +21,14 @@
         <main class="content-area">
             <section id="guide" class="tab-content active">
                 <div class="content-header">
-                    <h3>세대안내</h3>
-                    <p>공간의 가치를 높이는 세대별 안내입니다.</p>
+                    <h3>단지안내</h3>
+                    <p>공간의 가치를 높이는 단지 안내입니다.</p>
                 </div>
                 <div class="img-box">
-                    <img src="https://images.unsplash.com/photo-1600607687940-c52af0424225?auto=format&fit=crop&w=1200" alt="세대안내">
-                </div>
+				<img src="/images/logo/backGroung.png" alt="단지정원">
+ 				<img src="/images/logo/skyRounge.png" alt="스카이라운지">   
+				<img src="/images/logo/child1.png" alt="어린이집">             
+  			 </div>
             </section>
         </main>
     </div>

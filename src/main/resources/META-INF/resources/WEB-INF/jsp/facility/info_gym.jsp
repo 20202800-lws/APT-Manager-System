@@ -23,14 +23,13 @@
 
 			<main class="content-area">
 				<div class="page-header">
-					<h2>피트니스센터 (GYM)</h2>
+					<h2>헬스장</h2>
 				</div>
 
 				<div class="facility-section active" style="margin-top: 0;">
 					<div class="content-grid">
 						<div class="img-box">
-							<img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800"
-								alt="헬스장">
+							<img id="mainGymImg" src="/images/logo/health3.png" alt="헬스장">
 						</div>
 						<div class="info-box">
 							<h3>프리미엄 피트니스 공간</h3>
