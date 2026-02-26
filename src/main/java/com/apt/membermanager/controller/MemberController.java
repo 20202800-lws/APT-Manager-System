@@ -62,7 +62,7 @@ public class MemberController {
 
 	@PostMapping("/signup")
 	public String signup(@Valid @ModelAttribute("userSignupDto") UserSignupDto userSignupDto,
-			BindingResult bindingResult, RedirectAttributes rttr) { // ★ 알림 메시지를 전달할 RedirectAttributes 추가!
+			BindingResult bindingResult, RedirectAttributes rttr) { 
 
 		log.info("회원가입 요청: {}", userSignupDto);
 
@@ -82,9 +82,9 @@ public class MemberController {
 
 		log.info("회원가입 성공: {}", userSignupDto.getUserId());
 
-		// ★ 핵심 로직: 성공 알림 메시지를 일회성으로 담아서 홈("/")으로 보냅니다.
+		// ★ 핵심 로직: 성공 알림 메시지를 일회성으로 담아서 홈("/")으로 보냅니다. (선배님 코드 유지)
 		rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다! 관리자 승인 후 로그인 및 이용이 가능합니다.");
-		return "redirect:/"; // 로그인 페이지가 아닌 홈으로 이동!
+		return "redirect:/"; 
 	}
 
 	// ★ [수정됨] 선배님의 디테일한 로그인 제어 + 백엔드의 암호화 로직 결합!
@@ -114,8 +114,8 @@ public class MemberController {
 			return "redirect:/member/login";
 		}
 
-		// 4. 실패: 승인 대기 중인 경우 (관리자는 프리패스)
-		if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.getApprovalStatus()) {
+		// 4. 실패: 승인 대기 중인 경우 (관리자는 프리패스 - 백엔드 담당자님 코드 병합 완료!)
+		if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.isApprovalStatus()) {
 			rttr.addFlashAttribute("msg", "관리자 승인 대기 중인 계정입니다. 관리사무소에 문의하세요.");
 			return "redirect:/member/login";
 		}
@@ -124,7 +124,6 @@ public class MemberController {
 		HttpSession session = request.getSession();
 		session.setAttribute("loginMember", loginUser);
 
-		// (주의: User 엔티티에 getUsername() 인지 getUserName() 인지 백엔드 코드 확인 요망)
 		log.info("로그인 성공: {} (권한: {})", loginUser.getUsername(), loginUser.getUserRole());
 
 		// 6. 성공 후 도착지 다르게 설정
@@ -149,27 +148,22 @@ public class MemberController {
 	// 3. 비동기 통신 (AJAX / Fetch) 처리
 	// ==========================
 
-	// ★ [추가됨] 아이디 중복 체크 (화면 이동 없이 데이터만 반환)
-	@ResponseBody // 이 어노테이션이 있어야 JSP 페이지를 찾지 않고 글자(String) 자체를 프론트로 던져줍니다!
+	@ResponseBody 
 	@PostMapping("/checkId")
 	public String checkId(@RequestParam("userId") String userId) {
 		log.info("아이디 중복 체크 요청: {}", userId);
 
-		// 주의: 백엔드 MemberService에 checkIdDuplicate(String userId) 메서드가 구현되어 있어야 합니다!
-		// (만약 메서드 이름이 다르다면 백엔드 담당자에게 확인 후 수정해 주세요)
 		boolean isDuplicate = memberService.checkIdDuplicate(userId);
 
 		if (isDuplicate) {
-			return "DUPLICATE"; // 이미 사용 중인 아이디
+			return "DUPLICATE"; 
 		} else {
-			return "AVAILABLE"; // 사용 가능한 아이디
+			return "AVAILABLE"; 
 		}
 	}
 
-	// 아이디/비밀번호 찾기 화면 이동 매핑
 	@GetMapping("/find_account")
 	public String findAccount() {
-		// WEB-INF/jsp/member/find_account.jsp 화면을 열어줍니다.
 		return "member/find_account";
 	}
 }

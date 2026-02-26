@@ -4,13 +4,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+
 @Controller
 @RequestMapping("/admin")
-public class AdminResController {
+public class AdminReportController {
 
-	// 5. 시설 예약 관리
-    @GetMapping("/res_manage")
-    public String resManage() { 
-        return "admin/res_manage"; 
+	// 10. 신고 내역 관리
+    @GetMapping("/report_manage")
+    public String reportManage() { 
+        return "admin/report_manage"; 
     }
 }
