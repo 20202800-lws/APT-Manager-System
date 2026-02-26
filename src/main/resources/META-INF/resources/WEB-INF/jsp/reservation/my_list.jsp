@@ -45,13 +45,25 @@
                                 <td>${fac.reserveDate}</td>
                                 <td style="font-weight:600; color:var(--primary-color);">${fac.price}</td>
                                 <td>
-                                    <span class="${fac.resStatus == '취소됨' ? 'badge-cancel' : 'badge-active'}">${fac.resStatus}</span>
+                                    <c:choose>
+                                        <c:when test="${fac.resStatus == '예약완료'}">
+                                            <span class="badge-active">${fac.resStatus}</span>
+                                        </c:when>
+                                        <c:when test="${fac.resStatus == '이용완료'}">
+                                            <span class="badge-disabled" style="background:#95a5a6; color:white; padding:5px 10px; border-radius:12px; font-size:12px;">${fac.resStatus}</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge-cancel">${fac.resStatus}</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td>
-                                    <c:if test="${fac.resStatus != '취소됨'}">
-                                        <button class="btn-cancel" onclick="cancelReservation(${fac.resId}, 'facility')">취소</button>
-                                    </c:if>
-                                    <c:if test="${fac.resStatus == '취소됨'}">-</c:if>
+                                    <c:choose>
+                                        <c:when test="${fac.resStatus == '예약완료'}">
+                                            <button class="btn-cancel" onclick="cancelReservation(${fac.resId}, 'facility')">취소</button>
+                                        </c:when>
+                                        <c:otherwise>-</c:otherwise>
+                                    </c:choose>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -63,13 +75,25 @@
                                 <td>매월 1일 시작</td>
                                 <td style="font-weight:600; color:var(--primary-color);">${prog.program.fee}원</td>
                                 <td>
-                                    <span class="${prog.applyStatus == '취소됨' ? 'badge-cancel' : 'badge-active'}">${prog.applyStatus}</span>
+                                    <c:choose>
+                                        <c:when test="${prog.applyStatus == '예약완료'}">
+                                            <span class="badge-active">${prog.applyStatus}</span>
+                                        </c:when>
+                                        <c:when test="${prog.applyStatus == '이용완료'}">
+                                            <span class="badge-disabled" style="background:#95a5a6; color:white; padding:5px 10px; border-radius:12px; font-size:12px;">${prog.applyStatus}</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge-cancel">${prog.applyStatus}</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td>
-                                    <c:if test="${prog.applyStatus != '취소됨'}">
-                                        <button class="btn-cancel" onclick="cancelReservation(${prog.applyId}, 'program')">취소</button>
-                                    </c:if>
-                                    <c:if test="${prog.applyStatus == '취소됨'}">-</c:if>
+                                    <c:choose>
+                                        <c:when test="${prog.applyStatus == '예약완료'}">
+                                            <button class="btn-cancel" onclick="cancelReservation(${prog.applyId}, 'program')">취소</button>
+                                        </c:when>
+                                        <c:otherwise>-</c:otherwise>
+                                    </c:choose>
                                 </td>
                             </tr>
                         </c:forEach>

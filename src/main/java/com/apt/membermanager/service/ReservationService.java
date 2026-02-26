@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -29,7 +30,6 @@ public class ReservationService {
 
         // ★ [핵심] 스크린골프 시간 겹침 철통 방어 로직
         if ("스크린골프".equals(dto.getFacilityType())) {
-            // 해당 날짜에 예약된 모든 스크린골프 내역을 불러옴 (취소된 예약 제외)
             List<FacilityRes> existingList = facilityResRepository.findByFacilityTypeAndReserveDateAndResStatusNot(
                     dto.getFacilityType(), dto.getReserveDate(), "취소됨"
             );
@@ -66,6 +66,11 @@ public class ReservationService {
     public void cancelFacilityRes(Long resId) {
         FacilityRes res = facilityResRepository.findById(resId)
                 .orElseThrow(() -> new RuntimeException("예약 내역이 없습니다."));
+        
+        // ★ [방어막] 이미 이용완료된 예약은 취소 거부
+        if ("이용완료".equals(res.getResStatus())) {
+            throw new RuntimeException("이미 이용이 완료된 예약은 취소할 수 없습니다.");
+        }
         res.setResStatus("취소됨");
     }
 
@@ -97,14 +102,34 @@ public class ReservationService {
     public void cancelProgramApply(Long applyId) {
         ProgramApply apply = programApplyRepository.findById(applyId)
                 .orElseThrow(() -> new RuntimeException("신청 내역이 없습니다."));
+        
+        // ★ [방어막] 이미 이용완료된 예약은 취소 거부
+        if ("이용완료".equals(apply.getApplyStatus())) {
+            throw new RuntimeException("이미 이용이 완료된 강습은 취소할 수 없습니다.");
+        }
         apply.setApplyStatus("취소됨");
     }
 
     // ==========================================
-    // 3. 나의 내역 통합 조회 
+    // 3. 나의 내역 통합 조회 (스마트 상태 업데이트)
     // ==========================================
     public List<FacilityRes> getMyFacilityReservations(String userId) {
-        return facilityResRepository.findByUser_UserIdOrderByRegDateDesc(userId);
+        List<FacilityRes> list = facilityResRepository.findByUser_UserIdOrderByRegDateDesc(userId);
+        LocalDate today = LocalDate.now();
+
+        for (FacilityRes res : list) {
+            // 현재 상태가 '예약완료'인 것들만 날짜 검사 진행
+            if ("예약완료".equals(res.getResStatus())) {
+                LocalDate resDate = parseDate(res.getReserveDate());
+                
+                // 파싱된 날짜가 있고, 그 날짜가 오늘보다 과거(어제 이전)라면? -> 이용완료 처리!
+                if (resDate != null && resDate.isBefore(today)) {
+                    res.setResStatus("이용완료");
+                    facilityResRepository.save(res); // DB에 쾅! 반영
+                }
+            }
+        }
+        return list; // 업데이트된 최신 리스트를 프론트로 반환!
     }
 
     public List<ProgramApply> getMyProgramApplies(String userId) {
@@ -116,29 +141,48 @@ public class ReservationService {
     // ==========================================
     private boolean isGolfTimeOverlapping(String newDetail, String existDetail) {
         try {
-            // 자바스크립트에서 넘어오는 형식: "1번 타석 (19:00 부터 2시간)"
-            // 1. 새 예약 정보 파싱
             int newSeat = Integer.parseInt(newDetail.split("번")[0].trim());
             int newStart = Integer.parseInt(newDetail.substring(newDetail.indexOf("(") + 1, newDetail.indexOf("(") + 3));
             int newDuration = Integer.parseInt(newDetail.substring(newDetail.indexOf("부터") + 2, newDetail.indexOf("시간")).trim());
             int newEnd = newStart + newDuration;
 
-            // 2. 기존 예약 정보 파싱
             int extSeat = Integer.parseInt(existDetail.split("번")[0].trim());
             int extStart = Integer.parseInt(existDetail.substring(existDetail.indexOf("(") + 1, existDetail.indexOf("(") + 3));
             int extDuration = Integer.parseInt(existDetail.substring(existDetail.indexOf("부터") + 2, existDetail.indexOf("시간")).trim());
             int extEnd = extStart + extDuration;
 
-            // 3. 타석이 다르면 안 겹침
             if (newSeat != extSeat) return false;
 
-            // 4. 시간이 겹치는지 수학적 교집합 검사! 
-            // (내 시작시간이 상대 종료시간보다 이르고, 내 종료시간이 상대 시작시간보다 늦으면 겹치는 것!)
             return (newStart < extEnd && newEnd > extStart);
 
         } catch (Exception e) {
-            // 혹시라도 글자 포맷이 달라 오류가 나면 무조건 중복으로 튕겨버리게 해서 꼬이는 걸 방지
             return true; 
         }
+    }
+
+    // ==========================================
+    // [신규 헬퍼 메서드] 복잡한 문자열 날짜를 LocalDate로 변환하는 파서
+    // ==========================================
+    private LocalDate parseDate(String dateStr) {
+        try {
+            // 1. 게스트하우스 틸다(~) 처리 (시작일 기준)
+            String cleanStr = dateStr.split("~")[0].trim(); 
+            
+            // 2. JS가 만든 점(.) 처리 (예: 2026. 2. 26.) -> 2026-2-26 변환
+            cleanStr = cleanStr.replace(".", "-").replace(" ", "");
+            if (cleanStr.endsWith("-")) cleanStr = cleanStr.substring(0, cleanStr.length() - 1);
+
+            // 3. YYYY-MM-DD 형태로 분해하여 LocalDate 생성
+            String[] parts = cleanStr.split("-");
+            if (parts.length == 3) {
+                int year = Integer.parseInt(parts[0]);
+                int month = Integer.parseInt(parts[1]);
+                int day = Integer.parseInt(parts[2]);
+                return LocalDate.of(year, month, day);
+            }
+        } catch (Exception e) {
+            // 파싱 실패 시 무시
+        }
+        return null;
     }
 }
