@@ -1,6 +1,6 @@
 package com.apt.membermanager.repository;
 
-import com.apt.membermanager.entity.User;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,17 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-
-import java.util.List;
-import java.util.Optional;
+import com.apt.membermanager.entity.User;
 
 public interface UserRepository extends JpaRepository<User, String> {
-	// existsById(), findById() 등은 JpaRepository가 공짜로 줍니다!
 	
-	// 아이디 찾기, 로그인 등에서 사용
     Optional<User> findByUserId(String userId);
     
-    // ★ [추가] 아이디가 존재하는지(중복인지) true/false로 반환
     boolean existsByUserId(String userId);
     
     //회원목록 통합쿼리
@@ -34,12 +29,17 @@ public interface UserRepository extends JpaRepository<User, String> {
     		@Param("kwPhone")String kwPhone,
     		Pageable pageable);
     
-    
     long count();
-    
     long countByApprovalStatus(boolean approvalStatus);
-    
     long countByApprovalStatusAndUserRoleNot(boolean status, String userRole);
-    
     long countByUserRole(String userRole);
+
+    // ==========================================
+    // ★ [추가] 아이디/비밀번호 찾기 전용 메서드
+    // ==========================================
+    // 1. 아이디 찾기 (이름 + 전화번호)
+    Optional<User> findByUserNameAndPhone(String userName, String phone);
+    
+    // 2. 비밀번호 재설정 인증 (아이디 + 이름 + 전화번호)
+    Optional<User> findByUserIdAndUserNameAndPhone(String userId, String userName, String phone);
 }
