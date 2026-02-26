@@ -21,8 +21,9 @@ public class FeeRegisterDto {
         fee.setUseMonth(this.useMonth);
         fee.setTotalCost(this.totalCost);
         
-        // [중요] 처음 등록할 땐 당연히 아직 납부 안 한 상태('N')로 시작합니다.
-        fee.setIsPaid("N"); 
+        // ★ [수정됨] 이름과 타입을 변경된 엔티티에 맞게 수정!
+        // 처음 등록할 땐 당연히 미납 상태(0)로 시작합니다.
+        fee.setPaymentStatus(0); 
         
         return fee;
     }

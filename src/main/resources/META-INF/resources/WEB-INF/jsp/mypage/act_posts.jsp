@@ -1,51 +1,71 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마이페이지 - 활동내역/게시물</title>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-	<link rel="stylesheet" href="/css/layout.css">
-	<link rel="stylesheet" href="/css/mypage.css">
-			
-</head>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+	<!DOCTYPE html>
+	<html lang="ko">
 
-		<body>
-		  		 <!--header sub로 바꾸기!(이미지도 완성되면)-->
-			<jsp:include page="../layout/header_auth.jsp" />
-			
-<main class="container">
-	<aside class="sidebar">
-	    <h2>마이페이지</h2>
-	    <nav class="menu-list">
-	        <button type="button" class="menu-item" onclick="changeMenu(this, 'info_view')">내 정보</button>
-	        <button type="button" class="menu-item" onclick="changeMenu(this, 'info_edit')">정보 수정</button>
-	        <button type="button" class="menu-item" onclick="changeMenu(this, 'fee_view')">관리비</button>
-	        
-	        <div class="dropdown-grp">
-	            <div class="menu-item">활동 내역 ▾</div>
-	            <div class="sub-menu-side">
-	                <button type="button" class="sub-item" onclick="changeMenu(this, 'act_reply')">내가 쓴 댓글</button>
-	                <button type="button" class="sub-item active" onclick="changeMenu(this, 'act_posts')">내가 쓴 게시물</button>
-	            </div>
-	        </div>
-	    </nav>
-	</aside>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>마이페이지 - 활동내역/게시물</title>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<link rel="stylesheet" href="/css/layout.css">
+		<link rel="stylesheet" href="/css/mypage.css">
+	</head>
 
-	<div class="content-area">
-	    <div class="activity-header">
-	        <h3 id="pageTitle">📝 내가 쓴 게시물</h3>
-	        <span class="count-txt">총 <strong id="totalCount" style="color:#1a0b2e;">0</strong>건</span>
-	    </div>
+	<body>
+		<jsp:include page="../layout/header_intro.jsp">
+			<jsp:param name="pageTitle" value="마이페이지" />
+		</jsp:include>
 
-	    <ul id="activityList" class="activity-list"></ul>
-	</div>
+		<div class="page-wrapper" style="min-height: calc(100vh - 80px);">
 
-</main>
-<jsp:include page="../layout/footer.jsp" />
-<script src="mypage.js"></script>
+			<jsp:include page="../layout/sidebar_mypage.jsp">
+				<jsp:param name="activeMenu" value="act_posts" />
+			</jsp:include>
 
-</body>
-</html>
+			<main class="content-area">
+				<div class="page-header">
+					<h2>활동 내역</h2>
+				</div>
 
+				<div style="margin-top: 20px;">
+					<div class="activity-header"
+						style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
+						<h3 id="pageTitle" style="margin: 0;">📝 내가 쓴 게시물</h3>
+						<span class="count-txt">총 <strong id="totalCount" style="color:var(--primary-color);">${myPosts
+								!= null ? myPosts.size() : 0}</strong>건</span>
+					</div>
+
+					<ul id="activityList" class="activity-list" style="list-style: none; padding: 0;">
+
+						<c:forEach var="post" items="${myPosts}">
+							<li class="list-item" style="border-bottom: 1px solid #eee; padding: 15px 0;">
+								<div class="item-info" style="display:flex; flex-direction:column; gap:5px;">
+									<span class="category"
+										style="font-size:12px; color:var(--primary-color); font-weight:bold;">[${post.category}]</span>
+
+									<a href="/board/detail?id=${post.boardId}" class="subject"
+										style="font-size: 16px; font-weight: bold;">${post.title}</a>
+
+									<span class="date" style="font-size: 13px; color: #888;">${post.regDate}</span>
+								</div>
+								<button class="btn-delete"
+									style="float: right; margin-top: -30px; background: #fee2e2; color: #ef4444; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">삭제</button>
+							</li>
+						</c:forEach>
+
+						<c:if test="${empty myPosts}">
+							<li style="padding: 30px; text-align: center; color: #888; border-bottom: 1px solid #eee;">
+								작성한 게시물이 없습니다.
+							</li>
+						</c:if>
+
+					</ul>
+				</div>
+			</main>
+		</div>
+
+		<jsp:include page="../layout/footer.jsp" />
+		<script src="/js/mypage.js"></script>
+	</body>
+
+	</html>

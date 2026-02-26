@@ -348,3 +348,60 @@ footer {
     flex: 1; /* 남은 우측 공간을 100% 꽉 채워서 넓게 쓰라는 마법의 코드 */
     min-width: 0; /* 테이블이나 내용이 길어져도 레이아웃 밖으로 튀어나가지 않게 방어 */
 }
+
+/* =========================================
+   공통 사이드바 아코디언 (서브 메뉴) 스타일
+========================================= */
+.sub-toggle-btn {
+    padding: 16px 20px;
+    color: #555;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.sub-toggle-btn:hover {
+    background-color: #f8f9fa;
+    color: #1a0b2e;
+}
+.sub-menu-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 5px;
+}
+.sub-menu-item {
+    padding: 12px 15px 12px 45px !important;
+    color: #888;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 6px;
+    position: relative;
+    margin-bottom: 4px;
+    display: block;
+    transition: all 0.2s;
+}
+.sub-menu-item::before {
+    content: "";
+    position: absolute;
+    left: 24px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #e2e8f0;
+}
+.sub-menu-item:hover {
+    color: #1a0b2e !important;
+    font-weight: 700;
+    background-color: #f8fafc !important;
+}
+.sub-menu-item.active {
+    color: #ffffff !important;
+    font-weight: 700;
+    background-color: #1a0b2e !important;
+}
+.sub-menu-item.active::before {
+    background-color: transparent !important;
+}
