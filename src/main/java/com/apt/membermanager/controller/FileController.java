@@ -1,6 +1,9 @@
 package com.apt.membermanager.controller;
 
-import org.springframework.beans.factory.annotation.Value;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -11,16 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 @Controller
 public class FileController {
 
     // application.properties에 적은 경로(C:/membermanager/upload/)를 가져옴
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+	// OS 상관없이 현재 프로젝트 폴더 내의 apt_upload를 자동으로 찾음!
+    private final String uploadDir = System.getProperty("user.dir") + "/apt_upload/";
 
     // 이미지 요청 처리 (예: <img src="/images/cat.jpg">)
     @GetMapping("/images/{filename}")
