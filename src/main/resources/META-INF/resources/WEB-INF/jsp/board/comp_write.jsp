@@ -30,6 +30,13 @@
                                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:16px;">
                     </div>
                     
+                    <div class="form-group" style="margin-bottom: 20px; display:flex; align-items:center;">
+                        <input type="checkbox" id="secretCheck" name="isSecret" value="Y" style="width:18px; height:18px; cursor:pointer;">
+                        <label for="secretCheck" style="margin-left:8px; font-weight:bold; cursor:pointer; color:#ef4444;">
+                            <i class="fa-solid fa-lock"></i> 관리자만 볼 수 있도록 비밀글로 설정합니다.
+                        </label>
+                    </div>
+
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display:block; font-weight:bold; margin-bottom:8px;">내용</label>
                         <textarea name="content" placeholder="불편하신 사항이나 건의할 내용을 상세히 적어주세요..." required 
@@ -38,8 +45,10 @@
 
                     <div class="form-group" style="margin-bottom: 30px;">
                         <label style="display:block; font-weight:bold; margin-bottom:8px;">현장 사진 첨부</label>
-                        <input type="file" name="uploadFiles" multiple accept="image/*"
+                        <input type="file" name="uploadFiles" multiple accept="image/*" onchange="previewImages(this)"
                                style="padding:10px; border:1px dashed #ccc; width:100%; border-radius:6px;">
+                        
+                        <div id="imagePreviewContainer" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;"></div>
                     </div>
 
                     <div style="text-align:right; border-top:1px solid #eee; padding-top:20px;">
@@ -51,5 +60,6 @@
         </main>
     </div>
     <jsp:include page="../layout/footer.jsp" />
+
 </body>
 </html>

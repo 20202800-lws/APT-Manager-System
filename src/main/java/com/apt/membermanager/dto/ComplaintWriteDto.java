@@ -3,14 +3,16 @@ package com.apt.membermanager.dto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 @Getter @Setter
 public class ComplaintWriteDto {
-    private String category; // NOISE, FACILITY 등
+    private String category;
     private String title;
     private String content;
-    private String isSecret; // Y: 비밀글
-    private String phone;    // 비상 연락처
+    private String isSecret; 
+    private String phone;    
     
-    private MultipartFile file;
+    // ★ JSP의 다중 파일 업로드와 맞춰줌!
+    private List<MultipartFile> uploadFiles;
 }

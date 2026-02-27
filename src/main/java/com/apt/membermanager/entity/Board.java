@@ -9,7 +9,6 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
-
 @Entity
 @Getter
 @Setter
@@ -30,15 +29,16 @@ public class Board {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Lob // TEXT 타입 매핑
+    @Lob 
     @Column(columnDefinition = "TEXT")
     private String content;
 
     private boolean anonymous; // 0: 실명, 1: 익명
     
     @Builder.Default
-    private Integer views = 0;   // 조회수 초기값 0
-    private String category;     // 카테고리
+    private Integer views = 0;   // 조회수
+    
+    private String category;     // 카테고리 (FREE, ANON 등)
 
     @CreationTimestamp
     private LocalDateTime regDate;

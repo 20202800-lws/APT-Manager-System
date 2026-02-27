@@ -1,55 +1,86 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+	<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>익명게시판 - 글쓰기</title>
-    <link rel="stylesheet" href="<c:url value='/css/layout.css'/>">
-    <link rel="stylesheet" href="<c:url value='/css/board.css'/>">
-</head>
-<body>
-	<jsp:include page="../layout/header_sub.jsp">
-	    <jsp:param name="pageTitle" value="익명게시판" />
-	</jsp:include>
+		<!DOCTYPE html>
+		<html lang="ko">
 
-    <div class="container">
-        <jsp:include page="../layout/sidebar_board.jsp">
-            <jsp:param name="activeMenu" value="anon" />
-        </jsp:include>
+		<head>
+			<meta charset="UTF-8">
+			<title>익명게시판 - 글쓰기</title>
+			<link rel="stylesheet" href="<c:url value='/css/layout.css'/>">
+			<link rel="stylesheet" href="<c:url value='/css/board.css'/>">
+		</head>
 
-        <main id="mainArea">
-            <h3 style="font-size:24px; margin-bottom:20px; border-bottom:2px solid #1a0b2e; padding-bottom:15px;">새 게시글 작성 (익명)</h3>
-            
-            <div class="content-box">
-                <form action="<c:url value='/board/anon/write'/>" method="post" enctype="multipart/form-data">
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label style="display:block; font-weight:bold; margin-bottom:8px;">제목</label>
-                        <input type="text" name="title" placeholder="제목을 입력하세요" required 
-                               style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:16px;">
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label style="display:block; font-weight:bold; margin-bottom:8px;">내용</label>
-                        <textarea name="content" placeholder="내용을 입력하세요... (작성자는 철저히 숨겨집니다)" required 
-                                  style="width:100%; height:300px; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:15px; resize:vertical;"></textarea>
-                    </div>
+		<body>
+			<jsp:include page="../layout/header_sub.jsp">
+				<jsp:param name="pageTitle" value="익명게시판" />
+			</jsp:include>
 
-                    <div class="form-group" style="margin-bottom: 30px;">
-                        <label style="display:block; font-weight:bold; margin-bottom:8px;">사진 첨부</label>
-                        <input type="file" name="uploadFiles" multiple accept="image/*"
-                               style="padding:10px; border:1px dashed #ccc; width:100%; border-radius:6px;">
-                    </div>
+			<div class="container">
+				<jsp:include page="../layout/sidebar_board.jsp">
+					<jsp:param name="activeMenu" value="anon" />
+				</jsp:include>
 
-                    <div style="text-align:right; border-top:1px solid #eee; padding-top:20px;">
-                        <button type="button" class="btn-sub" onclick="history.back()">취소</button>
-                        <button type="submit" class="btn-main" style="margin-left:8px;">등록하기</button>
-                    </div>
-                </form>
-            </div>
-        </main>
-    </div>
-    <jsp:include page="../layout/footer.jsp" />
-</body>
-</html>
+				<main id="mainArea">
+					<h3
+						style="font-size:24px; margin-bottom:20px; border-bottom:2px solid #1a0b2e; padding-bottom:15px;">
+						새 게시글 작성 (익명)</h3>
+
+					<div class="content-box">
+						<form action="<c:url value='/board/anon/write'/>" method="post" enctype="multipart/form-data">
+							<div class="form-group" style="margin-bottom: 20px;">
+								<label style="display:block; font-weight:bold; margin-bottom:8px;">제목</label>
+								<input type="text" name="title" placeholder="제목을 입력하세요" required
+									style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:16px;">
+							</div>
+
+							<div class="form-group" style="margin-bottom: 20px;">
+								<label style="display:block; font-weight:bold; margin-bottom:8px;">내용</label>
+								<textarea name="content" placeholder="내용을 입력하세요... (작성자는 철저히 숨겨집니다)" required
+									style="width:100%; height:300px; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:15px; resize:vertical;"></textarea>
+							</div>
+
+							<div class="form-group" style="margin-bottom: 30px;">
+								<label style="display:block; font-weight:bold; margin-bottom:8px;">사진 첨부</label>
+								<input type="file" name="uploadFiles" multiple accept="image/*"
+									onchange="previewImages(this)"
+									style="padding:10px; border:1px dashed #ccc; width:100%; border-radius:6px;">
+
+								<div id="imagePreviewContainer"
+									style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;"></div>
+							</div>
+
+							<div style="text-align:right; border-top:1px solid #eee; padding-top:20px;">
+								<button type="button" class="btn-sub" onclick="history.back()">취소</button>
+								<button type="submit" class="btn-main" style="margin-left:8px;">등록하기</button>
+							</div>
+						</form>
+					</div>
+				</main>
+			</div>
+			<jsp:include page="../layout/footer.jsp" />
+			<script>
+				function previewImages(input) {
+					const container = document.getElementById('imagePreviewContainer');
+					container.innerHTML = '';
+
+					if (input.files && input.files.length > 0) {
+						Array.from(input.files).forEach(file => {
+							if (file.type.startsWith('image/')) {
+								const img = document.createElement('img');
+								img.src = URL.createObjectURL(file);
+								img.style.width = '120px';
+								img.style.height = '120px';
+								img.style.objectFit = 'cover';
+								img.style.borderRadius = '8px';
+								img.style.border = '1px solid #ddd';
+								img.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+								container.appendChild(img);
+							}
+						});
+					}
+				}
+			</script>
+		</body>
+
+		</html>
