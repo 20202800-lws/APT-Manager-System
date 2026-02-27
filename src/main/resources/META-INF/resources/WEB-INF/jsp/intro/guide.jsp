@@ -25,7 +25,7 @@
                     <p>공간의 가치를 높이는 단지 안내입니다.</p>
                 </div>
                 <div class="img-box">
-				<img src="/images/logo/backGroung.png" alt="단지정원">
+				<img src="/images/logo/backGroung1.png" alt="단지정원">
  				<img src="/images/logo/skyRounge.png" alt="스카이라운지">   
 				<img src="/images/logo/child1.png" alt="어린이집">             
   			 </div>

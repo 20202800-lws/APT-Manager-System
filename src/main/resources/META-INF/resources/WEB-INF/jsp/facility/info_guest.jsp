@@ -43,7 +43,7 @@
 							<span class="room-price">1박 60,000원~</span>
 						</div>
 						<div class="room-card active" 
-						 onclick="window.open('/images/logo/room2', '객실이미지3', 'width=800,height=600,top=100,left=200')" 
+						 onclick="window.open('/images/logo/room2.png', '객실이미지3', 'width=800,height=600,top=100,left=200')" 
 						     style="cursor:pointer;">
 							<span class="room-title">C타입 (패밀리형)</span>
 							<span class="room-desc">침대 2 + 거실 + 욕실 2 + 주방1(24평)</span>

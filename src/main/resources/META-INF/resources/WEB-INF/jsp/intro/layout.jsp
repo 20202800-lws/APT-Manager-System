@@ -26,6 +26,8 @@
                 </div>
                 <div class="img-box">
                     <img src="/images/logo/apart6.png" alt="단지배치도">
+					<img src="/images/logo/apart7.png" alt="단지배치도2">
+
                 </div>
             </section>
         </main>

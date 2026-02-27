@@ -18,7 +18,7 @@
             <a href="/intro/layout">아파트 소개</a>
             <ul class="sub-menu">
                 <li><a href="/intro/layout">단지배치도</a></li>
-                <li><a href="/intro/guide">세대안내</a></li>
+                <li><a href="/intro/guide">단지안내</a></li>
                 <li><a href="/intro/floor_plan">평면도</a></li>
             </ul>
         </div>

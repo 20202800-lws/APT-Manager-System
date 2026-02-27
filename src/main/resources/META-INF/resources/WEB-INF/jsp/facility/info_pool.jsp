@@ -29,10 +29,9 @@
 				<div class="facility-section active" style="margin-top: 0;">
 					<div class="content-grid">
 						<div class="img-box">
-							<img id="mainPoolImg" src="/images/logo/swimming.jpg" alt="수영장1">
-							<img id="mainPoolImg" src="/images/logo/swimming.jpg2" alt="수영장2">		
-							<img id="mainPoolImg" src="/images/logo/swimming.jpg3" alt="수영장3">
+							<img id="mainPoolImg" src="/images/logo/swimming2.jpg" alt="수영장2">		
 						</div>
+										
 						<div class="info-box">
 							<h3>25m 4레인 정규 풀</h3>
 							<p>강습이 가능하고 유아풀이 있어 가족단위로 사용 할 수 있는 넓고 쾌적한 실내 수영장입니다. </p>
@@ -47,7 +46,7 @@
 									<tr>
 										<th>구분</th>
 										<th>이용요금</th>
-										<td>이용 시간</td>
+										<th>이용 시간</th>
 										<th>비고</th>
 									</tr>
 								</thead>

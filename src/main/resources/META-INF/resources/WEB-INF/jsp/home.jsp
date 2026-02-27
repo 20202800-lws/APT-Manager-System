@@ -25,6 +25,9 @@
 			 
 			  <a href="/intro/layout.jsp">
 			  <img src="/images/logo/summer.png"  style="cursor: pointer;"> </a>
+			  
+			  <a href="/intro/layout.jsp">
+			 <img src="/images/logo/skyRounge.png"  style="cursor: pointer;"> </a>
 	      
 	    </div>
 	    <div class="hero-text">우리들의 APARTNERS<br>함께 하세요</div>
@@ -36,11 +39,10 @@
         <p class="section-desc">천안 브레인시티의 중심, 자연과 일상이 공존하는 쾌적한 단지 설계를 확인하세요.</p>
         <div class="image-container">
 			<a href="/intro/guide.jsp">
-		  <img src="/images/logo/skyRounge.png"class="active" style="cursor: pointer;"></a>
+		  <img src="/images/logo/apart7.png"class="active" style="cursor: pointer;"></a>
 		 <a href="/intro/guide.jsp">
-	     <img src="/images/logo/apart5.png" style="cursor: pointer;"> </a>
-		  <a href="/intro/guide.jsp">
-		  <img src="/images/logo/garden.png" style="cursor: pointer;"> </a>
+	     <img src="/images/logo/apart6.png" style="cursor: pointer;"> </a>
+		  
         
         </div>
     </section>
@@ -59,6 +61,13 @@
 			    <a href="/intro/guide.jsp">
 			        <img src="/images/logo/garden.png" style="cursor: pointer;">
 			    </a>
+				<a href="/intro/guide.jsp">
+			 <img src="/images/logo/garden2.png" style="cursor: pointer;">
+		 </a>
+				<a href="/intro/guide.jsp">
+		     <img src="/images/logo/child2.png" style="cursor: pointer;">
+			 </a>
+		
         </div>
     </section>
 
