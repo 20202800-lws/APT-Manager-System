@@ -3,20 +3,18 @@ package com.apt.membermanager.dto;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
-
 import jakarta.validation.constraints.NotBlank;
+import java.util.List; // ★ List 임포트 필수
 
 @Getter @Setter
 public class BoardWriteDto {
-    //private String category; // FREE, EVENT 등
 	
 	@NotBlank(message = "제목을 입력하세요")
     private String title;
 	
 	@NotBlank(message = "내용을 입력하세요")
     private String content;
-    //private boolean Anonymous; // 1: 익명, 0: 실명
     
-    // 첨부파일 (화면에서 파일 업로드할 때 받음)
-    private MultipartFile file; 
+    // ★ JSP의 name="uploadFiles"와 일치시키고 다중 파일(List)로 변경
+    private List<MultipartFile> uploadFiles; 
 }
