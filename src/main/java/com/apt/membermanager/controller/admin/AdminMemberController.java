@@ -9,8 +9,10 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.apt.membermanager.beans.MemberBean;
 import com.apt.membermanager.service.MemberService;
@@ -50,6 +52,13 @@ public class AdminMemberController {
 		model.addAttribute("stats",status);
     	
         return "admin/member_list"; 
+    }
+    
+    @PostMapping("/member/approve")
+    @ResponseBody
+    public String approveMember(@RequestParam("userId") String userId) {
+    	memberService.approveMember(userId,"USER");
+    	return "success";
     }
 
 }

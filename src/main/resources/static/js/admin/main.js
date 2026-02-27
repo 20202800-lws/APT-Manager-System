@@ -47,50 +47,64 @@ const dashboardManager = (function() {
     /* =========================================
        민원 목록 페이징 및 렌더링
        ========================================= */
-    function renderClaims() {
-        const tbody = document.getElementById('minwonTableBody');
-        
-        if (minwonList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="color:#999; text-align:center; padding:30px;">최근 접수된 민원이 없습니다.</td></tr>';
-            renderPagination('minwonPaginationWrapper', 0, currentMinwonPage, 'dashboardManager.goToMinwonPage');
-            return;
-        }
+	   function renderClaims() {
+	           const tbody = document.getElementById('minwonTableBody');
+	           
+			   
+			       const filteredList = minwonList.filter(item => {
+			           const status = (item.compStatus || "").toUpperCase();
+			           // 대기, 접수, 진행중인 것만 노출 (완료된 것은 대시보드에서 제외할 때)
+			           return status === 'WAIT' || status === 'PENDING' || status === 'PROCESSING';
+			       });
 
-        const totalPages = Math.ceil(minwonList.length / rowsPerPage);
-        if (currentMinwonPage > totalPages) currentMinwonPage = totalPages || 1;
+			       
 
-        const startIndex = (currentMinwonPage - 1) * rowsPerPage;
-        const paginatedData = minwonList.slice(startIndex, startIndex + rowsPerPage);
+			       if (filteredList.length === 0) {
+			           tbody.innerHTML = '<tr><td colspan="4" style="color:#999; text-align:center; padding:30px;">최근 접수된 민원이 없습니다.</td></tr>';
+			           renderPagination('minwonPaginationWrapper', 0, currentMinwonPage, 'dashboardManager.goToMinwonPage');
+			           return;
+			       }
 
-        tbody.innerHTML = paginatedData.map(item => {
-            let badge = '';
-            // ★ 수정됨: 백엔드 상태값 표준 및 뱃지 색상 통일 (comp_manage.js와 동일하게 적용)
-            if(item.compStatus === 'PENDING') badge = '<span class="badge badge-gray">접수</span>';
-            else if(item.compStatus === 'PROCESSING') badge = '<span class="badge badge-blue">진행중</span>';
-            else if(item.compStatus === 'COMPLETED') badge = '<span class="badge badge-green">완료</span>';
-            else badge = '<span class="badge badge-gray">미상</span>';
+	           const totalPages = Math.ceil(filteredList.length / rowsPerPage);
+	           if (currentMinwonPage > totalPages) currentMinwonPage = totalPages || 1;
 
-            let catColor = item.category === 'FACILITY' ? '#1A237E' : '#666';
+	           const startIndex = (currentMinwonPage - 1) * rowsPerPage;
+	           const paginatedData = filteredList.slice(startIndex, startIndex + rowsPerPage);
 
-            // 카테고리 한글명 매핑
-            let catName = item.category;
-            const catMap = { 'FACILITY': '시설보수', 'NOISE': '층간소음', 'PARKING': '주차문제', 'ETC': '기타' };
-            if (catMap[item.category]) catName = catMap[item.category];
+	           tbody.innerHTML = paginatedData.map(item => {
+	               let badge = '';
+	               const status = (item.compStatus || "").toUpperCase();
 
-            return `
-                <tr>
-                    <td style="color:${catColor}; font-weight:600;">${catName}</td>
-                    <td class="td-title" onclick="alert('민원 상세(ID:${item.compId}) 이동')">
-                        ${item.title}
-                    </td>
-                    <td style="color:#888; font-size:0.9rem;">${item.regDate}</td>
-                    <td>${badge}</td>
-                </tr>
-            `;
-        }).join('');
+	               
+	               if (status === 'WAIT') {
+	                   badge = '<span class="badge badge-gray">대기</span>';
+	               } else if (status === 'PENDING') {
+	                   badge = '<span class="badge badge-danger">접수</span>'; // 신규접수는 빨간색!
+	               } else if (status === 'PROCESSING') {
+	                   badge = '<span class="badge badge-info">진행중</span>';
+	               } else if (status === 'COMPLETED' || status === 'DONE') {
+	                   badge = '<span class="badge badge-success">완료</span>';
+	               } else {
+	                   badge = `<span class="badge badge-gray">${status}</span>`;
+	               }
 
-        renderPagination('minwonPaginationWrapper', minwonList.length, currentMinwonPage, 'dashboardManager.goToMinwonPage');
-    }
+	               const catMap = { 'FACILITY': '시설보수', 'NOISE': '층간소음', 'PARKING': '주차문제', 'ETC': '기타' };
+	               const catName = catMap[item.category] || item.category;
+
+	               return `
+	                   <tr>
+	                       <td style="font-weight:600;">${catName}</td>
+	                       <td class="td-title" onclick="location.href='/admin/comp_manage?compId=${item.compId}'">
+	                           ${item.title}
+	                       </td>
+	                       <td style="color:#888; font-size:0.9rem;">${item.regDate}</td>
+	                       <td>${badge}</td>
+	                   </tr>
+	               `;
+	           }).join('');
+
+	           renderPagination('minwonPaginationWrapper', filteredList.length, currentMinwonPage, 'dashboardManager.goToMinwonPage');
+	       }
 
     /* =========================================
        승인 대기 회원 목록 페이징 및 렌더링

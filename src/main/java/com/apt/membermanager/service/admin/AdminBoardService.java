@@ -28,22 +28,28 @@ public class AdminBoardService {
 	private final BoardRepository boardRepository;
 	private final CommentRepository commentRepository;
 	
-	@Transactional(readOnly = true)
-    public Page<BoardListBean> searchByBoardPaging(String loginId,
-    		String keyword,Pageable pageable){
-    	
-    	String searchKeyword = (keyword == null || keyword
-    			.trim().isEmpty()) ? "" :keyword.trim();
-    	
-    	Page<Board> entitiesPage = boardRepository
-    			.findByTitleContaining(searchKeyword,pageable);
-    	List<BoardListBean> list = entitiesPage.getContent().stream().map(entity->{
-    		long count = commentRepository.countByBoard_BoardId(entity.getBoardId());
-    		return new BoardListBean(entity,loginId,count);
-    	}).collect(Collectors.toList());
-    	
-    	return new PageImpl<>(list,pageable,entitiesPage.getTotalElements());
-    }
+	public Page<BoardListBean> searchByBoardPaging(String category, String loginId, String keyword, Pageable pageable) {
+	    String searchKeyword = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword.trim();
+	    
+	    Page<Board> entitiesPage;
+	    boolean isAnonymous = category.equals("SECRET");
+
+	    if (category.equals("ALL")) {
+	        // 전체 카테고리 검색
+	        entitiesPage = boardRepository.findByTitleContaining(searchKeyword, pageable);
+	    } else {
+	        // 익명(SECRET)은 true, 자유(FREE)는 false
+	        entitiesPage = boardRepository.findByAnonymousAndTitleContaining(isAnonymous, searchKeyword, pageable);
+	    }
+
+	    // 결과 변환 로직 (기존과 동일)
+	    List<BoardListBean> list = entitiesPage.getContent().stream().map(entity -> {
+	        long count = commentRepository.countByBoard_BoardId(entity.getBoardId());
+	        return new BoardListBean(entity, loginId, count);
+	    }).collect(Collectors.toList());
+	    
+	    return new PageImpl<>(list, pageable, entitiesPage.getTotalElements());
+	}
 	
 	public Map<String,Long> getBoardStatus(){
 		LocalDateTime start = LocalDate.now().atStartOfDay();

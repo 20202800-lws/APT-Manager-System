@@ -1,13 +1,19 @@
 package com.apt.membermanager.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "COMPLAINT")
 public class Complaint {
 
@@ -31,10 +37,12 @@ public class Complaint {
     private String reply; // 관리자 답변
 
     private String phone;
+    
+    @Column(name = "comp_status")
     private String compStatus; // WAIT, DONE
 
-    @Column(length = 1)
-    private String isSecret; // Y/N
+    @Column(columnDefinition = "TINYINT(1)")
+    private boolean secret; // Y/N
 
     @CreationTimestamp
     private LocalDateTime regDate;

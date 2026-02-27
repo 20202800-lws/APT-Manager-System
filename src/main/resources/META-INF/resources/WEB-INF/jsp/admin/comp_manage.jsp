@@ -36,19 +36,19 @@
         <div class="stat-grid-container grid-4">
             <div class="stat-card border-left-primary">
                 <h3>전체 민원</h3>
-                <div class="number text-primary" id="statTotalCount">0<span class="unit">건</span></div>
+                <div class="number text-primary" id="statTotalCount">${stats.totalCount}<span class="unit">건</span></div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>신규 접수</h3>
-                <div class="number text-danger" id="statPendingCount">0<span class="unit">건</span></div>
+                <div class="number text-danger" id="statPendingCount">${stats.newCount}<span class="unit">건</span></div>
             </div>
             <div class="stat-card border-left-info">
                 <h3>처리 중</h3>
-                <div class="number text-info" id="statProcessingCount">0<span class="unit">건</span></div>
+                <div class="number text-info" id="statProcessingCount">${stats.processingCount}<span class="unit">건</span></div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>처리 완료</h3>
-                <div class="number text-success" id="statCompletedCount">0<span class="unit">건</span></div>
+                <div class="number text-success" id="statCompletedCount">${stats.completedCount}<span class="unit">건</span></div>
             </div>
         </div>
 
@@ -56,24 +56,32 @@
             <div class="section-header">
                 <h3 class="section-title">접수 목록</h3>
                 <div class="section-actions">
-                    <select class="form-select" id="categoryFilter" onchange="complaintManager.searchTable()">
-                        <option value="">전체 유형</option>
-                        <option value="FACILITY">시설보수</option>
-                        <option value="NOISE">층간소음</option>
-                        <option value="PARKING">주차문제</option>
-                        <option value="ETC">기타</option>
-                    </select>
-                    <select class="form-select" id="statusFilter" onchange="complaintManager.searchTable()">
-                        <option value="">전체 상태</option>
-                        <option value="PENDING">접수</option>
-                        <option value="PROCESSING">진행중</option>
-                        <option value="COMPLETED">완료</option>
-                    </select>
-                    <input type="text" class="form-input" id="keyword" placeholder="작성자 또는 제목" 
-                           onkeyup="if(window.event.keyCode==13){complaintManager.searchTable()}">
-                    <button class="btn btn-secondary" onclick="complaintManager.searchTable()">
-                        <i class="fa-solid fa-search"></i>
-                    </button>
+					<select class="form-select" id="categoryFilter" onchange="complaintManager.searchTable()">
+					        <option value="">전체 유형</option>
+					        <option value="FACILITY" ${param.category == 'FACILITY' ? 'selected' : ''}>시설보수</option>
+					        <option value="NOISE" ${param.category == 'NOISE' ? 'selected' : ''}>층간소음</option>
+					        <option value="PARKING" ${param.category == 'PARKING' ? 'selected' : ''}>주차문제</option>
+					        <option value="ETC" ${param.category == 'ETC' ? 'selected' : ''}>기타</option>
+					    </select>
+
+					    <select class="form-select" id="statusFilter" onchange="complaintManager.searchTable()">
+					        <option value="">전체 상태</option>
+					        <option value="PENDING" ${param.status == 'PENDING' ? 'selected' : ''}>접수</option>
+					        <option value="PROCESSING" ${param.status == 'PROCESSING' ? 'selected' : ''}>진행중</option>
+					        <option value="COMPLETED" ${param.status == 'COMPLETED' ? 'selected' : ''}>완료</option>
+					    </select>
+
+					    <select class="form-select" id="searchType" style="width: 100px;">
+					        <option value="title" ${searchType == 'title' ? 'selected' : ''}>제목</option>
+					        <option value="userId" ${searchType == 'userId' ? 'selected' : ''}>작성자ID</option>
+					    </select>
+
+					    <input type="text" class="form-input" id="keyword" value="${keyword}" placeholder="검색어 입력" 
+					           onkeyup="if(window.event.keyCode==13){complaintManager.searchTable()}">
+					           
+					    <button class="btn btn-secondary" onclick="complaintManager.searchTable()">
+					        <i class="fa-solid fa-search"></i>
+					    </button>
                 </div>
             </div>
 
@@ -92,7 +100,22 @@
                 </tbody>
             </table>
 
-            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;">
+				<c:if test="${paging.totalPages > 1}">
+				        <button class="btn btn-secondary btn-xs" ${!paging.hasPrevious() ? 'disabled' : ''} 
+				                onclick="location.href='?page=${paging.number-1}&searchType=${searchType}&keyword=${keyword}'">&lt;</button>
+				        
+				        <c:forEach var="i" begin="0" end="${paging.totalPages - 1}">
+				            <c:if test="${i >= paging.number - 5 && i <= paging.number + 5}">
+				                <button class="btn ${i == paging.number ? 'btn-primary' : 'btn-secondary'} btn-xs" 
+				                        onclick="location.href='?page=${i}&searchType=${searchType}&keyword=${keyword}'">${i + 1}</button>
+				            </c:if>
+				        </c:forEach>
+
+				        <button class="btn btn-secondary btn-xs" ${!paging.hasNext() ? 'disabled' : ''} 
+				                onclick="location.href='?page=${paging.number+1}&searchType=${searchType}&keyword=${keyword}'">&gt;</button>
+				    </c:if>
+			</div>
         </div>
     </main>
 </div>
@@ -120,11 +143,12 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <select id="modalCompStatus" class="form-select" style="width:150px;">
-                <option value="PENDING">접수 (대기)</option>
-                <option value="PROCESSING">진행중</option>
-                <option value="COMPLETED">처리 완료</option>
-            </select>
+			<select id="modalCompStatus" class="form-select" style="width:150px;">
+			    <option value="WAIT">대기 (미확인)</option>
+			    <option value="PENDING">접수 완료</option>
+			    <option value="PROCESSING">처리 중</option>
+			    <option value="COMPLETED">처리 완료</option>
+			</select>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-secondary" onclick="complaintManager.closeModal()">닫기</button>
                 <button class="btn btn-primary" onclick="complaintManager.saveComplaint()">저장</button>
@@ -134,25 +158,24 @@
 </div>
 
 <script>
-    window.globalComplaintList = [];
-
-    <c:if test="${not empty complaintList}">
-        <c:forEach var="item" items="${complaintList}">
-            window.globalComplaintList.push({
-                compId: parseInt('${item.compId}'),
-                category: '${item.category}',
-                title: '${item.title}',
-                content: '${item.content}',
-                userName: '${item.userName}',
-                regDate: '${item.regDate}',
-                compStatus: '${item.compStatus}',
-                reply: '${item.reply}'
-            });
-        </c:forEach>
-    </c:if>
+	window.globalComplaintList = [
+	        <c:forEach var="item" items="${paging.content}" varStatus="status">
+	            {
+	                compId: ${item.compId},
+	                category: '${item.category}',
+	                title: '${item.title}',
+	                content: `${item.content}`, // 줄바꿈 대응 위해 백틱 사용 권장
+	                userName: '${item.userName}',
+	                regDate: '${item.regDate}',
+	                compStatus: '${item.compStatus}',
+					userId : '${item.userId}',
+	                reply: '${item.reply}'
+	            }${!status.last ? ',' : ''}
+	        </c:forEach>
+	    ];
 </script>
 
-<script src="<c:url value='/js/admin/complaint.js'/>"></script>
+<script src="<c:url value='/js/admin/comp_manage.js'/>"></script>
 
 </body>
 </html>

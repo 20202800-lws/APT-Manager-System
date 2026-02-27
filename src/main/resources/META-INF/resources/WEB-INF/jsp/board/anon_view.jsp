@@ -76,7 +76,7 @@
                 <div style="text-align:right; margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
                     <button type="button" class="btn-sub" onclick="location.href='<c:url value="/board/anon"/>'">목록으로</button>
                     <span id="myButtons">
-                        <form action="<c:url value='/board/anon/delete'/>" method="post" style="display:inline-block; margin-left:5px;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                        <form action="<c:url value='/board/delete'/>" method="post" style="display:inline-block; margin-left:5px;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
                             <input type="hidden" name="boardId" value="${post.boardId}">
                             <button type="submit" class="btn-danger">삭제</button>
                         </form>

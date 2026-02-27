@@ -45,12 +45,12 @@
             <div class="section-header">
                 <h3 class="section-title">공지사항 목록</h3>
                 <div class="section-actions">
-                    <select class="form-select" id="searchFilter" onchange="noticeManager.searchTable(true)">
+                    <select class="form-select" id="searchFilter">
                         <option value="all">전체 상태</option>
                         <option value="public">공개</option>
                         <option value="private">비공개</option>
                     </select>
-                    <input type="text" class="form-input" id="searchKeyword" placeholder="제목 검색" onkeyup="noticeManager.searchTable(true)">
+                    <input type="text" class="form-input" id="searchKeyword" placeholder="제목 검색" value="${keyword}" onkeyup="if(window.event.keyCode==13){noticeManager.searchTable(true)}">
                     <button class="btn btn-primary" onclick="noticeManager.searchTable(true)"><i class="fa-solid fa-search"></i></button>
                     
                     <button class="btn btn-dark" onclick="noticeManager.openModal('create')">
@@ -77,7 +77,29 @@
                 </tbody>
             </table>
 
-            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;">
+				<div class="admin-pagination" style="display:flex; justify-content:center; gap:8px;">
+					<c:if test="$paging.totalPages>0}">
+				        <%-- 이전 페이지 --%>
+				        <c:if test="${paging.hasPrevious()}">
+				            <a href="?page=${paging.number - 1}&searchInput=${keyword}&searchType=${searchType}" class="btn btn-secondary btn-xs">이전</a>
+				        </c:if>
+
+				        <%-- 페이지 번호 --%>
+				        <c:forEach var="i" begin="0" end="${paging.totalPages - 1}">
+				            <a href="?page=${i}&searchInput=${keyword}&searchType=${searchType}" 
+				               class="btn btn-xs ${i == paging.number ? 'btn-primary' : 'btn-secondary'}">
+				               ${i + 1}
+				            </a>
+				        </c:forEach>
+
+				        <%-- 다음 페이지 --%>
+				        <c:if test="${paging.hasNext()}">
+				            <a href="?page=${paging.number + 1}&searchInput=${keyword}&searchType=${searchType}" class="btn btn-secondary btn-xs">다음</a>
+				        </c:if>
+					</c:if>
+				    </div>
+			</div>
         </div>
 
     </main>
@@ -92,63 +114,80 @@
             </button>
         </div>
         
-        <form id="noticeForm" onsubmit="return false;">
+        <form id="noticeForm" action="/admin/notice/write_pro" method="post">
             <input type="hidden" id="modalNoticeId" name="noticeId">
 
-            <div class="form-grid" style="display:flex; flex-direction:column; gap:15px;">
-                <div class="info-group">
-                    <label class="info-label">제목</label>
-                    <input type="text" class="form-input" id="inputTitle" name="title" placeholder="제목 입력" style="font-weight:500;">
-                </div>
+			<input type="hidden" id="modalNoticeId" name="noticeId">
 
-                <div style="display:flex; gap:20px; align-items:center; padding:15px; background:#f8f9fa; border-radius:8px;">
-                    <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
-                        <input type="checkbox" id="checkImportant" name="isImportant" style="transform:scale(1.2); accent-color:var(--danger);">
-                        <span style="font-weight:600; color:var(--danger);">[필독] 상단 고정</span>
-                    </label>
-                    <div style="width:1px; height:20px; background:#ddd;"></div>
-                    <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
-                        <input type="checkbox" id="checkVisible" name="isVisible" checked style="transform:scale(1.2);">
-                        <span>바로 공개하기</span>
-                    </label>
-                </div>
+			    <div class="form-grid" style="display:flex; flex-direction:column; gap:15px;">
+			        <div class="info-group">
+			            <label class="info-label">제목</label>
+			            <input type="text" class="form-input" id="inputTitle" name="title" placeholder="제목 입력" style="font-weight:500;" required>
+			        </div>
 
-                <div class="info-group">
-                    <label class="info-label">내용</label>
-                    <textarea class="form-input" id="inputContent" name="content" rows="12" placeholder="내용을 입력하세요..." style="resize:vertical; line-height:1.6;"></textarea>
-                </div>
-            </div>
+			        <div style="display:flex; gap:20px; align-items:center; padding:15px; background:#f8f9fa; border-radius:8px;">
+			            <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
+			                <input type="checkbox" id="checkImportant" name="isImportant" value="true" style="transform:scale(1.2); accent-color:var(--danger);">
+			                <span style="font-weight:600; color:var(--danger);">[필독] 상단 고정</span>
+			            </label>
+			            <div style="width:1px; height:20px; background:#ddd;"></div>
+			            <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
+			                <input type="checkbox" id="checkVisible" name="isVisible" value="true" checked style="transform:scale(1.2);">
+			                <span>바로 공개하기</span>
+			            </label>
+			        </div>
 
-            <div style="margin-top:25px; display:flex; justify-content:flex-end; gap:10px;">
-                <button class="btn btn-secondary" onclick="noticeManager.closeModal()">취소</button>
-                <button class="btn btn-primary" onclick="noticeManager.saveNotice()">저장하기</button>
-            </div>
+			        <div class="info-group">
+			            <label class="info-label">내용</label>
+			            <textarea class="form-input" id="inputContent" name="content" rows="12" placeholder="내용을 입력하세요..." style="resize:vertical; line-height:1.6;" required></textarea>
+			        </div>
+			    </div>
+
+			    <div style="margin-top:25px; display:flex; justify-content:flex-end; gap:10px;">
+			        <button type="button" class="btn btn-secondary" onclick="noticeManager.closeModal()">취소</button>
+			        <button type="button" class="btn btn-primary" onclick="noticeManager.saveNotice()">저장하기</button>
+			    </div>
         </form>
     </div>
 </div>
 
-<script src="<c:url value='/js/admin/admin_common.js'/>"></script>
+
 
 <script>
-    window.globalNoticeList = [];
+	window.globalNoticeList = [];
+	    <c:forEach var="item" items="${paging.content}">
+	        window.globalNoticeList.push({
+	            noticeId: parseInt('${item.noticeId}'),
+	            writerId: '${item.writerId}',
+	            title: '${item.title.replace("'", "\\'")}', 
+	            content: `${item.content != null ? item.content.replace("`", "\\`") : ""}`,
+	            views: parseInt('${item.views}') || 0,
+	            regDate: '${item.regDate}',
+	            isImportant: ${item.isImportant == true},
+	            isVisible: ${item.isVisible != false}
+	        });
+	    </c:forEach>
 
-    <c:if test="${not empty noticeList}">
-        <c:forEach var="item" items="${noticeList}">
-            window.globalNoticeList.push({
-                noticeId: parseInt('${item.noticeId}'),
-                writerId: '${item.writerId}',
-                title: '${item.title}',
-                content: '${item.content}', // 목록에서 내용의 일부를 툴팁으로 보여주거나 할 때 유용함
-                views: parseInt('${item.views}') || 0,
-                regDate: '${item.regDate}',
-                isImportant: ${item.isImportant == true}, // DB/VO에 추가되었다고 가정
-                isVisible: ${item.isVisible != false} // 기본값 true 설정
-            });
-        </c:forEach>
-    </c:if>
+	    // 2. 서버의 페이징 상태를 JS로 전달
+		window.serverPaging = {
+		        currentPage: ${paging.number},
+		        totalPages: ${paging.totalPages},
+		        totalElements: ${paging.totalElements},
+		        // keyword가 null일 경우 빈 문자열("")로 처리하여 에러 방지
+		        keyword: '${keyword != null ? keyword : ""}', 
+		        searchType: '${searchType != null ? searchType : "title"}'
+		    };
+			
+			window.serverStats = {
+			        total: ${status.total != null ? status.total : 0},
+			        important: ${status.importantCount != null ? status.importantCount : 0},
+			        hidden: ${status.hiddenCount != null ? status.hiddenCount : 0}
+			    };
+	
+	
 </script>
+<script src="<c:url value='/js/admin/notice_manage.js'/>"></script>
 
-<script src="<c:url value='/js/admin/notice.js'/>"></script>
 
 </body>
 </html>

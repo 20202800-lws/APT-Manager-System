@@ -121,8 +121,8 @@
 
     // 2. 최근 민원 리스트
     window.globalRecentMinwonList = [];
-    <c:if test="${not empty recentMinwonList}">
-        <c:forEach var="item" items="${recentMinwonList}">
+    <c:if test="${not empty compPaging.content}">
+        <c:forEach var="item" items="${compPaging.content}">
             window.globalRecentMinwonList.push({
                 compId: parseInt('${item.compId}'),
                 category: '${item.category}',
@@ -135,8 +135,8 @@
 
     // 3. 승인 대기 회원 리스트
     window.globalPendingMemberList = [];
-    <c:if test="${not empty pendingMemberList}">
-        <c:forEach var="item" items="${pendingMemberList}">
+    <c:if test="${not empty paging.content}">
+        <c:forEach var="item" items="${paging.content}">
             window.globalPendingMemberList.push({
                 userId: '${item.userId}',
                 dong: '${item.dong}',
@@ -149,7 +149,7 @@
 </script>
 
 <script src="<c:url value='/js/admin/admin_common.js'/>"></script>
-<script src="<c:url value='/js/admin/dashboard.js'/>"></script>
+<script src="<c:url value='/js/admin/main.js'/>"></script>
 
 </body>
 </html>

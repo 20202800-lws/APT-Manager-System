@@ -13,8 +13,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchPost(); });
 });
-
+ 
 function renderList() {
+    const displayData = window.globalBoardList || []; 
+
+    document.getElementById('boardBody').innerHTML = displayData.map((p) => {
+        const isDone = (p.compStatus === 'DONE');
+        const statusColor = isDone ? '#10b981' : '#ef4444';
+        const statusText = isDone ? '처리완료' : '답변대기';
+
+        return `
+        <tr onclick="location.href='/board/comp/detail/${p.compId}'" style="cursor:pointer;">
+            <td>${p.compId}</td>
+            <td class="title-cell" style="text-align:left; padding-left:15px;">${p.title}</td>
+            <td>${p.authorName}</td> 
+            <td>${p.formattedDate}</td>
+            <td style="font-weight:bold; color:${statusColor};">${statusText}</td>
+        </tr>
+    `}).join('') || '<tr><td colspan="5" style="text-align:center; padding:50px;">등록된 민원이 없습니다.</td></tr>';
+    
+}
+/*function renderList() {
     document.getElementById('tableWrapper').style.display = 'block';
     const pagedData = boardData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -22,6 +41,7 @@ function renderList() {
     document.getElementById('boardBody').innerHTML = pagedData.map((p, index) => {
         const actualIdx = (currentPage - 1) * itemsPerPage + index;
         const statusColor = p.status === '완료' ? '#10b981' : '#ef4444'; // 녹색 or 빨간색
+		const statusText = p.compStatus === 'DONE' ? '처리완료' : '답변대기';
         return `
         <tr onclick="showDetail(${actualIdx})" style="cursor:pointer;">
             <td>${p.id}</td>
@@ -34,7 +54,7 @@ function renderList() {
     `}).join('') || '<tr><td colspan="6" style="text-align:center; padding:50px; color:#999;">등록된 민원이 없습니다.</td></tr>';
 
     renderPaginationUI(boardData.length);
-}
+}*/
 
 function renderPaginationUI(total) {
     const totalPages = Math.ceil(total / itemsPerPage);
@@ -58,13 +78,8 @@ function savePost() {
 }
 function deletePost(idx) { const targetIdx = (idx !== undefined) ? idx : currentPostIdx; if (confirm("삭제하시겠습니까?")) { boardData.splice(targetIdx, 1); showList(); } }
 
-function showDetail(idx) {
-    currentPostIdx = idx; const post = boardData[idx]; post.hits++;
-    document.getElementById('listView').style.display = 'none'; document.getElementById('detailView').style.display = 'block';
-    document.getElementById('viewTitle').innerText = post.title; document.getElementById('viewuser_id').innerText = post.author;
-    document.getElementById('viewDate').innerText = post.date; document.getElementById('viewHits').innerText = post.hits; document.getElementById('viewContent').innerText = post.content;
-    document.getElementById('viewImages').innerHTML = post.imgs.map(s => `<img src="${s}" style="max-width:100%; border-radius:10px; margin-top:10px;">`).join('');
-    document.getElementById('commentArea').style.display = 'block'; renderComments();
+function showDetail(compId) {
+    location.href = `/complaint/detail/${compId}`;
 }
 
 function renderComments() {

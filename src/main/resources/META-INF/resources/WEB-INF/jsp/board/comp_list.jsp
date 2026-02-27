@@ -34,7 +34,7 @@
                                 <th>제목</th>
                                 <th>작성자</th>
                                 <th>날짜</th>
-                                <th>조회수</th>
+                                
                                 <th>처리상태</th> </tr>
                         </thead>
                         <tbody id="boardBody"></tbody>
@@ -58,5 +58,20 @@
 
     <jsp:include page="../layout/footer.jsp" />
     <script src="<c:url value='/js/board/board_comp.js'/>"></script>
+	<script>
+	    // JS가 인식할 수 있도록 서버의 paging.content를 globalBoardList로 변환
+	    window.globalBoardList = [
+	        <c:forEach var="item" items="${paging.content}" varStatus="status">
+	            {
+	                compId: ${item.compId},
+	                title: '${item.title}', // 본인이 아니면 서비스에서 "🔒 비밀글"로 변환됨
+	                authorName: '${item.userName}', // JS에서 authorName으로 쓰고 있음
+	                formattedDate: '${item.regDate}', // JS에서 formattedDate로 쓰고 있음
+	               
+	                compStatus: '${item.compStatus}' // WAIT 또는 DONE
+	            }${!status.last ? ',' : ''}
+	        </c:forEach>
+	    ];
+	</script>
 </body>
 </html>

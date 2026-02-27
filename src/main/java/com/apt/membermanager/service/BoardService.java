@@ -53,13 +53,15 @@ public class BoardService {
     //게시판 목록(페이징)
     @Transactional(readOnly = true)
     public Page<BoardListBean> searchByBoardPaging(String loginId, boolean anonymous,
-    		String keyword,Pageable pageable){
+    		String searchType,String keyword, Pageable pageable){
     	
     	String searchKeyword = (keyword == null || keyword
     			.trim().isEmpty()) ? "" :keyword.trim();
     	
-    	Page<Board> entitiesPage = boardRepository
-    			.findByAnonymousAndTitleContaining(anonymous,searchKeyword,pageable);
+    	Page<Board> entitiesPage;
+    	if(searchType.equals("title")) {
+    		entitiesPage = boardRepository.findByAnonymousAndTitleContaining(anonymous,searchKeyword,pageable);
+    	} else entitiesPage = boardRepository.findByAnonymousAndUser_UserNameContaining(anonymous,searchKeyword,pageable);
     	List<BoardListBean> list = entitiesPage.getContent().stream().map(entity->{
     		long count = commentRepository.countByBoard_BoardId(entity.getBoardId());
     		return new BoardListBean(entity,loginId,count);
@@ -83,5 +85,17 @@ public class BoardService {
 		viewBean.setPrev_id(boardRepository.findPrevId(id, board.isAnonymous()));
 		viewBean.setNext_id(boardRepository.findNextId(id, board.isAnonymous()));
 		return viewBean;
+	}
+	
+	public boolean deletePost(Long boardId, String currentId) {
+		// TODO Auto-generated method stub
+		Board board = boardRepository.findById(boardId)
+		        .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+		if (!board.getUser().getUsername().equals(currentId)) {
+	        throw new IllegalStateException("삭제 권한이 없습니다.");
+	    }
+		boardRepository.delete(board);
+		
+		return board.isAnonymous();
 	}
 }

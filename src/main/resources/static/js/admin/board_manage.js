@@ -17,13 +17,26 @@ const boardManager = (function() {
 
     const modalMap = {};
 
-    document.addEventListener('DOMContentLoaded', () => {
+	document.addEventListener('DOMContentLoaded', () => {
+	    modalMap['bannedModal'] = document.getElementById('bannedModal');
+	    modalMap['detailModal'] = document.getElementById('detailModal');
+	    
+	    updateStats();
+	    
+	    // filterTab('ALL', 0); // <--- 이 줄을 삭제하거나 주석 처리하세요!
+	    
+	    // 대신 현재 데이터만 화면에 바로 출력합니다.
+	    renderTable(boardList); 
+
+	    // 모달 닫기 로직 유지...
+	});
+    /*document.addEventListener('DOMContentLoaded', () => {
         // Init Modals
         modalMap['bannedModal'] = document.getElementById('bannedModal');
         modalMap['detailModal'] = document.getElementById('detailModal');
         
         updateStats();
-        filterTab('ALL', 0);
+        filterTab('ALL', 0);*/
 
         // 모달 바깥 배경 클릭 시 닫기
         window.onclick = function(event) {
@@ -31,27 +44,39 @@ const boardManager = (function() {
                 closeModal(event.target.id);
             }
         };
-    });
+   
 
     /* =========================================
        2. Logic Functions
        ========================================= */
     function updateStats() {
+		const s = window.adminStats || { total: 0, newPost: 0, report: 0 };
+		
         const totalEl = document.getElementById('statTotalCount');
-        if(totalEl) totalEl.innerHTML = `${boardList.length}<span class="unit">개</span>`;
+        if(totalEl) totalEl.innerHTML = `${s.total}<span class="unit">개</span>`;
         
         // 오늘 날짜를 기준으로 오늘 작성된 글 계산
         const today = new Date().toISOString().split('T')[0]; 
         const todayCount = boardList.filter(d => d.regDate && d.regDate.startsWith(today)).length;
         const todayEl = document.getElementById('statTodayCount');
-        if(todayEl) todayEl.innerHTML = `${todayCount}<span class="unit">개</span>`;
+        if(todayEl) todayEl.innerHTML = `${s.newPost}<span class="unit">개</span>`;
 
         const reportCount = boardList.filter(d => d.reportCount > 0 || d.postStatus === 'BLIND').length;
         const reportEl = document.getElementById('statReportCount');
         if(reportEl) reportEl.innerHTML = `${reportCount}<span class="unit">건</span>`;
     }
 
-    function filterTab(category, index) {
+	function filterTab(category) {
+	    // 1. 현재 입력된 검색 조건 가져오기
+	    const filter = document.getElementById('searchFilter').value;
+	    const input = document.getElementById('searchInput').value.trim();
+	    
+	    // 2. 서버로 페이지 이동 (탭 클릭 시에는 항상 0페이지부터)
+	    // 쿼리 스트링에 category를 포함시켜서 보냅니다.
+	    location.href = `?page=0&category=${category}&searchFilter=${filter}&searchInput=${encodeURIComponent(input)}`;
+	}
+	
+    /*function filterTab(category, index) {
         currentCategory = category;
         
         // 탭 하이라이터 이동
@@ -70,9 +95,33 @@ const boardManager = (function() {
         if(titleEl) titleEl.innerText = titles[category] || '게시판 목록';
 
         searchTable(false); // 탭 이동 시 무조건 1페이지로 리셋
-    }
+    }*/
 
-    function searchTable(isPageMove = false) {
+	function searchTable() {
+	    // 1. HTML 요소 가져오기 (id가 정확해야 합니다)
+	    const filterEl = document.getElementById('searchFilter');
+	    const inputEl = document.getElementById('searchInput');
+	    
+	    if (!filterEl || !inputEl) {
+	        console.error("검색 요소를 찾을 수 없습니다.");
+	        return;
+	    }
+
+	    const filter = filterEl.value;
+	    const input = inputEl.value.trim();
+	    
+	    // 2. 현재 URL에서 category 파라미터 추출 (없으면 ALL)
+	    const urlParams = new URLSearchParams(window.location.search);
+	    let category = urlParams.get('category') || 'ALL';
+
+	    // 3. 서버로 이동 (주소 구성 확인)
+	    // 인코딩을 위해 encodeURIComponent를 꼭 사용하세요.
+	    const targetUrl = `?page=0&category=${category}&searchFilter=${filter}&searchInput=${encodeURIComponent(input)}`;
+	    
+	    console.log("이동할 주소:", targetUrl); // 브라우저 콘솔(F12)에서 확인 가능
+	    location.href = targetUrl;
+	}
+    /*function searchTable(isPageMove = false) {
         if (!isPageMove) currentPage = 1;
 
         const searchInput = document.getElementById('searchInput');
@@ -99,9 +148,49 @@ const boardManager = (function() {
         });
 
         renderTable(filtered);
-    }
+    }*/
 
-    function renderTable(data) {
+	function renderTable(data) {
+	    const tbody = document.getElementById('boardTableBody');
+	    if(!tbody) return;
+
+	    if (data.length === 0) {
+	        tbody.innerHTML = '<tr><td colspan="8" style="padding:40px; color:#999; text-align:center;">조건에 맞는 게시글이 없습니다.</td></tr>';
+	        // renderPagination(0); // <--- 이 줄을 주석 처리하거나 삭제하세요!
+	        return;
+	    }
+
+	    // ★ 수정: 더 이상 slice 하지 않고 백엔드에서 넘어온 data를 그대로 씁니다.
+	    const paginatedData = data; 
+
+	    tbody.innerHTML = paginatedData.map(item => {
+	        // (기존 뱃지 및 상태 HTML 생성 로직은 그대로 유지)
+	        let catBadge = (item.category === 'FREE') ? '<span class="badge badge-blue">자유</span>' : '<span class="badge badge-warning">익명</span>';
+	        
+	        let statusHtml = '';
+	        if (item.postStatus === 'BLIND') statusHtml = '<span class="badge badge-gray">숨김</span>';
+	        else if (item.reportCount > 0) statusHtml = `<span class="badge badge-red">신고 ${item.reportCount}</span>`;
+	        else statusHtml = '<span class="badge badge-success">정상</span>';
+
+	        return `
+	            <tr>
+	                <td>${item.boardId}</td>
+	                <td>${catBadge}</td>
+	                <td style="text-align:left; cursor:pointer;" onclick="boardManager.openDetailModal(${item.boardId})">${item.title}</td>
+	                <td>${item.userName}</td>
+	                <td>${item.regDate}</td>
+	                <td>${item.views}</td>
+	                <td>${statusHtml}</td>
+	                <td>
+	                    <button class="btn btn-secondary btn-xs" onclick="boardManager.openDetailModal(${item.boardId})">관리</button>
+	                </td>
+	            </tr>
+	        `;
+	    }).join('');
+
+	    // renderPagination(data.length); // <--- 이 줄도 주석 처리하세요!
+	}
+    /*function renderTable(data) {
         const tbody = document.getElementById('boardTableBody');
         if(!tbody) return;
 
@@ -159,7 +248,7 @@ const boardManager = (function() {
         }).join('');
 
         renderPagination(data.length);
-    }
+    }*/
 
     function renderPagination(totalCount) {
         const paginationContainer = document.getElementById('paginationWrapper');

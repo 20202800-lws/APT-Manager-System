@@ -32,17 +32,17 @@
             </div>
             <div class="stat-card border-left-warning">
                 <h3>승인 대기</h3>
-                <div class="number text-warning" id="statWaitCount">${stats.total}<span class="unit">명</span></div>
+                <div class="number text-warning" id="statWaitCount">${stats.wait}<span class="unit">명</span></div>
                 <div class="desc" style="font-weight:600; color:#d32f2f;">가입 승인 필요</div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>입주민 (정상)</h3>
-                <div class="number text-success" id="statActiveCount">${stats.total}<span class="unit">명</span></div>
+                <div class="number text-success" id="statActiveCount">${stats.member}<span class="unit">명</span></div>
                 <div class="desc">활동 중인 입주민</div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>관리자</h3>
-                <div class="number text-danger" id="statAdminCount">${stats.total}<span class="unit">명</span></div>
+                <div class="number text-danger" id="statAdminCount">${stats.admin}<span class="unit">명</span></div>
                 <div class="desc">시스템 관리 권한</div>
             </div>
         </div>

@@ -12,7 +12,7 @@
 <body>
 
 <jsp:include page="../layout/header_sub.jsp">
-    <jsp:param name="pageTitle" value="소식" />
+    <jsp:param name="pageTitle" value="공지사항" />
 </jsp:include>
 
 <div class="page-wrapper">
@@ -41,24 +41,24 @@
                 <tbody id="boardBody">
                     <%-- 백엔드(Controller)에서 넘어온 데이터(noticeList)를 반복 출력합니다. --%>
                     <c:choose>
-                        <c:when test="${empty noticeList}">
+                        <c:when test="${empty paging.content}">
                             <tr>
                                 <td colspan="3" style="padding:60px; color:#999;">등록된 공지사항이 없습니다.</td>
                             </tr>
                         </c:when>
                         <c:otherwise>
-                            <c:forEach var="notice" items="${noticeList}">
+                            <c:forEach var="notice" items="${paging.content}">
                                 <%-- 중요 공지(isPinned)일 경우 하이라이트 클래스 추가 --%>
-                                <tr class="${notice.isPinned ? 'pinned-row' : ''}">
+                                <tr class="${notice.isImportant ? 'pinned-row' : ''}">
                                     <td>
-                                        <c:if test="${notice.isPinned}"><span class="badge-pinned">중요</span></c:if>
-                                        <c:if test="${!notice.isPinned}">${notice.id}</c:if>
+                                        <c:if test="${notice.isImportant}"><span class="badge-pinned">중요</span></c:if>
+                                        <c:if test="${!notice.isImportant}">${notice.noticeId}</c:if>
                                     </td>
-                                    <td class="title-cell ${notice.isPinned ? 'pinned-text' : ''}" 
-                                        onclick="location.href='/notice/notice_view?id=${notice.id}'">
+                                    <td class="title-cell ${notice.isImportant ? 'pinned-text' : ''}" 
+                                        onclick="location.href='/notice/notice_view?id=${notice.noticeId}'">
                                         ${notice.title}
                                     </td>
-                                    <td style="color:#888;">${notice.date}</td>
+                                    <td style="color:#888;">${notice.regDate}</td>
                                 </tr>
                             </c:forEach>
                         </c:otherwise>
@@ -74,12 +74,34 @@
             </div>
             
             <div class="pagination">
+				<%-- 전체 페이지가 0보다 클 때만 페이징 표시 --%>
+				    <c:if test="${paging.totalPages > 0}">
+				        
+				        <%-- 이전 페이지 버튼 --%>
+				        <c:if test="${paging.hasPrevious()}">
+				            <span class="page-link" onclick="location.href='?page=${paging.number - 1}&keyword=${keyword}'">&laquo;</span>
+				        </c:if>
+
+				        <%-- 페이지 번호들: 음수 방지를 위해 한 번 더 체크 --%>
+				        <c:forEach var="i" begin="0" end="${paging.totalPages > 0 ? paging.totalPages - 1 : 0}">
+				            <span class="page-number ${i == paging.number ? 'active' : ''}" 
+				                  onclick="location.href='?page=${i}&keyword=${keyword}'">
+				                ${i + 1}
+				            </span>
+				        </c:forEach>
+
+				        <%-- 다음 페이지 버튼 --%>
+				        <c:if test="${paging.hasNext()}">
+				            <span class="page-link" onclick="location.href='?page=${paging.number + 1}&keyword=${keyword}'">&raquo;</span>
+				        </c:if>
+				        
+				    </c:if>
                 </div>
         </div>
     </main>
 </div>
 
 <jsp:include page="../layout/footer.jsp" />
-
+<script src="<c:url value='/js/notice/notice.js'/>"></script>
 </body>
 </html>

@@ -11,8 +11,8 @@ function getTodayString() {
 document.addEventListener("DOMContentLoaded", () => {
 	boardData = window.globalBoardList;
     renderList();
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchPost(); });
+    /*const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchPost(); });*/
 });
 
 function renderList() {
@@ -25,9 +25,10 @@ function renderList() {
 
     tbody.innerHTML = displayData.map((p) => {
         return `
-        <tr onclick="location.href='/board/anon/view/${p.id}'" style="cursor:pointer;">
+        <tr>
             <td>${p.id}</td>
-            <td class="title-cell" style="text-align:left; padding-left:15px;">${p.title}</td>
+            <td class="title-cell" style="text-align:left; padding-left:15px;"
+			 onclick="location.href='/board/anon/view/${p.id}'" style="cursor:pointer;">${p.title}</td>
             <td>${p.author}</td>
             <td>${p.date}</td>
             <td>${p.hits}</td>
@@ -95,7 +96,26 @@ function renderComments() {
 function addComment() { const input = document.getElementById('commentInput'); if (!input.value.trim()) return alert("댓글 내용을 입력해주세요."); boardData[currentPostIdx].comments.push({ author: "익명", text: input.value.trim(), date: getTodayString() }); input.value = ''; renderComments(); }
 function deleteComment(idx) { if (confirm("댓글을 삭제할까요?")) { boardData[currentPostIdx].comments.splice(idx, 1); renderComments(); } }
 function previewImages(input) { const container = document.getElementById('previewContainer'); container.innerHTML = ''; currentImgs = []; Array.from(input.files).slice(0, 3).forEach(file => { const reader = new FileReader(); reader.onload = (e) => { currentImgs.push(e.target.result); container.innerHTML += `<img src="${e.target.result}" style="width:80px; height:80px; object-fit:cover; border-radius:5px;">`; }; reader.readAsDataURL(file); }); }
+
 function searchPost() {
+    // 1. 요소 가져오기
+    const inputEl = document.getElementById('searchInput');
+    const typeEl = document.getElementById('searchType');
+
+    if (!inputEl) return;
+
+    // 2. 값 추출
+    const keyword = inputEl.value.trim();
+    // 익명게시판에 select 박스가 있다면 그 값을 쓰고, 없다면 무조건 'title'로 보냄
+    const type = typeEl ? typeEl.value : 'title';
+
+    // 3. 실행 (콘솔로 확인 가능)
+    console.log("익명 검색 실행:", type, keyword);
+
+    // 4. 서버 이동
+    location.href = `?page=0&searchType=${type}&searchInput=${encodeURIComponent(keyword)}`;
+}
+/*function searchPost() {
     const keyword = document.getElementById('searchInput').value.trim().toLowerCase(); if (!keyword) { renderList(); return; }
     const filtered = boardData.filter(post => post.title.toLowerCase().includes(keyword));
     document.getElementById('boardBody').innerHTML = filtered.map(p => `
@@ -107,4 +127,4 @@ function searchPost() {
 		           <td>${p.hits}</td>
 		</tr>
     `).join('') || '<tr><td colspan="5" style="padding:50px; color:#999; text-align:center;">검색 결과가 없습니다.</td></tr>'; document.getElementById('paginationBox').innerHTML = '';
-}
+}*/

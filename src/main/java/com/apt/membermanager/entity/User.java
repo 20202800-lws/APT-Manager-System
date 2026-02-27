@@ -105,5 +105,11 @@ public class User implements UserDetails{
 		return List.of(new SimpleGrantedAuthority("ROLE_" + this.userRole));
 	}
 
+	public void updateRole(String userRole,boolean approvalStatus) {
+		// TODO Auto-generated method stub
+		this.userRole = userRole;
+		this.approvalStatus = approvalStatus;
+	}
+
 	
 }

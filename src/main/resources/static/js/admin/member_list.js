@@ -203,7 +203,7 @@ const adminMember = (function() {
        CRUD 비즈니스 로직
        ========================================= */
 
-    function approveMember(id) {
+    /*function approveMember(id) {
         if(confirm('해당 회원의 가입을 승인하시겠습니까?')) {
             const member = memberList.find(m => m.userId === id);
             if(member) {
@@ -213,7 +213,38 @@ const adminMember = (function() {
                 alert("승인 처리되었습니다.");
             }
         }
-    }
+    }*/
+	
+	function approveMember(id) {
+	    if(!confirm('해당 회원의 가입을 승인하시겠습니까?')) return;
+
+	    
+	    fetch('/admin/member/approve', { 
+	        method: 'POST',
+	        headers: {
+	            'Content-Type': 'application/x-www-form-urlencoded',
+	            
+	        },
+	        body: new URLSearchParams({ 'userId': id })
+	    })
+	    .then(response => {
+	        if (response.ok) {
+	            const member = memberList.find(m => m.userId === id);
+	            if(member) {
+	                member.approvalStatus = 'ACT'; 
+	                updateStats(); 
+	                searchTable(false); // 리스트 새로고침 (JS 내부 함수)
+	                alert("성공적으로 승인 처리되었습니다.");
+	            }
+	        } else {
+	            alert("서버 오류로 인해 승인에 실패했습니다.");
+	        }
+	    })
+	    .catch(err => {
+	        console.error("Error:", err);
+	        alert("요청 중 네트워크 오류가 발생했습니다.");
+	    });
+	}
 
     function openModal(id) {
         const item = memberList.find(d => d.userId === id);

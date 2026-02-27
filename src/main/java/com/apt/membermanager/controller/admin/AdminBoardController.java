@@ -34,12 +34,13 @@ public class AdminBoardController {
 
 	// 7. 일반 게시판 관리
     @GetMapping("/board_manage")
-    public String boardManage(@RequestParam(value="keyword",required = false)String keyword,
+    public String boardManage(@RequestParam(value="category",required = false, defaultValue = "ALL") String category,
+    		@RequestParam(value="searchInput",required = false)String keyword,
     		@RequestParam(value = "page", defaultValue = "0") int page,
             Model model, Principal principal,BoardListBean listBean) { 
     	String loginId = (principal != null) ? principal.getName() : "";
         Pageable pageable = PageRequest.of(page, 10,Sort.by("boardId").descending());
-        Page<BoardListBean> paging = adminBoardService.searchByBoardPaging(loginId,keyword,pageable);
+        Page<BoardListBean> paging = adminBoardService.searchByBoardPaging(category,loginId,keyword,pageable);
         Map<String,Long> status = adminBoardService.getBoardStatus();
         model.addAttribute("paging", paging);
         model.addAttribute("keyword", keyword);

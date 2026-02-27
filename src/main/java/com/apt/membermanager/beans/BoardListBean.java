@@ -40,10 +40,11 @@ public class BoardListBean {
 	
 	private String content;
 	
+	
 	public BoardListBean(Board board, String currentId, long commentCount) {
 		super();
 		this.boardId = board.getBoardId();
-		this.owner = board.getUser().getRealName().equals(currentId);
+		this.owner = board.getUser().getUserId().equals(currentId);
 		
 		this.title = board.getTitle();
 		this.anonymous = board.isAnonymous();
@@ -55,7 +56,7 @@ public class BoardListBean {
 			if(!owner) {
 				this.author ="익명";
 			}else this.author="익명(나)";
-		}else this.author=board.getUser().getRealName(); this.category = "FREE";
+		}else { this.author=board.getUser().getRealName(); this.category = "FREE";}
 		
 		if(board.getRegDate()!=null) {
 			if(board.getRegDate().toLocalDate().equals(LocalDate.now())) {
@@ -66,6 +67,7 @@ public class BoardListBean {
 			}
 			
 		}
+		
 		
 		
 	}

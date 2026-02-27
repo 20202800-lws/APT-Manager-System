@@ -1,11 +1,15 @@
 package com.apt.membermanager.service;
 
+import com.apt.membermanager.beans.ComplaintListBean;
 import com.apt.membermanager.dto.ComplaintWriteDto;
 import com.apt.membermanager.entity.Complaint;
 import com.apt.membermanager.entity.User;
 import com.apt.membermanager.repository.ComplaintRepository;
 import com.apt.membermanager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ComplaintService {
 
     private final ComplaintRepository complaintRepository;
@@ -21,19 +26,20 @@ public class ComplaintService {
 
     // 1. 민원 접수 (입주민용)
     @Transactional
-    public void writeComplaint(String userId, ComplaintWriteDto dto) {
+    public Long writeComplaint(String userId, ComplaintWriteDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("회원 정보가 없습니다."));
 
-        Complaint complaint = new Complaint();
-        complaint.setUser(user); // 작성자
-        complaint.setCategory(dto.getCategory()); // 소음, 시설, 기타 등
-        complaint.setTitle(dto.getTitle());
-        complaint.setContent(dto.getContent());
-        complaint.setPhone(dto.getPhone());
+        Complaint complaint = Complaint.builder()
+				.title(dto.getTitle())
+				.content(dto.getContent())
+				.secret(dto.isSecret())
+				.compStatus("답변대기")
+				.user(user)
+				.build();
         
         // 비밀글 체크 (체크박스 값 'Y'가 넘어오면 'Y', 아니면 'N')
-        complaint.setIsSecret("Y".equals(dto.getIsSecret()) ? "Y" : "N");
+        
         
         // 초기 상태는 무조건 '대기중(WAIT)'
         complaint.setCompStatus("WAIT");
@@ -41,12 +47,13 @@ public class ComplaintService {
 
         // [추후작업] 여기서 FileService를 호출해서 사진 저장 로직 추가 가능
 
-        complaintRepository.save(complaint);
+        return complaintRepository.save(complaint).getCompId();
     }
 
     // 2. 내 민원 목록 보기 (마이페이지용)
-    public List<Complaint> getMyComplaintList(String userId) {
-        return complaintRepository.findByUser_UserIdOrderByRegDateDesc(userId);
+    @Transactional(readOnly = true)
+    public Page<Complaint> getMyComplaintList(String userId,Pageable pageable) {
+        return complaintRepository.findByUser_UserId(userId,pageable);
     }
 
     // 3. 민원 상세 보기 (보안 체크 포함)
@@ -55,7 +62,7 @@ public class ComplaintService {
                 .orElseThrow(() -> new RuntimeException("해당 민원이 없습니다."));
 
         // [보안] 비밀글인데, 작성자도 아니고 관리자도 아니면? -> 에러!
-        if ("Y".equals(complaint.getIsSecret())) {
+        if (complaint.isSecret()) {
             boolean isWriter = complaint.getUser().getUserId().equals(userId);
             boolean isAdmin = "ADMIN".equals(userRole);
 
@@ -66,22 +73,38 @@ public class ComplaintService {
         return complaint;
     }
 
-    // ==========================================
-    // 4. 관리자 기능 (답변 달기)
-    // ==========================================
+    // 전체 민원 목록 (공용게시판/관리자)
+    @Transactional(readOnly = true)
+    public Page<ComplaintListBean> getAllComplaints(String type,String keyword,String loginId, Pageable pageable) {
+    	String searchKeyword = (keyword == null || keyword
+    			.trim().isEmpty()) ? "" :keyword.trim();
+    	Page<Complaint> entityPage;
+    	if (searchKeyword.isEmpty()) {
+            entityPage = complaintRepository.findAll(pageable);
+        } else {
+            if ("userId".equals(type)) {
+                // 작성자 ID로 검색
+                entityPage = complaintRepository.findByUser_UserIdContaining(searchKeyword, pageable);
+            } else {
+                // 기본값은 제목 검색
+                entityPage = complaintRepository.findByTitleContaining(searchKeyword, pageable);
+            }
+        }
+    	
+        return entityPage.map(entity -> {
+            ComplaintListBean bean = ComplaintListBean.fromEntity(entity);
+            
+            
+            boolean isOwner = entity.getUser().getUserId().equals(loginId);
+            
+            if (!isOwner) {
+                bean.setTitle("🔒 비밀글입니다.");
+                // 상세 내용 등 다른 필드도 숨기고 싶다면 여기서 null 처리
+                // bean.setContent(null); 
+            }
+            return bean;
+        });
+    }
+
     
-    // 전체 민원 목록 (관리자용)
-    public List<Complaint> getAllComplaints() {
-        return complaintRepository.findAll();
-    }
-
-    // 답변 등록 및 처리 완료
-    @Transactional
-    public void replyComplaint(Long compId, String replyContent) {
-        Complaint complaint = complaintRepository.findById(compId)
-                .orElseThrow(() -> new RuntimeException("민원 글이 없습니다."));
-
-        complaint.setReply(replyContent); // 답변 내용 저장
-        complaint.setCompStatus("DONE");  // 상태를 '처리완료'로 변경!
-    }
 }

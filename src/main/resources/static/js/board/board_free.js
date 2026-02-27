@@ -40,9 +40,11 @@ function renderList() {
 
     tbody.innerHTML = displayData.map((p) => {
         return `
-        <tr onclick="location.href='/board/free/view/${p.id}'" style="cursor:pointer;">
+        <tr>
             <td>${p.id}</td>
-            <td class="title-cell" style="text-align:left; padding-left:15px;">${p.title}</td>
+            <td class="title-cell" style="text-align:left; padding-left:15px;" 
+			 onclick="location.href='/board/free/view/${p.id}'"
+			  style="cursor:pointer;">${p.title}</td>
             <td>${p.author}</td>
             <td>${p.date}</td>
             <td>${p.hits}</td>
@@ -234,6 +236,14 @@ function previewImages(input) {
 /* 검색 로직 */
 function searchPost() {
     const type = document.getElementById('searchType').value;
+    const keyword = document.getElementById('searchInput').value.trim();
+    
+    // 검색어가 없으면 전체 목록으로, 있으면 검색 파라미터를 붙여서 '페이지 이동'을 시킴
+    // 이렇게 하면 JSP가 다시 로드되면서 서버에서 페이징 바를 새로 그려줍니다.
+    location.href = `?page=0&searchType=${type}&searchInput=${encodeURIComponent(keyword)}`;
+}
+/*function searchPost() {
+    const type = document.getElementById('searchType').value;
     const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
     
     if (!keyword) { renderList(); return; }
@@ -254,4 +264,4 @@ function searchPost() {
     `).join('') || '<tr><td colspan="5" style="padding:50px; color:#999; text-align:center;">검색 결과가 없습니다.</td></tr>';
     
     document.getElementById('paginationBox').innerHTML = '';
-}
+}*/

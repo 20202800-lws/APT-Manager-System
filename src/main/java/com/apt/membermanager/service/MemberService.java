@@ -109,9 +109,7 @@ public class MemberService {
   		 return userPage.map(MemberBean::fromMember);
   	 }
   	 
-  	 //입주민 조회
-  	 
-  	 
+  	 //회원 권한(상태)별 조회
   	 public Map<String,Long> getMemberStatus(){
   		 Map<String, Long> status = new HashMap<>();
   		 status.put("total", userRepository.count());
@@ -120,5 +118,12 @@ public class MemberService {
   		 status.put("admin", userRepository.countByUserRole("ADMIN"));
   		 return status;
   	 }
+
+  	 //가입 승인시 회원권한 추가
+	 public void approveMember(String userId,String userRole) {
+		 User user = getMemberInfo(userId);
+		 user.updateRole(userRole,true);
+		 userRepository.save(user);
+	 }
   	 
 }

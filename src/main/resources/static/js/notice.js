@@ -40,10 +40,16 @@ function renderList(data = notices) {
 }
 
 function searchNotice() {
+    const keyword = document.getElementById('searchInput').value.trim();
+    if(keyword) {
+        location.href = '/notice/notice_list?keyword=' + encodeURIComponent(keyword);
+    }
+}
+/*function searchNotice() {
     const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
     const filtered = notices.filter(n => n.title.toLowerCase().includes(keyword));
     renderList(filtered);
-}
+}*/
 
 function showDetail(id) {
     const post = notices.find(n => n.id === id);

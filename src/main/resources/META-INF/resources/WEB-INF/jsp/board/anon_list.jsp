@@ -42,13 +42,34 @@
                 </div>
                 
                 <div class="board-footer">
-                    <div class="pagination" id="paginationBox"></div>
+                    <div class="pagination" id="paginationBox">
+						<c:if test="${paging.hasPrevious()}">
+						        <span onclick="location.href='?page=${paging.number - 1}&searchType=${param.searchType}&searchInput=${param.searchInput}'" 
+						              style="cursor:pointer;">&lt;</span>
+						    </c:if>
+
+						    <c:forEach var="i" begin="1" end="${paging.totalPages}">
+						        <span class="${i == paging.number + 1 ? 'active' : ''}" 
+						              onclick="location.href='?page=${i-1}&searchType=${param.searchType}&searchInput=${param.searchInput}'" 
+						              style="cursor:pointer;">
+						            ${i}
+						        </span>
+						    </c:forEach>
+
+						    <c:if test="${paging.hasNext()}">
+						        <span onclick="location.href='?page=${paging.number + 1}&searchType=${param.searchType}&searchInput=${param.searchInput}'" 
+						              style="cursor:pointer;">&gt;</span>
+						    </c:if>
+					</div>
                     <div class="search-area">
-                        <select id="searchType" style="padding:10px; border-radius:6px; border:1px solid #ddd;">
-                            <option value="title">제목</option>
-                        </select>
-                        <input type="text" id="searchInput" placeholder="검색어를 입력하세요">
-                        <button class="btn-main" onclick="searchPost()">검색</button>
+						<select id="searchType" style="padding:10px; border-radius:6px; border:1px solid #ddd;">
+						        <option value="title" ${param.searchType == 'title' ? 'selected' : ''}>제목</option>
+						    </select>
+						    <input type="text" id="searchInput" name="searchInput" 
+						           placeholder="검색어를 입력하세요" 
+						           value="${param.searchInput}" 
+						           onkeyup="if(window.event.keyCode==13){searchPost()}">
+						    <button class="btn-main" onclick="searchPost()">검색</button>
                     </div>
                 </div>
             </div>
@@ -74,6 +95,7 @@
 		        </c:forEach>
 		    </c:if>
 			console.log("주입된 데이터 개수: ", window.globalBoardList.length);
+			renderPaginationUI = function() {};
 		</script>
 </body>
 </html>

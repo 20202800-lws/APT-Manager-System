@@ -28,9 +28,12 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 	
 	Page<Board> findByAnonymousAndTitleContaining(boolean anonymous, String searchKeyword, Pageable pageable);
 	
+	Page<Board> findByAnonymousAndUser_UserNameContaining(boolean anonymous, String searchKeyword, Pageable pageable);
+	
 	@Query("SELECT MAX(b.boardId) FROM Board b WHERE b.boardId < :id AND b.anonymous = :anonymous")
     Long findPrevId(@Param("id") Long id, @Param("anonymous") boolean anonymous);
 
     @Query("SELECT MIN(b.boardId) FROM Board b WHERE b.boardId > :id AND b.anonymous = :anonymous")
     Long findNextId(@Param("id") Long id, @Param("anonymous") boolean anonymous);
+	
 }

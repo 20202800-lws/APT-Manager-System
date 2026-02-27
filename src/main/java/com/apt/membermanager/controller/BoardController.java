@@ -19,6 +19,8 @@ import com.apt.membermanager.beans.BoardListBean;
 import com.apt.membermanager.beans.BoardViewBean;
 import com.apt.membermanager.beans.CommentViewBean;
 import com.apt.membermanager.dto.BoardWriteDto;
+import com.apt.membermanager.entity.Board;
+import com.apt.membermanager.repository.BoardRepository;
 import com.apt.membermanager.service.BoardService;
 import com.apt.membermanager.service.CommentService;
 
@@ -38,15 +40,17 @@ public class BoardController {
     
     //자유게시판 목록
 	@GetMapping("/free")
-    public String searchFreeList(@RequestParam(value="keyword",required = false)String keyword,
+    public String searchFreeList(@RequestParam(value="searchType",required = false, defaultValue = "title") String searchType,
+    		@RequestParam(value="searchInput",required = false)String keyword,
     		@RequestParam(value = "page", defaultValue = "0") int page,
             Model model, Principal principal) {
 		
 		String loginId = (principal != null) ? principal.getName() : "";
 		boolean anonymous = false; // 익명 여부 로직에 맞춰 설정
         Pageable pageable = PageRequest.of(page, 10,Sort.by("boardId").descending());
-        Page<BoardListBean> paging = boardService.searchByBoardPaging(loginId, anonymous, keyword,pageable);
+        Page<BoardListBean> paging = boardService.searchByBoardPaging(loginId, anonymous,searchType ,keyword,pageable);
         model.addAttribute("paging", paging);
+        model.addAttribute("searchType",searchType);
         model.addAttribute("keyword", keyword);
 		
     	return "board/free_list"; 
@@ -65,7 +69,7 @@ public class BoardController {
     	boolean anonymous = false;
     	long boardId = boardService.writeBoard(principal.getName(), dto, anonymous);
     	
-    	return "board/free_view/"+boardId;
+    	return "redirect:/board/free/view/"+boardId;
     }
     
     @GetMapping("/free/view/{id}")
@@ -84,15 +88,17 @@ public class BoardController {
     
     //익명게시판 목록
     @GetMapping("/anon")
-    public String searchAnonList(@RequestParam(value="keyword",required = false)String keyword,
+    public String searchAnonList(@RequestParam(value="searchType",required = false, defaultValue = "title") String searchType,
+    		@RequestParam(value="searchInput",required = false)String keyword,
     		@RequestParam(value = "page", defaultValue = "0") int page,
             Model model, Principal principal) {
 		
 		String loginId = (principal != null) ? principal.getName() : "";
 		boolean anonymous = true; // 익명 여부 로직에 맞춰 설정
         Pageable pageable = PageRequest.of(page, 10,Sort.by("boardId").descending());
-        Page<BoardListBean> paging = boardService.searchByBoardPaging(loginId, anonymous, keyword,pageable);
+        Page<BoardListBean> paging = boardService.searchByBoardPaging(loginId, anonymous,searchType, keyword,pageable);
         model.addAttribute("paging", paging);
+        model.addAttribute("searchType",searchType);
         model.addAttribute("keyword", keyword);
 		
     	return "board/anon_list"; 
@@ -105,7 +111,7 @@ public class BoardController {
     	boolean anonymous = true;
     	long boardId = boardService.writeBoard(principal.getName(), dto, anonymous);
     	
-    	return "board/anon_view/"+boardId;
+    	return "redirect:/board/anon/view/"+boardId;
     }
     
     @GetMapping("/anon/view/{id}")
@@ -121,36 +127,23 @@ public class BoardController {
     	return "board/anon_view";
     }
     
+    @PostMapping("/delete")
+    public String deletePost(@RequestParam("boardId") Long boardId,Principal principal) {
+    	String currentId = (principal != null) ? principal.getName() : "";
+    	boolean state = boardService.deletePost(boardId,currentId);
+    	String category;
+    	if(state) {
+    		category = "anon";
+    	}
+    	else category = "free";
+    	
+    	return "redirect:/board/"+category;
+    }
+    
 
 
-    @GetMapping("/comp")
-    public String compList() { return "board/comp_list"; }
+    
 
-    // ==========================================
-    // 2. 자유게시판 (Free)
-    // ==========================================
-    @GetMapping("/free/write")
-    public String freeWrite() { return "board/free_write"; }
-
-    @GetMapping("/free/view")
-    public String freeView() { return "board/free_view"; }
-
-    // ==========================================
-    // 3. 익명게시판 (Anon)
-    // ==========================================
-    @GetMapping("/anon/write")
-    public String anonWrite() { return "board/anon_write"; }
-
-    @GetMapping("/anon/view")
-    public String anonView() { return "board/anon_view"; }
-
-    // ==========================================
-    // 4. 민원게시판 (Complaint)
-    // ==========================================
-    @GetMapping("/comp/write")
-    public String compWrite() { return "board/comp_write"; }
-
-    @GetMapping("/comp/view")
-    public String compView() { return "board/comp_view"; }
+    
     
 }

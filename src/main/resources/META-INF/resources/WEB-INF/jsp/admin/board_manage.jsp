@@ -42,30 +42,42 @@
         </div>
 
         <div class="tab-wrapper">
-            <div class="tab-container">
-                <div class="tab-highlighter" id="tabHighlighter"></div>
-                <button class="tab-btn active" onclick="boardManager.filterTab('ALL', 0)">전체보기</button>
-                <button class="tab-btn" onclick="boardManager.filterTab('FREE', 1)">자유게시판</button>
-                <button class="tab-btn" onclick="boardManager.filterTab('SECRET', 2)">익명게시판</button>
-                <button class="tab-btn" onclick="boardManager.filterTab('REPORT', 3)">신고내역</button>
-            </div>
+			<div class="tab-container">
+			    <button class="tab-btn ${param.category == 'ALL' || empty param.category ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('ALL')">전체보기</button>
+			    <button class="tab-btn ${param.category == 'FREE' ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('FREE')">자유게시판</button>
+			    <button class="tab-btn ${param.category == 'SECRET' ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('SECRET')">익명게시판</button>
+			    <button class="tab-btn ${param.category == 'REPORT' ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('REPORT')">신고내역</button>
+			</div>
         </div>
 
         <div class="content-box">
             <div class="section-header">
                 <h3 class="section-title" id="listTitle">전체 게시글 목록</h3>
-                <div class="section-actions">
-                    <button class="btn btn-secondary" onclick="boardManager.openBannedModal()">
-                        <i class="fa-solid fa-shield-halved"></i> 금지어 설정
-                    </button>
-                    <div style="width: 10px;"></div>
-                    <select class="form-select" id="searchFilter">
-                        <option value="title">제목</option>
-                        <option value="userName">작성자</option>
-                    </select>
-                    <input type="text" class="form-input" id="searchInput" placeholder="검색어 입력" onkeyup="boardManager.searchTable()">
-                    <button class="btn btn-primary" onclick="boardManager.searchTable()"><i class="fa-solid fa-search"></i></button>
-                </div>
+                <				<div class="section-actions">
+				    <button class="btn btn-secondary" onclick="boardManager.openBannedModal()">
+				        <i class="fa-solid fa-shield-halved"></i> 금지어 설정
+				    </button>
+				    
+				    <div style="width: 10px;"></div>
+				    
+				    <select class="form-select" id="searchFilter" name="searchFilter">
+				        <option value="title" ${param.searchFilter == 'title' ? 'selected' : ''}>제목</option>
+				        <option value="userName" ${param.searchFilter == 'userName' ? 'selected' : ''}>작성자</option>
+				    </select>
+
+				    <input type="text" class="form-input" id="searchInput" name="searchInput"
+				           placeholder="검색어 입력" 
+				           value="${param.searchInput}" 
+				           onkeyup="if(window.event.keyCode==13){boardManager.searchTable()}">
+
+				    <button class="btn btn-primary" onclick="boardManager.searchTable()">
+				        <i class="fa-solid fa-search"></i>
+				    </button>
+				</div>
             </div>
 
             <table class="admin-table">
@@ -84,7 +96,29 @@
                 </tbody>
             </table>
 
-            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;">
+				<c:if test="${paging.hasPrevious()}">
+				        <button class="btn btn-secondary btn-xs" 
+				                onclick="location.href='?page=${paging.number - 1}&category=${param.category}&searchFilter=${param.searchFilter}&searchInput=${param.searchInput}'">&lt;</button>
+				    </c:if>
+
+				    <c:forEach var="i" begin="1" end="${paging.totalPages}">
+				        <c:choose>
+				            <c:when test="${i == paging.number + 1}">
+				                <button class="btn btn-primary btn-xs">${i}</button>
+				            </c:when>
+				            <c:otherwise>
+				                <button class="btn btn-secondary btn-xs" 
+				                        onclick="location.href='?page=${i-1}&category=${param.category}&searchFilter=${param.searchFilter}&searchInput=${param.searchInput}'">${i}</button>
+				            </c:otherwise>
+				        </c:choose>
+				    </c:forEach>
+
+				    <c:if test="${paging.hasNext()}">
+				        <button class="btn btn-secondary btn-xs" 
+				                onclick="location.href='?page=${paging.number + 1}&category=${param.category}&searchFilter=${param.searchFilter}&searchInput=${param.searchInput}'">&gt;</button>
+				    </c:if>
+			</div>
         </div>
 
     </main>
@@ -145,6 +179,12 @@
 </div>
 
 <script>
+window.adminStats = {
+	total: ${status.total != null ? status.total:0},
+	newPost: ${status['new'] != null ? status['new']:0},
+	report: ${status.report != null ? status.report:0}
+};
+
     window.globalBoardList = [];
 
     <c:if test="${not empty paging.content}">
