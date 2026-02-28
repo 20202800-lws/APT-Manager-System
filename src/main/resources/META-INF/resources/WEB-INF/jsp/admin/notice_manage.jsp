@@ -25,18 +25,18 @@
 
         <div class="stat-grid-container grid-3">
             <div class="stat-card border-left-primary">
-                <h3>전체 게시글</h3>
-                <div class="number text-primary" id="statTotal">0<span class="unit">건</span></div>
+                <h3>전체 공지</h3>
+                <div class="number text-primary" id="statTotal">${status.total != null ? status.total : 0}<span class="unit">건</span></div>
                 <div class="desc">누적 등록된 공지</div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>중요(필독) 공지</h3>
-                <div class="number text-danger" id="statImportant">0<span class="unit">건</span></div>
+                <div class="number text-danger" id="statImportant">${status.importantCount != null ? status.importantCount : 0}<span class="unit">건</span></div>
                 <div class="desc">현재 상단 고정 중</div>
             </div>
             <div class="stat-card border-left-warning">
                 <h3>비공개(숨김)</h3>
-                <div class="number text-warning" id="statHidden">0<span class="unit">건</span></div>
+                <div class="number text-warning" id="statHidden">${status.hiddenCount != null ? status.hiddenCount : 0}<span class="unit">건</span></div>
                 <div class="desc">임시저장 및 숨김 처리</div>
             </div>
         </div>
@@ -45,15 +45,20 @@
             <div class="section-header">
                 <h3 class="section-title">공지사항 목록</h3>
                 <div class="section-actions">
-                    <select class="form-select" id="searchFilter" onchange="noticeManager.searchTable(true)">
-                        <option value="all">전체 상태</option>
-                        <option value="public">공개</option>
-                        <option value="private">비공개</option>
+                    <select class="form-select" id="searchType">
+                        <option value="title" ${searchType == 'title' ? 'selected' : ''}>제목</option>
+                        <option value="content" ${searchType == 'content' ? 'selected' : ''}>내용</option>
                     </select>
-                    <input type="text" class="form-input" id="searchKeyword" placeholder="제목 검색" onkeyup="noticeManager.searchTable(true)">
-                    <button class="btn btn-primary" onclick="noticeManager.searchTable(true)"><i class="fa-solid fa-search"></i></button>
                     
-                    <button class="btn btn-dark" onclick="noticeManager.openModal('create')">
+                    <input type="text" class="form-input" id="searchKeyword" placeholder="검색어 입력" value="${keyword}" 
+                           onkeyup="if(window.event.keyCode==13){noticeManager.searchTable()}">
+                    <button class="btn btn-primary" onclick="noticeManager.searchTable()">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                    
+                    <div style="width: 10px;"></div>
+                    
+                    <button class="btn btn-dark" onclick="noticeManager.openModal()">
                         <i class="fa-solid fa-pen-to-square"></i> 공지 등록
                     </button>
                 </div>
@@ -61,94 +66,115 @@
 
             <table class="admin-table">
                 <colgroup>
-                    <col width="8%">  <col width="45%"> <col width="12%"> <col width="15%"> <col width="12%"> <col width="8%">  
+                    <col width="8%"> <col width="45%"> <col width="12%"> <col width="15%"> <col width="12%"> <col width="8%">  
                 </colgroup>
                 <thead>
                     <tr>
-                        <th>번호(ID)</th>
+                        <th>번호</th>
                         <th>제목</th>
-                        <th>작성자(ID)</th>
+                        <th>작성자</th>
                         <th>작성일</th>
                         <th>조회수</th> 
                         <th>관리</th>
                     </tr>
                 </thead>
                 <tbody id="noticeTableBody">
-                </tbody>
+                    </tbody>
             </table>
 
-            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;">
+                <c:if test="${paging.totalPages > 1}">
+                    <button class="btn btn-secondary btn-xs" ${!paging.hasPrevious() ? 'disabled' : ''} 
+                            onclick="location.href='?page=${paging.number-1}&searchType=${searchType}&searchInput=${keyword}'">&lt;</button>
+                    
+                    <c:forEach var="i" begin="0" end="${paging.totalPages - 1}">
+                        <c:if test="${i >= paging.number - 5 && i <= paging.number + 5}">
+                            <button class="btn ${i == paging.number ? 'btn-primary' : 'btn-secondary'} btn-xs" 
+                                    onclick="location.href='?page=${i}&searchType=${searchType}&searchInput=${keyword}'">${i + 1}</button>
+                        </c:if>
+                    </c:forEach>
+
+                    <button class="btn btn-secondary btn-xs" ${!paging.hasNext() ? 'disabled' : ''} 
+                            onclick="location.href='?page=${paging.number+1}&searchType=${searchType}&searchInput=${keyword}'">&gt;</button>
+                </c:if>
+            </div>
         </div>
 
     </main>
 </div>
 
 <div id="noticeModal" class="modal-overlay">
-    <div class="modal-container" style="width: 700px;">
-        <div class="content-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="font-size:1.3rem; font-weight:700;" id="modalTitle">공지사항 등록</h3>
-            <button onclick="noticeManager.closeModal()" style="border:none; background:none; font-size:1.2rem; cursor:pointer; color:#666;">
+    <div class="modal-container large">
+        <div class="modal-header">
+            <h3 id="modalTitle"><i class="fa-solid fa-bullhorn"></i> 공지사항 등록</h3>
+            <button class="modal-close-btn" onclick="noticeManager.closeModal()">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
         
-        <form id="noticeForm" onsubmit="return false;">
-            <input type="hidden" id="modalNoticeId" name="noticeId">
+        <form id="noticeForm" action="<c:url value='/admin/notice/write_pro'/>" method="post">
+            <div class="modal-body">
+                <input type="hidden" id="modalNoticeId" name="noticeId">
 
-            <div class="form-grid" style="display:flex; flex-direction:column; gap:15px;">
-                <div class="info-group">
-                    <label class="info-label">제목</label>
-                    <input type="text" class="form-input" id="inputTitle" name="title" placeholder="제목 입력" style="font-weight:500;">
-                </div>
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                    <div>
+                        <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">제목</label>
+                        <input type="text" class="form-input" id="inputTitle" name="title" placeholder="제목을 입력하세요" style="width:100%; font-weight:500;" required>
+                    </div>
 
-                <div style="display:flex; gap:20px; align-items:center; padding:15px; background:#f8f9fa; border-radius:8px;">
-                    <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
-                        <input type="checkbox" id="checkImportant" name="isImportant" style="transform:scale(1.2); accent-color:var(--danger);">
-                        <span style="font-weight:600; color:var(--danger);">[필독] 상단 고정</span>
-                    </label>
-                    <div style="width:1px; height:20px; background:#ddd;"></div>
-                    <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
-                        <input type="checkbox" id="checkVisible" name="isVisible" checked style="transform:scale(1.2);">
-                        <span>바로 공개하기</span>
-                    </label>
-                </div>
+                    <div style="display:flex; gap:20px; align-items:center; padding:15px; background:#f8f9fa; border-radius:8px; border:1px solid #eee;">
+                        <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
+                            <input type="checkbox" id="checkImportant" name="isImportant" value="true" style="transform:scale(1.2); accent-color:var(--danger);">
+                            <span style="font-weight:600; color:var(--danger);">[필독] 상단 고정</span>
+                        </label>
+                        <div style="width:1px; height:20px; background:#ddd;"></div>
+                        <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
+                            <input type="checkbox" id="checkVisible" name="isVisible" value="true" checked style="transform:scale(1.2);">
+                            <span style="font-weight:600; color:#333;">바로 공개하기</span>
+                        </label>
+                    </div>
 
-                <div class="info-group">
-                    <label class="info-label">내용</label>
-                    <textarea class="form-input" id="inputContent" name="content" rows="12" placeholder="내용을 입력하세요..." style="resize:vertical; line-height:1.6;"></textarea>
+                    <div>
+                        <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">내용</label>
+                        <textarea class="form-input" id="inputContent" name="content" rows="12" placeholder="공지사항 내용을 입력하세요..." style="width:100%; resize:vertical; line-height:1.6;" required></textarea>
+                    </div>
                 </div>
             </div>
 
-            <div style="margin-top:25px; display:flex; justify-content:flex-end; gap:10px;">
-                <button class="btn btn-secondary" onclick="noticeManager.closeModal()">취소</button>
-                <button class="btn btn-primary" onclick="noticeManager.saveNotice()">저장하기</button>
+            <div class="modal-footer right-align">
+                <button type="button" class="btn btn-secondary" onclick="noticeManager.closeModal()">취소</button>
+                <button type="submit" class="btn btn-primary" id="btnSaveNotice"><i class="fa-solid fa-check"></i> 저장하기</button>
             </div>
         </form>
-    </div>
+        </div>
 </div>
-
-<script src="<c:url value='/js/admin/admin_common.js'/>"></script>
 
 <script>
     window.globalNoticeList = [];
-
-    <c:if test="${not empty noticeList}">
-        <c:forEach var="item" items="${noticeList}">
+    <c:if test="${not empty paging.content}">
+        <c:forEach var="item" items="${paging.content}">
             window.globalNoticeList.push({
                 noticeId: parseInt('${item.noticeId}'),
                 writerId: '${item.writerId}',
-                title: '${item.title}',
-                content: '${item.content}', // 목록에서 내용의 일부를 툴팁으로 보여주거나 할 때 유용함
+                title: `${item.title}`, 
+                content: `${item.content}`,
                 views: parseInt('${item.views}') || 0,
                 regDate: '${item.regDate}',
-                isImportant: ${item.isImportant == true}, // DB/VO에 추가되었다고 가정
-                isVisible: ${item.isVisible != false} // 기본값 true 설정
+                isImportant: ${item.isImportant == true},
+                isVisible: ${item.isVisible != false}
             });
         </c:forEach>
     </c:if>
+
+    // 통계 데이터 직접 바인딩 (이제 화면에서 JS를 통하지 않고 JSTL로 바로 뿌려주므로 보조용으로만 남겨둡니다)
+    window.serverStats = {
+        total: ${status.total != null ? status.total : 0},
+        important: ${status.importantCount != null ? status.importantCount : 0},
+        hidden: ${status.hiddenCount != null ? status.hiddenCount : 0}
+    };
 </script>
 
-<script src="<c:url value='/js/admin/notice.js'/>"></script>
+<script src="<c:url value='/js/admin/notice_manage.js'/>"></script>
 
 </body>
 </html>

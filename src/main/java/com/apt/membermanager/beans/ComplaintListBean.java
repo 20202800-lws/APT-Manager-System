@@ -1,0 +1,63 @@
+package com.apt.membermanager.beans;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import com.apt.membermanager.entity.Complaint;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
+public class ComplaintListBean {
+
+	private Long compId;         
+	private String category;     
+	private String title;        
+	private String content;      
+	private String compStatus;   
+	private String reply;
+	
+	private String userName;     
+	private String userId;       
+	private String regDate;      
+	
+	// ★ 우리가 사수한 핵심 데이터 추가! (프론트에서 자물쇠 아이콘을 띄우려면 필수입니다)
+	private String isSecret;     
+    
+	public static ComplaintListBean fromEntity(Complaint complaint) {
+		String authorName = (complaint.getUser() != null) ? complaint.getUser().getRealName() : "알 수 없음";
+		String authorId = (complaint.getUser() != null) ? complaint.getUser().getUserId() : "unknown";
+		
+		return ComplaintListBean.builder()
+				.compId(complaint.getCompId())
+				.category(complaint.getCategory())
+				.title(complaint.getTitle())
+				.content(complaint.getContent()) // 추가: 상세 보기용
+				.compStatus(complaint.getCompStatus())
+				.reply(complaint.getReply())     // 추가: 답변 확인용
+				.userName(authorName)            // 수정: 실명을 이름 필드에
+				.userId(authorId)                // 추가: ID를 ID 필드에
+				.regDate(formatReceiptDate(complaint.getRegDate())) 
+				.isSecret(complaint.getIsSecret()) // ★ 비밀글 여부(Y/N) 맵핑 추가!
+				.build();
+	}
+    
+	private static String formatReceiptDate(LocalDateTime dateTime) {
+		if (dateTime == null) return "-";
+		LocalDateTime now = LocalDateTime.now();
+        
+		if (dateTime.toLocalDate().equals(now.toLocalDate())) {
+			return dateTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+		} else {
+			return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		}
+	}
+}

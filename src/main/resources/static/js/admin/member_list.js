@@ -1,127 +1,79 @@
 /**
  * admin_member.js
- * 회원 관리 페이지 로직을 처리하는 스크립트 (페이징 연동 완료)
+ * 회원 관리 페이지 로직을 처리하는 스크립트 (서버 페이징 연동 완료)
  */
 
 const adminMember = (function() {
     
-    // JSP에서 전달받은 전체 데이터
+    // JSP에서 전달받은 서버 데이터
     let memberList = window.globalMemberList || [];
-    let currentFilteredList = []; 
-    
-    let currentFilterCode = 'ALL'; 
-    const TAB_WIDTH = 140; 
-    let currentUserId = null; 
     const modal = document.getElementById('memberModal');
 
-    // 페이징 관련 변수
-    let currentPage = 1;
-    const rowsPerPage = 10; 
-
-    // 초기화 함수
-    function init() {
-        updateStats();
-        filterTab('ALL', 0); 
+    // 초기화 및 이벤트 리스너 등록
+    document.addEventListener('DOMContentLoaded', () => {
+        // 백엔드에서 받은 데이터 즉시 렌더링
+        renderTable(memberList);
 
         // 모달 외부 클릭 시 닫기
         window.onclick = function(event) {
-            if (event.target === modal) {
+            if (event.target && event.target.classList.contains('modal-overlay')) {
                 closeModal();
             }
         }
-    }
+    });
 
-    // 통계 업데이트
-    function updateStats() {
-        const counts = {
-            total: memberList.length,
-            wait: memberList.filter(m => m.approvalStatus === 'WAIT').length,
-            active: memberList.filter(m => m.approvalStatus === 'ACT').length,
-            admin: memberList.filter(m => m.approvalStatus === 'ADM').length
-        };
+    /* =========================================
+       1. 필터 및 검색 로직 (서버 연동)
+       ========================================= */
 
-        const totalEl = document.getElementById('statTotalCount');
-        const waitEl = document.getElementById('statWaitCount');
-        const activeEl = document.getElementById('statActiveCount');
-        const adminEl = document.getElementById('statAdminCount');
-
-        if(totalEl) totalEl.innerHTML = `${counts.total}<span class="unit">명</span>`;
-        if(waitEl) waitEl.innerHTML = `${counts.wait}<span class="unit">명</span>`;
-        if(activeEl) activeEl.innerHTML = `${counts.active}<span class="unit">명</span>`;
-        if(adminEl) adminEl.innerHTML = `${counts.admin}<span class="unit">명</span>`;
-    }
-
-    // 탭 필터링
-    function filterTab(code, index) {
-        currentFilterCode = code;
-
-        const highlighter = document.getElementById('tabHighlighter');
-        if (highlighter) {
-            highlighter.style.transform = `translateX(${index * TAB_WIDTH}px)`;
+    // 탭(상태별) 클릭 시 서버로 이동
+    function filterTab(tabCode) {
+        // 탭 이동 시에도 현재 입력해둔 검색어가 있다면 유지해줍니다.
+        const type = document.getElementById('searchType').value;
+        const kw = document.getElementById('keyword').value.trim();
+        
+        let targetUrl = `?page=0&tab=${tabCode}`;
+        
+        // 검색어가 있으면 해당 타입(kwName, kwAddress, kwPhone) 파라미터 추가
+        if(kw) {
+            targetUrl += `&${type}=${encodeURIComponent(kw)}`;
         }
         
-        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-            if(i === index) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
-
-        const titles = { 
-            'ALL': '전체 회원 목록', 
-            'WAIT': '가입 승인 대기 목록', 
-            'ACT': '입주민 회원 목록',
-            'ADM': '관리자 목록'
-        };
-        const titleEl = document.getElementById('tableTitle');
-        if(titleEl) titleEl.innerText = titles[code] || '회원 목록';
-
-        // 탭이 바뀌면 무조건 1페이지부터 보여줌
-        searchTable(true);
+        location.href = targetUrl;
     }
 
-    // 검색 및 데이터 필터링
-    function searchTable(isResetPage = false) {
-        if (isResetPage) currentPage = 1;
-
-        const searchInput = document.getElementById('searchInput');
-        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    // 돋보기 버튼 클릭 시 서버로 이동
+    function searchTable() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab') || 'ALL'; // 현재 탭 유지
         
-        currentFilteredList = memberList.filter(item => {
-            if (currentFilterCode !== 'ALL' && item.approvalStatus !== currentFilterCode) return false;
-            
-            if (keyword) {
-                const dongStr = String(item.dong);
-                const hoStr = String(item.ho);
-                
-                return item.userName.toLowerCase().includes(keyword) || 
-                       dongStr.includes(keyword) || 
-                       hoStr.includes(keyword) || 
-                       item.phone.includes(keyword);
-            }
-            return true;
-        });
-
-        renderTable();
+        const type = document.getElementById('searchType').value; // kwName, kwAddress, kwPhone 중 하나
+        const kw = document.getElementById('keyword').value.trim();
+        
+        let targetUrl = `?page=0&tab=${tab}`;
+        
+        if(kw) {
+            targetUrl += `&${type}=${encodeURIComponent(kw)}`;
+        }
+        
+        location.href = targetUrl;
     }
 
-    // 테이블 렌더링 (페이징 적용)
-    function renderTable() {
+    /* =========================================
+       2. 화면 렌더링 로직
+       ========================================= */
+
+    // 테이블 렌더링 (서버에서 받은 1페이지 분량 데이터만 그림)
+    function renderTable(data) {
         const tbody = document.getElementById('memberTableBody');
         if(!tbody) return;
         
-        if (currentFilteredList.length === 0) {
+        if (!data || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="padding:40px; color:#999; text-align:center;">조건에 맞는 회원이 없습니다.</td></tr>';
-            renderPagination(0);
             return;
         }
 
-        const totalPages = Math.ceil(currentFilteredList.length / rowsPerPage);
-        if (currentPage > totalPages) currentPage = totalPages || 1;
-
-        const startIndex = (currentPage - 1) * rowsPerPage;
-        const paginatedData = currentFilteredList.slice(startIndex, startIndex + rowsPerPage);
-
-        let rowsHtml = '';
-        paginatedData.forEach(item => {
+        tbody.innerHTML = data.map(item => {
             let badgeHtml = '';
             let btnHtml = '';
             
@@ -137,19 +89,19 @@ const adminMember = (function() {
                     badgeHtml = '<span class="badge badge-success">입주민</span>';
                     btnHtml = `<button class="btn btn-secondary btn-xs" onclick="adminMember.openModal('${item.userId}')">상세</button>`;
                     break;
-                case 'ADM':
-                    // ★ 수정: 없는 badge-dark 대신 badge-blue 사용
+                case 'ADMIN':
                     badgeHtml = '<span class="badge badge-blue">관리자</span>';
                     btnHtml = `<button class="btn btn-secondary btn-xs" onclick="adminMember.openModal('${item.userId}')">관리</button>`;
                     break;
                 default:
-                    badgeHtml = '<span class="badge badge-red">정지</span>';
+                    badgeHtml = '<span class="badge badge-gray">알수없음</span>';
                     btnHtml = `<button class="btn btn-secondary btn-xs" onclick="adminMember.openModal('${item.userId}')">상세</button>`;
             }
 
-            let dongHoText = isNaN(item.dong) ? item.dong : `${item.dong}동 ${item.ho}호`;
+            // 동/호수가 null이거나 숫자가 아닐 경우의 예외 처리
+            let dongHoText = (!item.dong || item.dong === 'null') ? '-' : `${item.dong}동 ${item.ho}호`;
 
-            rowsHtml += `
+            return `
                 <tr>
                     <td>${badgeHtml}</td>
                     <td style="font-weight:600;">${dongHoText}</td>
@@ -162,65 +114,44 @@ const adminMember = (function() {
                     </td>
                 </tr>
             `;
-        });
-
-        tbody.innerHTML = rowsHtml;
-        renderPagination(currentFilteredList.length);
-    }
-
-    // 페이징 버튼 렌더링
-    function renderPagination(totalCount) {
-        const container = document.getElementById('paginationWrapper');
-        if (!container) return;
-
-        // ★ 수정: 데이터가 0개일 때만 비우고, 1페이지라도 있으면 [1] 버튼 유지
-        if (totalCount === 0) { 
-            container.innerHTML = ''; 
-            return; 
-        }
-
-        const totalPages = Math.ceil(totalCount / rowsPerPage);
-
-        let html = `<button class="btn btn-secondary btn-xs" ${currentPage === 1 ? 'disabled' : `onclick="adminMember.goToPage(${currentPage - 1})"`}>&lt;</button> `;
-
-        for (let i = 1; i <= totalPages; i++) {
-            const activeClass = i === currentPage ? 'btn-primary' : 'btn-secondary';
-            html += `<button class="btn ${activeClass} btn-xs" onclick="adminMember.goToPage(${i})">${i}</button> `;
-        }
-
-        html += `<button class="btn btn-secondary btn-xs" ${currentPage === totalPages ? 'disabled' : `onclick="adminMember.goToPage(${currentPage + 1})"`}>&gt;</button>`;
-        
-        container.innerHTML = html;
-    }
-
-    // 페이지 이동 로직
-    function goToPage(page) {
-        currentPage = page;
-        renderTable();
+        }).join('');
     }
 
     /* =========================================
-       CRUD 비즈니스 로직
+       3. CRUD 및 모달 비즈니스 로직
        ========================================= */
 
+    // 회원 승인 (AJAX 연동)
     function approveMember(id) {
-        if(confirm('해당 회원의 가입을 승인하시겠습니까?')) {
-            const member = memberList.find(m => m.userId === id);
-            if(member) {
-                member.approvalStatus = 'ACT'; 
-                updateStats(); 
-                searchTable(false); // 페이지 유지
-                alert("승인 처리되었습니다.");
+        if(!confirm('해당 회원의 가입을 승인하시겠습니까?')) return;
+
+        fetch('/admin/member/approve', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ 'userId': id })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("성공적으로 승인 처리되었습니다.");
+                // 성공 시 화면을 새로고침하여 상단 통계(대기 인원 등)와 목록을 즉시 갱신!
+                location.reload(); 
+            } else {
+                alert("서버 오류로 인해 승인에 실패했습니다.");
             }
-        }
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            alert("요청 중 네트워크 오류가 발생했습니다.");
+        });
     }
 
     function openModal(id) {
         const item = memberList.find(d => d.userId === id);
         if(!item || !modal) return;
 
-        currentUserId = id;
-
+        // JSP에서 추가했던 hidden input에 아이디 심기
+        document.getElementById('modalUserId').value = item.userId; 
+        
         document.getElementById('modalUserName').value = item.userName;
         document.getElementById('modalDong').value = item.dong;
         document.getElementById('modalHo').value = item.ho;
@@ -229,56 +160,33 @@ const adminMember = (function() {
         document.getElementById('modalJoinDate').innerText = item.joinDate;
         document.getElementById('modalApprovalStatus').value = item.approvalStatus;
 
-        // ★ 수정: setTimeout 제거하고 admin.css의 애니메이션 활용
-        modal.style.display = 'flex';
-    }
-
-    function saveMember() {
-        const item = memberList.find(d => d.userId === currentUserId);
-        if(item) {
-            item.userName = document.getElementById('modalUserName').value;
-            item.dong = document.getElementById('modalDong').value;
-            item.ho = document.getElementById('modalHo').value;
-            item.phone = document.getElementById('modalPhone').value;
-            item.approvalStatus = document.getElementById('modalApprovalStatus').value;
-            
-            alert('회원 정보가 수정되었습니다.');
-            closeModal();
-            updateStats();
-            searchTable(false); // 페이지 유지
-        }
-    }
-
-    function deleteMember() {
-        if(confirm('회원을 삭제하시겠습니까? (DB Soft Delete 권장)')) {
-            memberList = memberList.filter(m => m.userId !== currentUserId);
-            alert('삭제되었습니다.');
-            closeModal();
-            updateStats();
-            searchTable(false); 
-        }
+        modal.style.display = 'flex'; // admin.css 모달 띄우기 방식
     }
 
     function closeModal() {
-        if(!modal) return;
-        // ★ 수정: setTimeout 제거하고 즉시 display none 처리
-        modal.style.display = 'none';
-        currentUserId = null; 
+        if(modal) modal.style.display = 'none';
     }
 
-    // 초기화 실행
-    document.addEventListener('DOMContentLoaded', init);
+    function saveMember() {
+        const id = document.getElementById('modalUserId').value;
+        // TODO: 향후 AdminMemberController 에 수정 API(/admin/member/update) 추가 필요
+        alert(`[API 연동 필요] 회원(${id}) 정보가 정상적으로 수정되었습니다.`);
+        closeModal();
+    }
 
-    // 외부 노출
+    function deleteMember() {
+        const id = document.getElementById('modalUserId').value;
+        if(confirm('이 회원을 강제 탈퇴 처리하시겠습니까? (이 작업은 복구할 수 없습니다)')) {
+            // TODO: 향후 AdminMemberController 에 삭제 API(/admin/member/delete) 추가 필요
+            alert(`[API 연동 필요] 회원(${id})이 시스템에서 삭제되었습니다.`);
+            closeModal();
+        }
+    }
+
+    // 캡슐화된 함수 노출
     return {
-        filterTab,
-        searchTable,
-        goToPage,
-        approveMember,
-        openModal,
-        saveMember,
-        deleteMember,
-        closeModal
+        filterTab, searchTable, approveMember,
+        openModal, closeModal, saveMember, deleteMember
     };
 
 })();

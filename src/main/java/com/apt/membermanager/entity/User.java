@@ -22,7 +22,7 @@ import java.util.List;
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails{
+public class User implements UserDetails {
 
     @Id
     @Column(name = "user_id", length = 50)
@@ -58,29 +58,26 @@ public class User implements UserDetails{
     @Column(name = "profile_img")
     private String profileImg;
 
-    //시큐리티는 이 메소드로 비밀번호를 가져감
+    // 시큐리티는 이 메소드로 비밀번호를 가져감
     @Override
     public String getPassword() {
-    	return this.userPw;
+        return this.userPw;
     }
     
-    //시큐리티는 이 메소드로 아이디를 가져감 
+    // 시큐리티는 이 메소드로 아이디를 가져감 
     @Override
-	public String getUsername() {
-		// TODO Auto-generated method stub
-		return this.userId;
-	}
+    public String getUsername() {
+        return this.userId;
+    }
     
-    // ★ [추가됨] 프론트엔드(JSP)에서 실제 이름을 가져올 때, 
-    // 시큐리티의 getUsername()과 톰캣이 헷갈리지 않도록 명확한 통로를 제공
+    // 프론트엔드(JSP)에서 실제 이름을 가져올 때 사용 (시큐리티 메서드와의 충돌 방지)
     public String getRealName() {
         return this.userName;
     }
     
-    // ★ [수정됨] int -> Boolean
-    // DB의 TINYINT(1)을 자바의 Boolean(true/false)으로 자동 변환해줍니다.
+    // DB의 TINYINT(1)을 자바의 Boolean(true/false)으로 자동 변환
     @Column(name = "approval_status")
-    @ColumnDefault("false") // DB 기본값 설정 (선택사항)
+    @ColumnDefault("false")
     private boolean approvalStatus; 
 
     @CreationTimestamp
@@ -91,22 +88,24 @@ public class User implements UserDetails{
     private LocalDateTime withdrawalDate;
     
     @Override
-	public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() { return true; }
 
-	@Override
-	public boolean isAccountNonLocked() { return true; }
+    @Override
+    public boolean isAccountNonLocked() { return true; }
 
-	@Override
-	public boolean isCredentialsNonExpired() { return true; }
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
 
-	@Override
-	public boolean isEnabled() { return true; }
-	
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return List.of(new SimpleGrantedAuthority("ROLE_" + this.userRole));
-	}
+    @Override
+    public boolean isEnabled() { return true; }
+    
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.userRole));
+    }
 
-	
+    public void updateRole(String userRole, boolean approvalStatus) {
+        this.userRole = userRole;
+        this.approvalStatus = approvalStatus;
+    }
 }

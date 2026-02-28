@@ -10,16 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<c:url value='/css/admin.css'/>">
-
-    <style>
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        .modal-container { width: 600px; background: #fff; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; }
-        .complaint-info { background: #F8F9FA; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
-        .info-row { display: flex; margin-bottom: 8px; font-size: 0.95rem; }
-        .info-label { width: 80px; font-weight: 600; color: #555; }
-        .info-value { flex: 1; color: #333; }
-    </style>
 </head>
 <body>
 
@@ -36,19 +26,19 @@
         <div class="stat-grid-container grid-4">
             <div class="stat-card border-left-primary">
                 <h3>전체 민원</h3>
-                <div class="number text-primary" id="statTotalCount">0<span class="unit">건</span></div>
+                <div class="number text-primary" id="statTotalCount">${stats.totalCount != null ? stats.totalCount : 0}<span class="unit">건</span></div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>신규 접수</h3>
-                <div class="number text-danger" id="statPendingCount">0<span class="unit">건</span></div>
+                <div class="number text-danger" id="statPendingCount">${stats.newCount != null ? stats.newCount : 0}<span class="unit">건</span></div>
             </div>
             <div class="stat-card border-left-info">
                 <h3>처리 중</h3>
-                <div class="number text-info" id="statProcessingCount">0<span class="unit">건</span></div>
+                <div class="number text-info" id="statProcessingCount">${stats.processingCount != null ? stats.processingCount : 0}<span class="unit">건</span></div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>처리 완료</h3>
-                <div class="number text-success" id="statCompletedCount">0<span class="unit">건</span></div>
+                <div class="number text-success" id="statCompletedCount">${stats.completedCount != null ? stats.completedCount : 0}<span class="unit">건</span></div>
             </div>
         </div>
 
@@ -58,20 +48,28 @@
                 <div class="section-actions">
                     <select class="form-select" id="categoryFilter" onchange="complaintManager.searchTable()">
                         <option value="">전체 유형</option>
-                        <option value="FACILITY">시설보수</option>
-                        <option value="NOISE">층간소음</option>
-                        <option value="PARKING">주차문제</option>
-                        <option value="ETC">기타</option>
+                        <option value="FACILITY" ${param.category == 'FACILITY' ? 'selected' : ''}>시설보수</option>
+                        <option value="NOISE" ${param.category == 'NOISE' ? 'selected' : ''}>층간소음</option>
+                        <option value="PARKING" ${param.category == 'PARKING' ? 'selected' : ''}>주차문제</option>
+                        <option value="ETC" ${param.category == 'ETC' ? 'selected' : ''}>기타</option>
                     </select>
+
                     <select class="form-select" id="statusFilter" onchange="complaintManager.searchTable()">
                         <option value="">전체 상태</option>
-                        <option value="PENDING">접수</option>
-                        <option value="PROCESSING">진행중</option>
-                        <option value="COMPLETED">완료</option>
+                        <option value="PENDING" ${param.status == 'PENDING' ? 'selected' : ''}>접수</option>
+                        <option value="PROCESSING" ${param.status == 'PROCESSING' ? 'selected' : ''}>진행중</option>
+                        <option value="COMPLETED" ${param.status == 'COMPLETED' ? 'selected' : ''}>완료</option>
                     </select>
-                    <input type="text" class="form-input" id="keyword" placeholder="작성자 또는 제목" 
+
+                    <select class="form-select" id="searchType" style="width: 100px;">
+                        <option value="title" ${searchType == 'title' ? 'selected' : ''}>제목</option>
+                        <option value="userId" ${searchType == 'userId' ? 'selected' : ''}>작성자ID</option>
+                    </select>
+
+                    <input type="text" class="form-input" id="keyword" value="${keyword}" placeholder="검색어 입력" 
                            onkeyup="if(window.event.keyCode==13){complaintManager.searchTable()}">
-                    <button class="btn btn-secondary" onclick="complaintManager.searchTable()">
+                           
+                    <button class="btn btn-primary" onclick="complaintManager.searchTable()">
                         <i class="fa-solid fa-search"></i>
                     </button>
                 </div>
@@ -79,8 +77,8 @@
 
             <table class="admin-table">
                 <colgroup>
-                    <col width="10%"> <col width="10%"> <col width="*">
-                    <col width="15%"> <col width="15%"> <col width="10%"> <col width="10%">
+                    <col width="8%"> <col width="12%"> <col width="*">
+                    <col width="15%"> <col width="12%"> <col width="10%"> <col width="10%">
                 </colgroup>
                 <thead>
                     <tr>
@@ -89,70 +87,97 @@
                     </tr>
                 </thead>
                 <tbody id="complaintTableBody">
-                </tbody>
+                    </tbody>
             </table>
 
-            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;">
+                <c:if test="${paging.totalPages > 1}">
+                    <button class="btn btn-secondary btn-xs" ${!paging.hasPrevious() ? 'disabled' : ''} 
+                            onclick="location.href='?page=${paging.number-1}&searchType=${searchType}&keyword=${keyword}'">&lt;</button>
+                    
+                    <c:forEach var="i" begin="0" end="${paging.totalPages - 1}">
+                        <c:if test="${i >= paging.number - 5 && i <= paging.number + 5}">
+                            <button class="btn ${i == paging.number ? 'btn-primary' : 'btn-secondary'} btn-xs" 
+                                    onclick="location.href='?page=${i}&searchType=${searchType}&keyword=${keyword}'">${i + 1}</button>
+                        </c:if>
+                    </c:forEach>
+
+                    <button class="btn btn-secondary btn-xs" ${!paging.hasNext() ? 'disabled' : ''} 
+                            onclick="location.href='?page=${paging.number+1}&searchType=${searchType}&keyword=${keyword}'">&gt;</button>
+                </c:if>
+            </div>
         </div>
     </main>
 </div>
 
 <div id="complaintModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="content-header" style="margin:0; display:flex; justify-content:space-between;">
-            <h3>민원 상세 및 답변</h3>
-            <button onclick="complaintManager.closeModal()" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-container large">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-clipboard-list"></i> 민원 상세 및 답변</h3>
+            <button class="modal-close-btn" onclick="complaintManager.closeModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
         
-        <input type="hidden" id="targetCompId"> 
-        
-        <div class="complaint-info">
-            <div class="info-row"><div class="info-label">유형</div><div class="info-value" id="modalCategory"></div></div>
-            <div class="info-row"><div class="info-label">작성자</div><div class="info-value" id="modalUserName"></div></div>
-            <div class="info-row"><div class="info-label">접수일</div><div class="info-value" id="modalRegDate"></div></div>
-            <div class="info-row" style="margin-top:10px;"><div class="info-label">내용</div></div>
-            <div style="background:#fff; padding:10px; border:1px solid #ddd; min-height:80px; white-space:pre-wrap;" id="modalContent"></div>
+        <div class="modal-body">
+            <input type="hidden" id="targetCompId"> 
+            
+            <div class="complaint-info">
+                <div class="info-row"><div class="info-label">유형</div><div class="info-value" id="modalCategory"></div></div>
+                <div class="info-row"><div class="info-label">작성자</div><div class="info-value" id="modalUserName"></div></div>
+                <div class="info-row"><div class="info-label">접수일</div><div class="info-value" id="modalRegDate"></div></div>
+                <div class="info-row" style="margin-top:10px;"><div class="info-label">내용</div></div>
+                <div style="background:#fff; padding:15px; border:1px solid #ddd; border-radius:4px; min-height:80px; white-space:pre-wrap; line-height:1.6;" id="modalContent"></div>
+            </div>
+
+            <div style="margin-top:20px;">
+                <label style="font-size:0.95rem; font-weight:700; color:var(--primary); margin-bottom:8px; display:block;">
+                    <i class="fa-solid fa-comment-dots"></i> 관리자 답변 등록
+                </label>
+                <textarea id="modalReply" class="form-input" style="width:100%; height:120px; padding:15px; resize:none; line-height:1.5;" placeholder="입주민에게 전달할 처리 결과 및 답변을 입력하세요."></textarea>
+            </div>
         </div>
 
-        <div>
-            <label style="font-size:0.9rem; font-weight:600; margin-bottom:5px; display:block;">관리자 답변</label>
-            <textarea id="modalReply" class="form-input" style="width:100%; height:100px; padding:10px; resize:none;" placeholder="답변을 입력하세요"></textarea>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <select id="modalCompStatus" class="form-select" style="width:150px;">
-                <option value="PENDING">접수 (대기)</option>
-                <option value="PROCESSING">진행중</option>
-                <option value="COMPLETED">처리 완료</option>
-            </select>
+        <div class="modal-footer space-between">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <label style="font-weight:600; font-size:0.9rem; color:#555;">처리 상태</label>
+                <select id="modalCompStatus" class="form-select" style="width:140px; border-color:var(--primary);">
+                    <option value="WAIT">대기 (미확인)</option>
+                    <option value="PENDING">접수 완료</option>
+                    <option value="PROCESSING">처리 중</option>
+                    <option value="COMPLETED">처리 완료</option>
+                </select>
+            </div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-secondary" onclick="complaintManager.closeModal()">닫기</button>
-                <button class="btn btn-primary" onclick="complaintManager.saveComplaint()">저장</button>
+                <button class="btn btn-secondary" onclick="complaintManager.closeModal()">취소</button>
+                <button class="btn btn-primary" onclick="complaintManager.saveComplaint()">
+                    <i class="fa-solid fa-check"></i> 저장 및 전송
+                </button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    window.globalComplaintList = [];
-
-    <c:if test="${not empty complaintList}">
-        <c:forEach var="item" items="${complaintList}">
-            window.globalComplaintList.push({
-                compId: parseInt('${item.compId}'),
+    // JS 데이터 바인딩
+    window.globalComplaintList = [
+        <c:forEach var="item" items="${paging.content}" varStatus="status">
+            {
+                compId: ${item.compId},
                 category: '${item.category}',
                 title: '${item.title}',
-                content: '${item.content}',
+                content: `${item.content}`, 
                 userName: '${item.userName}',
                 regDate: '${item.regDate}',
                 compStatus: '${item.compStatus}',
-                reply: '${item.reply}'
-            });
+                userId : '${item.userId}',
+                reply: `${item.reply}` // 답변 내용도 백틱으로 감싸서 줄바꿈 에러 방지
+            }${!status.last ? ',' : ''}
         </c:forEach>
-    </c:if>
+    ];
 </script>
 
-<script src="<c:url value='/js/admin/complaint.js'/>"></script>
+<script src="<c:url value='/js/admin/comp_manage.js'/>"></script>
 
 </body>
 </html>
