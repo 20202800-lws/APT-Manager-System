@@ -96,4 +96,5 @@
 							</c:otherwise>
 				</c:choose>
 			</div>
+			<script src="<c:url value='/js/common.js'/>"></script>
 		</header>

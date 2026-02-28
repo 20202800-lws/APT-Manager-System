@@ -18,4 +18,9 @@ public interface FacilityResRepository extends JpaRepository<FacilityRes, Long> 
     List<FacilityRes> findByFacilityTypeAndReserveDateAndResStatusNot(
             String facilityType, String reserveDate, String resStatus
     );
+
+    // ==========================================
+    // ★ [관리자용 추가] 전체 시설 예약 내역 최신순 조회
+    // ==========================================
+    List<FacilityRes> findAllByOrderByRegDateDesc();
 }

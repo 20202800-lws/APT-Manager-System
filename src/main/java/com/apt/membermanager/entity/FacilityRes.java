@@ -1,30 +1,43 @@
 package com.apt.membermanager.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import java.time.LocalDateTime;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter
 @Table(name = "FACILITY_RES")
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FacilityRes {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "res_id")
     private Long resId;
 
+    // 예약자 정보 (USERS 테이블 조인)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String facilityType; // 시설 종류
-    private String detailInfo;   // 상세 내역
-    private String reserveDate;  // 이용 날짜/기간
-    private String price;        // 결제 금액
-    private String resStatus;    // "예약완료", "취소됨"
+    @Column(name = "facility_type", length = 50)
+    private String facilityType;
+
+    @Column(name = "detail_info", length = 200)
+    private String detailInfo;
+
+    @Column(name = "reserve_date", length = 100)
+    private String reserveDate;
+
+    @Column(name = "price", length = 50)
+    private String price;
+
+    @Column(name = "res_status", length = 20)
+    private String resStatus;
 
     @CreationTimestamp
+    @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate;
 }
