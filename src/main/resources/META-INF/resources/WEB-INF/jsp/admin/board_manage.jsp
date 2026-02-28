@@ -27,45 +27,64 @@
         <div class="stat-grid-container grid-3">
             <div class="stat-card border-left-primary">
                 <h3>전체 게시글</h3>
-                <div class="number text-primary" id="statTotalCount">0<span class="unit">개</span></div>
+                <div class="number text-primary" id="statTotalCount">${not empty status.total ? status.total : 0}<span class="unit">개</span></div>
                 <div class="desc">누적 게시글 현황</div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>오늘의 새 글</h3>
-                <div class="number text-success" id="statTodayCount">0<span class="unit">개</span></div>
+                <div class="number text-success" id="statTodayCount">${not empty status['new'] ? status['new'] : 0}<span class="unit">개</span></div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>신고 / 블라인드</h3>
-                <div class="number text-danger" id="statReportCount">0<span class="unit">건</span></div>
+                <div class="number text-danger" id="statReportCount">${not empty status.report ? status.report : 0}<span class="unit">건</span></div>
                 <div class="desc">관리자 확인 필요</div>
             </div>
         </div>
 
         <div class="tab-wrapper">
-            <div class="tab-container">
-                <div class="tab-highlighter" id="tabHighlighter"></div>
-                <button class="tab-btn active" onclick="boardManager.filterTab('ALL', 0)">전체보기</button>
-                <button class="tab-btn" onclick="boardManager.filterTab('FREE', 1)">자유게시판</button>
-                <button class="tab-btn" onclick="boardManager.filterTab('SECRET', 2)">익명게시판</button>
-                <button class="tab-btn" onclick="boardManager.filterTab('REPORT', 3)">신고내역</button>
-            </div>
+			<div class="tab-container">
+                <button class="tab-btn ${(category == 'ALL' || empty category) ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('ALL')">전체보기</button>
+			    <button class="tab-btn ${category == 'FREE' ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('FREE')">자유게시판</button>
+			    <button class="tab-btn ${category == 'SECRET' ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('SECRET')">익명게시판</button>
+			    <button class="tab-btn ${category == 'REPORT' ? 'active' : ''}" 
+			            onclick="boardManager.filterTab('REPORT')">신고내역</button>
+			</div>
         </div>
 
         <div class="content-box">
             <div class="section-header">
-                <h3 class="section-title" id="listTitle">전체 게시글 목록</h3>
-                <div class="section-actions">
-                    <button class="btn btn-secondary" onclick="boardManager.openBannedModal()">
-                        <i class="fa-solid fa-shield-halved"></i> 금지어 설정
-                    </button>
-                    <div style="width: 10px;"></div>
+                <h3 class="section-title" id="listTitle">
+                    <c:choose>
+                        <c:when test="${category == 'FREE'}">자유게시판 목록</c:when>
+                        <c:when test="${category == 'SECRET'}">익명게시판 목록</c:when>
+                        <c:when test="${category == 'REPORT'}">신고된 게시글</c:when>
+                        <c:otherwise>전체 게시글 목록</c:otherwise>
+                    </c:choose>
+                </h3>
+				<div class="section-actions">
+				    <button class="btn btn-secondary" onclick="boardManager.openBannedModal()">
+				        <i class="fa-solid fa-shield-halved"></i> 금지어 설정
+				    </button>
+				    
+				    <div style="width: 10px;"></div>
+				    
                     <select class="form-select" id="searchFilter">
-                        <option value="title">제목</option>
-                        <option value="userName">작성자</option>
-                    </select>
-                    <input type="text" class="form-input" id="searchInput" placeholder="검색어 입력" onkeyup="boardManager.searchTable()">
-                    <button class="btn btn-primary" onclick="boardManager.searchTable()"><i class="fa-solid fa-search"></i></button>
-                </div>
+				        <option value="title" ${searchType == 'title' ? 'selected' : ''}>제목</option>
+				        <option value="userName" ${searchType == 'userName' ? 'selected' : ''}>작성자</option>
+				    </select>
+
+				    <input type="text" class="form-input" id="searchInput"
+				           placeholder="검색어 입력" 
+				           value="${keyword}" 
+				           onkeyup="if(window.event.keyCode==13){boardManager.searchTable()}">
+
+				    <button class="btn btn-primary" onclick="boardManager.searchTable()">
+				        <i class="fa-solid fa-search"></i>
+				    </button>
+				</div>
             </div>
 
             <table class="admin-table">
@@ -81,70 +100,40 @@
                     </tr>
                 </thead>
                 <tbody id="boardTableBody">
-                </tbody>
+                    </tbody>
             </table>
 
-            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
+            <div id="paginationWrapper" style="margin-top:20px; text-align:center;">
+                <c:if test="${paging.hasPrevious()}">
+				    <button class="btn btn-secondary btn-xs" 
+				            onclick="location.href='?page=${paging.number - 1}&category=${category}&searchType=${searchType}&searchInput=${keyword}'">&lt;</button>
+				</c:if>
+
+				<c:forEach var="i" begin="1" end="${paging.totalPages}">
+                    <button class="btn ${i == paging.number + 1 ? 'btn-primary' : 'btn-secondary'} btn-xs" 
+                            onclick="location.href='?page=${i-1}&category=${category}&searchType=${searchType}&searchInput=${keyword}'">${i}</button>
+				</c:forEach>
+
+				<c:if test="${paging.hasNext()}">
+				    <button class="btn btn-secondary btn-xs" 
+				            onclick="location.href='?page=${paging.number + 1}&category=${category}&searchType=${searchType}&searchInput=${keyword}'">&gt;</button>
+				</c:if>
+			</div>
         </div>
 
     </main>
 </div>
 
-<div id="bannedModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="content-header" style="margin-bottom:15px; display:flex; justify-content:space-between;">
-            <h3 style="font-size:1.2rem; font-weight:700;">🚫 금지어 관리 설정</h3>
-            <button onclick="boardManager.closeModal('bannedModal')" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">
-            등록된 단어가 포함된 게시글은 자동으로 블라인드 처리되거나 등록이 제한됩니다.
-        </p>
-        
-        <textarea id="bannedInput" class="form-input" style="height:150px; resize:none; padding:15px; line-height:1.6; width:100%;" 
-            placeholder="금지어를 쉼표(,)로 구분하여 입력하세요. (예: 바보, 멍청이, 욕설)"></textarea>
-        
-        <div style="text-align:right; display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-            <button class="btn btn-secondary" onclick="boardManager.closeModal('bannedModal')">취소</button>
-            <button class="btn btn-primary" onclick="boardManager.saveBannedWords()">설정 저장</button>
-        </div>
-    </div>
-</div>
-
-<div id="detailModal" class="modal-overlay">
-    <div class="modal-container" style="width: 600px;"> 
-        <div class="content-header" style="margin-bottom:15px; display:flex; justify-content:space-between;">
-            <h3 class="font-bold text-lg">게시글 상세 정보</h3>
-            <button onclick="boardManager.closeModal('detailModal')" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <input type="hidden" id="targetBoardId"> 
-        <div id="postDetailContent"></div>
-
-        <div style="margin-top:20px; padding-top:20px; border-top:1px solid #eee;">
-             <label style="font-weight:600; display:block; margin-bottom:8px; color:var(--danger);">관리 조치 (블라인드 사유)</label>
-             <select id="blindReason" class="form-select" style="width:100%;">
-                 <option value="부적절한 홍보 게시물">부적절한 홍보 게시물</option>
-                 <option value="욕설 및 비방">욕설 및 비방</option>
-                 <option value="도배 및 스팸">도배 및 스팸</option>
-                 <option value="기타 사유">기타 사유</option>
-             </select>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; margin-top:25px;">
-            <button class="btn btn-secondary" style="color:var(--danger); border-color:var(--danger);" onclick="boardManager.executeAction('delete')">
-                <i class="fa-solid fa-trash"></i> 완전 삭제
-            </button>
-            <div style="display:flex; gap:10px;">
-                 <button class="btn btn-secondary" onclick="boardManager.closeModal('detailModal')">닫기</button>
-                 <button class="btn btn-primary" onclick="boardManager.executeAction('blind')">
-                    <i class="fa-solid fa-eye-slash"></i> 블라인드 처리
-                 </button>
-            </div>
-        </div>
-    </div>
-</div>
+<jsp:include page="./modals/board_modals.jsp" /> 
 
 <script>
+    // ★ 통계 데이터 바인딩 최적화
+    window.adminStats = {
+        total: parseInt('${status.total != null ? status.total : 0}'),
+        newPost: parseInt("${status['new'] != null ? status['new'] : 0}"),
+        report: parseInt('${status.report != null ? status.report : 0}')
+    };
+
     window.globalBoardList = [];
 
     <c:if test="${not empty paging.content}">
@@ -158,7 +147,7 @@
                 views: parseInt('${board.views}'),
                 reportCount: parseInt('${board.reportCount}'),
                 postStatus: '${board.postStatus}',
-                content: '${board.content}'
+                content: `${board.content}` // 줄바꿈 대응을 위해 백틱(`) 권장
             });
         </c:forEach>
     </c:if>

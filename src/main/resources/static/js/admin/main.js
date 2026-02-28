@@ -1,86 +1,62 @@
 /* =========================================
-   관리자 | 대시보드 로직 (데이터 연동 & 독립 페이징)
+   관리자 | 대시보드 로직 (초경량 서버 연동형)
    ========================================= */
 
 const dashboardManager = (function() {
 
-    // 1. 데이터 초기화 (JSP 전역 변수에서 호출)
-    let statsData = window.globalStatsData || { totalHouseholdCount: 0, unprocessedMinwon: 0, feePaymentRate: 0, parkingRate: 0 };
+    // 1. 데이터 초기화 (백엔드에서 이미 최신 5건씩 잘라서 보내준 데이터)
     let minwonList = window.globalRecentMinwonList || [];
     let memberList = window.globalPendingMemberList || [];
 
-    // 2. 독립적인 페이징 관련 변수 설정 (대시보드는 한 화면에 적게 보여주는 것이 좋음)
-    const rowsPerPage = 5;
-    let currentMinwonPage = 1;
-    let currentMemberPage = 1;
-
-    // 3. 초기 실행 (DOM 로드 후)
+    // 2. 초기 실행
     document.addEventListener('DOMContentLoaded', () => {
         renderDate();
-        renderStats();
         renderClaims();
         renderMembers();
     });
 
-    // 날짜 표시
+    // 오늘 날짜 표시 (우측 상단)
     function renderDate() {
         const today = new Date();
         const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-        document.getElementById('currentDate').innerText = today.toLocaleDateString('ko-KR', options);
-    }
-
-    // 통계 렌더링
-    function renderStats() {
-        document.getElementById('statTotalHouseholdCount').innerHTML = 
-            `${statsData.totalHouseholdCount.toLocaleString()}<span class="unit">세대</span>`;
-        
-        document.getElementById('statUnprocessedMinwon').innerHTML = 
-            `${statsData.unprocessedMinwon.toLocaleString()}<span class="unit">건</span>`;
-        
-        document.getElementById('statFeePaymentRate').innerHTML = 
-            `${statsData.feePaymentRate}<span class="unit">%</span>`;
-        
-        document.getElementById('statParkingRate').innerHTML = 
-            `${statsData.parkingRate}<span class="unit">%</span>`;
+        const dateEl = document.getElementById('currentDate');
+        if(dateEl) dateEl.innerText = today.toLocaleDateString('ko-KR', options);
     }
 
     /* =========================================
-       민원 목록 페이징 및 렌더링
+       민원 요약 목록 렌더링 (최대 5건)
        ========================================= */
     function renderClaims() {
         const tbody = document.getElementById('minwonTableBody');
-        
+        if(!tbody) return;
+
         if (minwonList.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="color:#999; text-align:center; padding:30px;">최근 접수된 민원이 없습니다.</td></tr>';
-            renderPagination('minwonPaginationWrapper', 0, currentMinwonPage, 'dashboardManager.goToMinwonPage');
             return;
         }
 
-        const totalPages = Math.ceil(minwonList.length / rowsPerPage);
-        if (currentMinwonPage > totalPages) currentMinwonPage = totalPages || 1;
-
-        const startIndex = (currentMinwonPage - 1) * rowsPerPage;
-        const paginatedData = minwonList.slice(startIndex, startIndex + rowsPerPage);
-
-        tbody.innerHTML = paginatedData.map(item => {
+        tbody.innerHTML = minwonList.map(item => {
             let badge = '';
-            // ★ 수정됨: 백엔드 상태값 표준 및 뱃지 색상 통일 (comp_manage.js와 동일하게 적용)
-            if(item.compStatus === 'PENDING') badge = '<span class="badge badge-gray">접수</span>';
-            else if(item.compStatus === 'PROCESSING') badge = '<span class="badge badge-blue">진행중</span>';
-            else if(item.compStatus === 'COMPLETED') badge = '<span class="badge badge-green">완료</span>';
-            else badge = '<span class="badge badge-gray">미상</span>';
+            const status = (item.compStatus || "").toUpperCase();
 
-            let catColor = item.category === 'FACILITY' ? '#1A237E' : '#666';
+            // 백엔드 상태값 매칭
+            if (status === 'WAIT') {
+                badge = '<span class="badge badge-gray">대기</span>';
+            } else if (status === 'PENDING') {
+                badge = '<span class="badge badge-danger">접수</span>'; 
+            } else if (status === 'PROCESSING') {
+                badge = '<span class="badge badge-info">진행중</span>';
+            } else if (status === 'COMPLETED') {
+                badge = '<span class="badge badge-success">완료</span>';
+            }
 
-            // 카테고리 한글명 매핑
-            let catName = item.category;
             const catMap = { 'FACILITY': '시설보수', 'NOISE': '층간소음', 'PARKING': '주차문제', 'ETC': '기타' };
-            if (catMap[item.category]) catName = catMap[item.category];
+            const catName = catMap[item.category] || item.category;
 
             return `
                 <tr>
-                    <td style="color:${catColor}; font-weight:600;">${catName}</td>
-                    <td class="td-title" onclick="alert('민원 상세(ID:${item.compId}) 이동')">
+                    <td style="font-weight:600; color:#555;">${catName}</td>
+                    <td class="td-title" onclick="location.href='/admin/comp_manage?keyword=${encodeURIComponent(item.title)}'">
                         ${item.title}
                     </td>
                     <td style="color:#888; font-size:0.9rem;">${item.regDate}</td>
@@ -88,116 +64,68 @@ const dashboardManager = (function() {
                 </tr>
             `;
         }).join('');
-
-        renderPagination('minwonPaginationWrapper', minwonList.length, currentMinwonPage, 'dashboardManager.goToMinwonPage');
     }
 
     /* =========================================
-       승인 대기 회원 목록 페이징 및 렌더링
+       승인 대기 회원 요약 목록 렌더링 (최대 5건)
        ========================================= */
     function renderMembers() {
         const tbody = document.getElementById('memberTableBody');
+        if(!tbody) return;
         
         if (memberList.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="color:#999; text-align:center; padding:30px;">승인 대기 중인 회원이 없습니다.</td></tr>';
-            renderPagination('memberPaginationWrapper', 0, currentMemberPage, 'dashboardManager.goToMemberPage');
             return;
         }
 
-        const totalPages = Math.ceil(memberList.length / rowsPerPage);
-        if (currentMemberPage > totalPages) currentMemberPage = totalPages || 1;
+        tbody.innerHTML = memberList.map(item => {
+            // 동호수 예외처리 방어
+            let dongHoText = (!item.dong || item.dong === 'null') ? '-' : `${item.dong}동 ${item.ho}호`;
 
-        const startIndex = (currentMemberPage - 1) * rowsPerPage;
-        const paginatedData = memberList.slice(startIndex, startIndex + rowsPerPage);
-
-        tbody.innerHTML = paginatedData.map(item => {
             return `
                 <tr>
-                    <td style="font-weight:600;">${item.dong}동 ${item.ho}호</td>
+                    <td style="font-weight:600; color:#555;">${dongHoText}</td>
                     <td>${item.userName}</td>
                     <td style="color:#888; font-size:0.9rem;">${item.joinDate}</td>
                     <td>
                         <button class="btn btn-primary btn-xs" onclick="dashboardManager.quickApprove('${item.userId}', '${item.userName}')">
-                            승인
+                            <i class="fa-solid fa-check"></i> 승인
                         </button>
                     </td>
                 </tr>
             `;
         }).join('');
-
-        renderPagination('memberPaginationWrapper', memberList.length, currentMemberPage, 'dashboardManager.goToMemberPage');
     }
 
     /* =========================================
-       공통 페이징 UI 렌더링 함수
-       ========================================= */
-    function renderPagination(containerId, totalCount, currentPage, fnName) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        // ★ 수정됨: 데이터가 0개일 때만 비우고, 1개 이상이면 무조건 페이징 유지
-        if (totalCount === 0) { 
-            container.innerHTML = ''; 
-            return; 
-        }
-
-        const totalPages = Math.ceil(totalCount / rowsPerPage);
-
-        let html = `<button class="btn btn-secondary btn-xs" ${currentPage === 1 ? 'disabled' : `onclick="${fnName}(${currentPage - 1})"`}>&lt;</button> `;
-
-        for (let i = 1; i <= totalPages; i++) {
-            const activeClass = i === currentPage ? 'btn-primary' : 'btn-secondary';
-            html += `<button class="btn ${activeClass} btn-xs" onclick="${fnName}(${i})">${i}</button> `;
-        }
-
-        html += `<button class="btn btn-secondary btn-xs" ${currentPage === totalPages ? 'disabled' : `onclick="${fnName}(${currentPage + 1})"`}>&gt;</button>`;
-        
-        container.innerHTML = html;
-    }
-
-    // 민원 페이지 이동 함수
-    function goToMinwonPage(page) {
-        currentMinwonPage = page;
-        renderClaims();
-    }
-
-    // 회원 승인 페이지 이동 함수
-    function goToMemberPage(page) {
-        currentMemberPage = page;
-        renderMembers();
-    }
-
-    /* =========================================
-       기능 로직 (승인 처리)
+       기능 로직 (빠른 승인 API 연동)
        ========================================= */
     function quickApprove(id, name) {
-        if(confirm(`${name} 님의 가입을 승인하시겠습니까?`)) {
+        if(!confirm(`[${name}] 님의 가입을 승인하시겠습니까?`)) return;
             
-            // 실제 서버 연결 시 이 부분에 AJAX / fetch 로직 구현
-            // fetch('/admin/member/approve', { ... })
-            
-            alert(`[${name}]님 승인 처리되었습니다.`);
-            
-            // UI에서 해당 항목 즉시 제거 후 다시 그리기
-            const rowIndex = memberList.findIndex(m => m.userId === id);
-            if(rowIndex > -1) {
-                memberList.splice(rowIndex, 1);
-                
-                // 데이터가 삭제되어 현재 페이지가 비게 되면 이전 페이지로 이동
-                const totalPages = Math.ceil(memberList.length / rowsPerPage);
-                if (currentMemberPage > totalPages && currentMemberPage > 1) {
-                    currentMemberPage--;
-                }
-                
-                renderMembers();
+        // AdminMemberController 의 approveMember 로 POST 요청
+        fetch('/admin/member/approve', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ 'userId': id })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert(`[${name}]님 승인 처리되었습니다.`);
+                // 성공 시 화면을 즉시 새로고침하여 대시보드의 숫자가 갱신되도록 함
+                location.reload(); 
+            } else {
+                alert("서버 오류로 인해 승인에 실패했습니다.");
             }
-        }
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            alert("요청 중 네트워크 오류가 발생했습니다.");
+        });
     }
 
     // 외부로 노출할 함수
     return {
-        goToMinwonPage,
-        goToMemberPage,
         quickApprove
     };
 

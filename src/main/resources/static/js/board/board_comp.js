@@ -26,10 +26,12 @@ function renderList(data, tbody) {
         // DB의 영문 상태값을 한글과 색상으로 변환
         let statusText = '접수 대기';
         let statusColor = '#ef4444'; // 빨강
+        
+        // 상대방 백엔드의 'DONE' 상태값도 호환되도록 방어 로직 추가
         if (p.status === 'PROCESSING') { 
             statusText = '진행중'; 
             statusColor = '#f59e0b'; // 주황
-        } else if (p.status === 'COMPLETED') { 
+        } else if (p.status === 'COMPLETED' || p.status === 'DONE' || p.status === '완료') { 
             statusText = '처리 완료'; 
             statusColor = '#10b981'; // 초록
         }
@@ -45,7 +47,8 @@ function renderList(data, tbody) {
                 ${secretIcon} ${p.title}
             </td>
             <td>${p.author}</td>
-            <td>${p.date.substring(0, 10)}</td> <td>${p.hits}</td>
+            <td>${p.date.substring(0, 10)}</td> 
+            <td>${p.hits}</td>
             <td style="font-weight:bold; color:${statusColor};">${statusText}</td>
         </tr>
         `;
@@ -61,7 +64,6 @@ function searchPost() {
 
 // =========================================
 // 글쓰기 화면 - 다중 이미지 미리보기 기능
-// (JSP에 있던 스크립트를 여기로 옮겨와서 통합 관리!)
 // =========================================
 function previewImages(input) {
     const container = document.getElementById('imagePreviewContainer');

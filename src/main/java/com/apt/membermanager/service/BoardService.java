@@ -31,7 +31,7 @@ public class BoardService {
 	private final UserRepository userRepository;
 	private final CommentRepository commentRepository;
 	
-	// ★ 추가된 도구들
+	// ★ 선배님이 만드신 첨부파일 도구 사수!
 	private final FileHandler fileHandler;
 	private final AttachmentRepository attachmentRepository;
 	
@@ -64,12 +64,22 @@ public class BoardService {
         return boardId;
     }
     
-    //게시판 목록(페이징)
+    // 게시판 목록(페이징 및 검색)
     @Transactional(readOnly = true)
-    public Page<BoardListBean> searchByBoardPaging(String loginId, boolean anonymous, String keyword, Pageable pageable){
+    public Page<BoardListBean> searchByBoardPaging(String loginId, boolean anonymous,
+    		String searchType, String keyword, Pageable pageable) {
+    	
     	String searchKeyword = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword.trim();
-    	Page<Board> entitiesPage = boardRepository.findByAnonymousAndTitleContaining(anonymous, searchKeyword, pageable);
-    	List<BoardListBean> list = entitiesPage.getContent().stream().map(entity->{
+    	Page<Board> entitiesPage;
+        
+        // ★ 상대 브랜치 기능 흡수: 검색 타입(제목 or 작성자)에 따른 분기 처리
+    	if("title".equals(searchType)) {
+    		entitiesPage = boardRepository.findByAnonymousAndTitleContaining(anonymous, searchKeyword, pageable);
+    	} else {
+            entitiesPage = boardRepository.findByAnonymousAndUser_UserNameContaining(anonymous, searchKeyword, pageable);
+        }
+        
+    	List<BoardListBean> list = entitiesPage.getContent().stream().map(entity -> {
     		long count = commentRepository.countByBoard_BoardId(entity.getBoardId());
     		return new BoardListBean(entity, loginId, count);
     	}).collect(Collectors.toList());
@@ -88,5 +98,18 @@ public class BoardService {
 		viewBean.setPrev_id(boardRepository.findPrevId(id, board.isAnonymous()));
 		viewBean.setNext_id(boardRepository.findNextId(id, board.isAnonymous()));
 		return viewBean;
+	}
+	
+    // ★ 상대 브랜치 기능 흡수: 게시글 삭제 기능
+	public boolean deletePost(Long boardId, String currentId) {
+		Board board = boardRepository.findById(boardId)
+		        .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+		if (!board.getUser().getUsername().equals(currentId)) {
+	        throw new IllegalStateException("삭제 권한이 없습니다.");
+	    }
+		boardRepository.delete(board);
+		
+        // 삭제 후 익명게시판/자유게시판 리다이렉트를 판단하기 위해 boolean 반환
+		return board.isAnonymous();
 	}
 }

@@ -28,7 +28,7 @@ public class CommunityService {
 
     // 글쓰기
     @Transactional
-    public Long writeBoard(String userId, BoardWriteDto dto,boolean anonymous) {
+    public Long writeBoard(String userId, BoardWriteDto dto, boolean anonymous) {
         // 1. 작성자 찾기
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("작성자 정보가 없습니다."));
@@ -47,13 +47,15 @@ public class CommunityService {
 
     // 전체 글 목록 보기 (최신순)
     public List<Board> getBoardList() {
-        // JPA가 제공하는 전체 조회 (정렬이 필요하면 Repository에 메서드 추가)
+        // JPA가 제공하는 전체 조회
         return boardRepository.findAll();
     }
     
     // 카테고리별 글 목록 보기
     public List<Board> getBoardListByCategory(String category) {
-        return boardRepository.findByCategoryOrderByRegDateDesc(category);
+        // ★ 에러 원인 완벽 해결: category 문자열을 boolean으로 변환해서 검색합니다!
+        boolean isAnonymous = "SECRET".equalsIgnoreCase(category);
+        return boardRepository.findByAnonymousOrderByBoardIdDesc(isAnonymous);
     }
 
     // 글 상세 보기 (조회수 증가 포함)
