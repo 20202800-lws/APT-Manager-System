@@ -37,8 +37,13 @@ public class Complaint {
     private String reply;
 
     private String phone;
-    private String compStatus;
+    
+    // ★ 상대 브랜치 흡수: 명확한 DB 컬럼 지정 및 주석 유지
+    @Column(name = "comp_status")
+    private String compStatus; // WAIT, COMPLETED 등 상태값 저장
 
+    // ★ HEAD 사수 (초대형 버그 방지): boolean secret으로 돌아가려는 것을 막고 String isSecret 유지!
+    // 이래야 JSP 화면에서 500 에러가 다시 터지지 않습니다!
     @Column(length = 1)
     private String isSecret; // Y/N
 

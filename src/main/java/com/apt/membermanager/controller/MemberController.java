@@ -2,6 +2,7 @@ package com.apt.membermanager.controller;
 
 import com.apt.membermanager.dto.UserSignupDto;
 import com.apt.membermanager.entity.User;
+import com.apt.membermanager.repository.UserRepository; // ★ 추가됨: UserRepository import
 import com.apt.membermanager.service.MemberDetailsService;
 import com.apt.membermanager.service.MemberService;
 
@@ -30,113 +31,135 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class MemberController {
 
-	private final MemberService memberService;
-	private final MemberDetailsService memberDetailsService;
-	private final PasswordEncoder passwordEncoder;
-    private final com.apt.membermanager.repository.UserRepository userRepository;
+    private final MemberService memberService;
+    private final MemberDetailsService memberDetailsService;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository; // ★ HEAD 브랜치의 계정 찾기용 레포지토리 사수!
 
-	@GetMapping("/login")
-	public String loginPage(Authentication authentication, HttpServletRequest request) {
-		HttpSession session = request.getSession(false);
-		if ((authentication != null && authentication.isAuthenticated())
-				|| (session != null && session.getAttribute("loginMember") != null)) {
-			return "redirect:/";
-		}
-		return "member/login";
-	}
+    // ==========================
+    // 1. 화면 이동 (GET)
+    // ==========================
 
-	@GetMapping("/signup")
-	public String signupPage() {
-		return "member/signup";
-	}
+    @GetMapping("/login")
+    public String loginPage(Authentication authentication, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if ((authentication != null && authentication.isAuthenticated())
+                || (session != null && session.getAttribute("loginMember") != null)) {
+            return "redirect:/";
+        }
+        return "member/login";
+    }
 
-	@PostMapping("/signup")
-	public String signup(@Valid @ModelAttribute("userSignupDto") UserSignupDto userSignupDto,
-			BindingResult bindingResult, RedirectAttributes rttr) { 
+    @GetMapping("/signup")
+    public String signupPage() {
+        return "member/signup";
+    }
 
-		log.info("회원가입 요청: {}", userSignupDto);
+    @GetMapping("/find_account")
+    public String findAccount() {
+        return "member/find_account";
+    }
 
-		if (bindingResult.hasErrors()) {
-			log.warn("검증 오류 발생: {}", bindingResult.getAllErrors());
-			return "member/signup";
-		}
+    // ==========================
+    // 2. 기능 처리 (POST)
+    // ==========================
 
-		try {
-			log.info("회원가입 시작: {}", userSignupDto.getUserId());
-			memberService.signup(userSignupDto);
-		} catch (RuntimeException e) {
-			log.error("가입 실패: {}", e.getMessage());
-			rttr.addFlashAttribute("msg", "회원가입 처리 중 오류가 발생했습니다.");
-			return "redirect:/member/signup";
-		}
+    @PostMapping("/signup")
+    public String signup(@Valid @ModelAttribute("userSignupDto") UserSignupDto userSignupDto,
+                         BindingResult bindingResult, RedirectAttributes rttr) { 
 
-		log.info("회원가입 성공: {}", userSignupDto.getUserId());
-		rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다! 관리자 승인 후 로그인 및 이용이 가능합니다.");
-		return "redirect:/"; 
-	}
+        log.info("회원가입 요청: {}", userSignupDto);
 
-	@PostMapping("/login")
-	public String login(@RequestParam String userId, @RequestParam String userPw, HttpServletRequest request,
-			RedirectAttributes rttr) {
+        if (bindingResult.hasErrors()) {
+            log.warn("검증 오류 발생: {}", bindingResult.getAllErrors());
+            return "member/signup";
+        }
 
-		log.info("로그인 시도: {}", userId);
-		User loginUser = null;
+        try {
+            log.info("회원가입 시작: {}", userSignupDto.getUserId());
+            memberService.signup(userSignupDto);
+        } catch (RuntimeException e) {
+            log.error("가입 실패: {}", e.getMessage());
+            rttr.addFlashAttribute("msg", "회원가입 처리 중 오류가 발생했습니다.");
+            return "redirect:/member/signup";
+        }
 
-		try {
-			loginUser = (User) memberDetailsService.loadUserByUsername(userId);
-			if (!passwordEncoder.matches(userPw, loginUser.getPassword())) {
-				loginUser = null; 
-			}
-		} catch (UsernameNotFoundException e) {
-			loginUser = null;
-		}
+        log.info("회원가입 성공: {}", userSignupDto.getUserId());
+        // ★ 핵심 로직: 성공 알림 메시지를 일회성으로 담아서 홈("/")으로 보냅니다.
+        rttr.addFlashAttribute("msg", "회원가입이 완료되었습니다! 관리자 승인 후 로그인 및 이용이 가능합니다.");
+        return "redirect:/"; 
+    }
 
-		if (loginUser == null) {
-			rttr.addFlashAttribute("msg", "아이디 또는 비밀번호가 일치하지 않습니다.");
-			return "redirect:/member/login";
-		}
+    @PostMapping("/login")
+    public String login(@RequestParam String userId, @RequestParam String userPw, HttpServletRequest request,
+                        RedirectAttributes rttr) {
 
-		if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.isApprovalStatus()) {
-			rttr.addFlashAttribute("msg", "관리자 승인 대기 중인 계정입니다. 관리사무소에 문의하세요.");
-			return "redirect:/member/login";
-		}
+        log.info("로그인 시도: {}", userId);
+        User loginUser = null;
 
-		HttpSession session = request.getSession();
-		session.setAttribute("loginMember", loginUser);
-		log.info("로그인 성공: {} (권한: {})", loginUser.getUsername(), loginUser.getUserRole());
+        try {
+            // 1. 아이디로 유저 찾기
+            loginUser = (User) memberDetailsService.loadUserByUsername(userId);
 
-		if ("ADMIN".equals(loginUser.getUserRole())) {
-			return "redirect:/admin/main";
-		} else {
-			return "redirect:/";
-		}
-	}
+            // 2. 비밀번호 검증 (암호화된 DB 비밀번호와 사용자가 입력한 비밀번호 비교)
+            if (!passwordEncoder.matches(userPw, loginUser.getPassword())) {
+                loginUser = null; // 비밀번호가 틀리면 null 처리
+            }
+        } catch (UsernameNotFoundException e) {
+            // 아이디가 아예 없는 경우
+            loginUser = null;
+        }
 
-	@GetMapping("/logout")
-	public String logout(HttpServletRequest request) {
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-			log.info("로그아웃 완료");
-		}
-		return "redirect:/";
-	}
+        // 3. 실패: 아이디 없음 or 비번 틀림
+        if (loginUser == null) {
+            rttr.addFlashAttribute("msg", "아이디 또는 비밀번호가 일치하지 않습니다.");
+            return "redirect:/member/login";
+        }
 
-	@ResponseBody 
-	@PostMapping("/checkId")
-	public String checkId(@RequestParam("userId") String userId) {
-		boolean isDuplicate = memberService.checkIdDuplicate(userId);
-		return isDuplicate ? "DUPLICATE" : "AVAILABLE"; 
-	}
+        // 4. 실패: 승인 대기 중인 경우 (관리자는 프리패스)
+        if (!"ADMIN".equals(loginUser.getUserRole()) && !loginUser.isApprovalStatus()) {
+            rttr.addFlashAttribute("msg", "관리자 승인 대기 중인 계정입니다. 관리사무소에 문의하세요.");
+            return "redirect:/member/login";
+        }
 
-	@GetMapping("/find_account")
-	public String findAccount() {
-		return "member/find_account";
-	}
+        // 5. 성공: 세션에 회원 정보 저장
+        HttpSession session = request.getSession();
+        session.setAttribute("loginMember", loginUser);
+        log.info("로그인 성공: {} (권한: {})", loginUser.getUsername(), loginUser.getUserRole());
+
+        // 6. 성공 후 도착지 다르게 설정
+        if ("ADMIN".equals(loginUser.getUserRole())) {
+            return "redirect:/admin/main";
+        } else {
+            return "redirect:/";
+        }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+            log.info("로그아웃 완료");
+        }
+        return "redirect:/";
+    }
+
+    // ==========================
+    // 3. 비동기 통신 (AJAX / Fetch) 처리
+    // ==========================
+
+    @ResponseBody 
+    @PostMapping("/checkId")
+    public String checkId(@RequestParam("userId") String userId) {
+        log.info("아이디 중복 체크 요청: {}", userId);
+        boolean isDuplicate = memberService.checkIdDuplicate(userId);
+        return isDuplicate ? "DUPLICATE" : "AVAILABLE"; 
+    }
 
     // ==========================================
-	// ★ [추가됨] 아이디 / 비밀번호 찾기 비동기 API
-	// ==========================================
+    // ★ [HEAD 브랜치 신규 추가] 아이디 / 비밀번호 찾기 비동기 API
+    // ==========================================
     
     // 1. 아이디 찾기 API
     @ResponseBody

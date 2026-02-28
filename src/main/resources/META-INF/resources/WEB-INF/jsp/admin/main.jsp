@@ -11,11 +11,11 @@
     <link rel="stylesheet" href="<c:url value='/css/admin.css'/>">
     
     <style>
-        /* 대시보드 전용 레이아웃 */
-        .dashboard-row { display: flex; gap: 20px; }
-        .dashboard-col { flex: 1; display: flex; flex-direction: column; }
+        /* 대시보드 전용 레이아웃 (Grid/Flex) */
+        .dashboard-row { display: flex; gap: 20px; margin-top: 20px; }
+        .dashboard-col { flex: 1; display: flex; flex-direction: column; background: #fff; padding: 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
         
-        /* 테이블 텍스트 스타일 */
+        /* 테이블 텍스트 말줄임 및 호버 액션 */
         .td-title { text-align: left !important; max-width: 200px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .td-title:hover { text-decoration: underline; color: var(--primary); }
     </style>
@@ -28,64 +28,63 @@
 
     <main class="main-content">
         
-        <div class="content-header">
+        <div class="content-header" style="display:flex; justify-content:space-between; align-items:flex-end;">
             <div>
                 <h2>관리자 대시보드</h2>
                 <p class="subtitle">아파트 전체 현황 및 주요 알림 요약</p>
             </div>
-            <div style="font-size:0.9rem; color:#666; font-weight:500;">
-                <i class="fa-regular fa-calendar"></i> <span id="currentDate"></span>
+            <div style="font-size:0.95rem; color:#555; font-weight:600; background:#fff; padding:8px 15px; border-radius:20px; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <i class="fa-regular fa-calendar-check" style="color:var(--primary);"></i> <span id="currentDate"></span>
             </div>
         </div>
 
         <div class="stat-grid-container grid-4">
             <div class="stat-card border-left-primary">
                 <h3>총 입주 세대</h3>
-                <div class="number text-primary" id="statTotalHouseholdCount">0<span class="unit">세대</span></div>
+                <div class="number text-primary" id="statTotalHouseholdCount">${not empty stats.totalHouseholdCount ? stats.totalHouseholdCount : 0}<span class="unit">세대</span></div>
             </div>
             <div class="stat-card border-left-danger">
                 <h3>미처리 민원</h3>
-                <div class="number text-danger" id="statUnprocessedMinwon">0<span class="unit">건</span></div>
+                <div class="number text-danger" id="statUnprocessedMinwon">${not empty stats.unprocessedMinwon ? stats.unprocessedMinwon : 0}<span class="unit">건</span></div>
                 <div class="desc" style="color:#d32f2f; font-weight:600;">빠른 확인 요망</div>
             </div>
             <div class="stat-card border-left-success">
                 <h3>관리비 납부율</h3>
-                <div class="number text-success" id="statFeePaymentRate">0<span class="unit">%</span></div>
+                <div class="number text-success" id="statFeePaymentRate">${not empty stats.feePaymentRate ? stats.feePaymentRate : 0}<span class="unit">%</span></div>
             </div>
             <div class="stat-card border-left-warning">
                 <h3>주차 혼잡도</h3>
-                <div class="number text-warning" id="statParkingRate">0<span class="unit">%</span></div>
+                <div class="number text-warning" id="statParkingRate">${not empty stats.parkingRate ? stats.parkingRate : 0}<span class="unit">%</span></div>
             </div>
         </div>
 
         <div class="dashboard-row">
             
-            <div class="dashboard-col content-box">
-                <div class="section-header">
-                    <h3 class="section-title">📢 최근 접수된 민원</h3>
+            <div class="dashboard-col">
+                <div class="section-header" style="margin-bottom:15px;">
+                    <h3 class="section-title"><i class="fa-solid fa-bell" style="color:#e74c3c;"></i> 최근 접수된 민원</h3>
                     <a href="<c:url value='/admin/comp_manage'/>" class="btn btn-secondary btn-xs">더보기 +</a>
                 </div>
                 <table class="admin-table">
                     <colgroup>
-                        <col width="15%"> <col width="50%"> <col width="20%"> <col width="15%">
+                        <col width="20%"> <col width="45%"> <col width="20%"> <col width="15%">
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>카테고리</th>
+                            <th>유형</th>
                             <th>제목</th>
                             <th>작성일</th>
                             <th>상태</th>
                         </tr>
                     </thead>
                     <tbody id="minwonTableBody">
-                    </tbody>
+                        </tbody>
                 </table>
-                <div id="minwonPaginationWrapper" style="margin-top:auto; padding-top:15px; text-align:center;"></div>
             </div>
 
-            <div class="dashboard-col content-box">
-                <div class="section-header">
-                    <h3 class="section-title">👤 입주 승인 대기</h3>
+            <div class="dashboard-col">
+                <div class="section-header" style="margin-bottom:15px;">
+                    <h3 class="section-title"><i class="fa-solid fa-user-clock" style="color:#f39c12;"></i> 입주 승인 대기</h3>
                     <a href="<c:url value='/admin/member_list'/>" class="btn btn-secondary btn-xs">관리 이동 <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
                 <table class="admin-table">
@@ -101,9 +100,8 @@
                         </tr>
                     </thead>
                     <tbody id="memberTableBody">
-                    </tbody>
+                        </tbody>
                 </table>
-                <div id="memberPaginationWrapper" style="margin-top:auto; padding-top:15px; text-align:center;"></div>
             </div>
 
         </div> 
@@ -111,32 +109,30 @@
 </div>
 
 <script>
-    // 1. 상단 통계 데이터
+    // JS 데이터 바인딩 (NaN 방어코드 적용)
     window.globalStatsData = {
-        totalHouseholdCount: parseInt('${stats.totalHouseholdCount}') || 0,
-        unprocessedMinwon: parseInt('${stats.unprocessedMinwon}') || 0,
-        feePaymentRate: parseInt('${stats.feePaymentRate}') || 0,
-        parkingRate: parseInt('${stats.parkingRate}') || 0
+        totalHouseholdCount: ${not empty stats.totalHouseholdCount ? stats.totalHouseholdCount : 0},
+        unprocessedMinwon: ${not empty stats.unprocessedMinwon ? stats.unprocessedMinwon : 0},
+        feePaymentRate: ${not empty stats.feePaymentRate ? stats.feePaymentRate : 0},
+        parkingRate: ${not empty stats.parkingRate ? stats.parkingRate : 0}
     };
 
-    // 2. 최근 민원 리스트
     window.globalRecentMinwonList = [];
-    <c:if test="${not empty recentMinwonList}">
-        <c:forEach var="item" items="${recentMinwonList}">
+    <c:if test="${not empty compPaging.content}">
+        <c:forEach var="item" items="${compPaging.content}">
             window.globalRecentMinwonList.push({
                 compId: parseInt('${item.compId}'),
                 category: '${item.category}',
-                title: '${item.title}',
+                title: `${item.title}`, // 따옴표 이스케이프 방어를 위해 백틱 사용
                 regDate: '${item.regDate}',
                 compStatus: '${item.compStatus}'
             });
         </c:forEach>
     </c:if>
 
-    // 3. 승인 대기 회원 리스트
     window.globalPendingMemberList = [];
-    <c:if test="${not empty pendingMemberList}">
-        <c:forEach var="item" items="${pendingMemberList}">
+    <c:if test="${not empty paging.content}">
+        <c:forEach var="item" items="${paging.content}">
             window.globalPendingMemberList.push({
                 userId: '${item.userId}',
                 dong: '${item.dong}',
@@ -149,7 +145,7 @@
 </script>
 
 <script src="<c:url value='/js/admin/admin_common.js'/>"></script>
-<script src="<c:url value='/js/admin/dashboard.js'/>"></script>
+<script src="<c:url value='/js/admin/main.js'/>"></script>
 
 </body>
 </html>

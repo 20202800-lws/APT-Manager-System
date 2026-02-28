@@ -1,107 +1,72 @@
 /* =========================================
-   민원 접수 현황 (Admin Complaint Logic)
-   Refactored based on ERD: COMPLAINT Table (데이터 연동 및 페이징)
+   관리자 민원 관리 로직 (서버 연동형)
    ========================================= */
 
 const complaintManager = (function() {
-
-    // 1. Data Initialization (JSP에서 넘겨받은 전역 데이터 사용)
+    
+    // JSP에서 넘어온 전역 데이터
     let complaintList = window.globalComplaintList || [];
 
-    // === 페이징 관련 변수 ===
-    let currentPage = 1;
-    const rowsPerPage = 10;
-
     document.addEventListener('DOMContentLoaded', () => {
-        updateStats();
-        searchTable(false); // 초기 렌더링
-        
-        // Modal Outside Click Close
-        const modal = document.getElementById('complaintModal');
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
+        // 서버에서 받은 데이터 즉시 렌더링
+        renderTable(complaintList);
+
+        // 모달 바깥 배경 클릭 시 닫기
+        window.onclick = function(event) {
+            if (event.target.classList && event.target.classList.contains('modal-overlay')) {
+                closeModal();
+            }
+        };
     });
 
-    /* =========================================
-       2. Logic Functions
-       ========================================= */
-    function updateStats() {
-        const setHtml = (id, count) => {
-            const el = document.getElementById(id);
-            if(el) el.innerHTML = `${count}<span class="unit">건</span>`;
-        };
-
-        setHtml('statPendingCount', complaintList.filter(d => d.compStatus === 'PENDING').length);
-        setHtml('statProcessingCount', complaintList.filter(d => d.compStatus === 'PROCESSING').length);
-        setHtml('statCompletedCount', complaintList.filter(d => d.compStatus === 'COMPLETED').length);
-        setHtml('statTotalCount', complaintList.length);
-    }
-
-    // === 페이징 유지를 위한 파라미터 추가 ===
-    function searchTable(isPageMove = false) {
-        if (!isPageMove) currentPage = 1;
-
-        const categoryVal = document.getElementById('categoryFilter').value;
-        const statusVal = document.getElementById('statusFilter').value;
-        const keyword = document.getElementById('keyword').value.toLowerCase().trim();
-
-        const filtered = complaintList.filter(item => {
-            if (categoryVal && item.category !== categoryVal) return false;
-            if (statusVal && item.compStatus !== statusVal) return false;
-            
-            if (keyword) {
-                const matchTitle = item.title.toLowerCase().includes(keyword);
-                const matchUser = item.userName.toLowerCase().includes(keyword);
-                if (!matchTitle && !matchUser) return false;
-            }
-            return true;
-        });
+    // === 검색 필터 및 서버 이동 ===
+    function searchTable() {
+        const type = document.getElementById('searchType').value;
+        const kw = document.getElementById('keyword').value.trim();
         
-        renderTable(filtered);
+        // 추후 백엔드 필터 추가를 대비한 파라미터 수집
+        const cat = document.getElementById('categoryFilter') ? document.getElementById('categoryFilter').value : '';
+        const stat = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : '';
+
+        // 검색 시 항상 1페이지(index 0)로 이동
+        location.href = `?page=0&searchType=${type}&keyword=${encodeURIComponent(kw)}&category=${cat}&status=${stat}`;
     }
 
-    // === 데이터 페이징 자르기 추가 ===
+    // === 테이블 렌더링 ===
     function renderTable(data) {
         const tbody = document.getElementById('complaintTableBody');
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="padding:40px; text-align:center; color:#999;">데이터가 없습니다.</td></tr>';
-            renderPagination(0);
+        if (!tbody) return;
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#999;">조건에 맞는 민원이 없습니다.</td></tr>';
             return;
         }
 
-        // 페이징 계산
-        const totalPages = Math.ceil(data.length / rowsPerPage);
-        if (currentPage > totalPages) currentPage = totalPages || 1;
+        const catMap = { 'FACILITY': '시설보수', 'NOISE': '층간소음', 'PARKING': '주차문제', 'ETC': '기타' };
 
-        const startIndex = (currentPage - 1) * rowsPerPage;
-        const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
-
-        tbody.innerHTML = paginatedData.map(item => {
-            let catName = '기타';
-            let catClass = 'badge-gray';
-            
-            switch(item.category) {
-                case 'FACILITY': catName = '시설보수'; catClass = 'badge-red'; break;
-                case 'NOISE': catName = '층간소음'; catClass = 'badge-blue'; break;
-                case 'PARKING': catName = '주차문제'; catClass = 'badge-warning'; break;
-                case 'ETC': catName = '기타'; catClass = 'badge-gray'; break;
-            }
-
+        tbody.innerHTML = data.map(item => {
             let statusBadge = '';
-            if(item.compStatus === 'PENDING') statusBadge = '<span class="badge badge-gray">접수</span>';
-            else if(item.compStatus === 'PROCESSING') statusBadge = '<span class="badge badge-blue">진행중</span>';
-            else if(item.compStatus === 'COMPLETED') statusBadge = '<span class="badge badge-green">완료</span>';
+            const status = (item.compStatus || "").toUpperCase();
+
+            // 백엔드 상태값에 따른 뱃지 디자인 일치화
+            if (status === 'WAIT') {
+                statusBadge = '<span class="badge badge-gray">대기</span>'; 
+            } else if (status === 'PENDING') {
+                statusBadge = '<span class="badge badge-danger">접수</span>'; 
+            } else if (status === 'PROCESSING') {
+                statusBadge = '<span class="badge badge-info">진행중</span>';
+            } else if (status === 'COMPLETED') {
+                statusBadge = '<span class="badge badge-success">완료</span>';
+            }
 
             return `
                 <tr>
                     <td style="color:#666;">${item.compId}</td>
-                    <td><span class="badge ${catClass}">${catName}</span></td>
-                    <td style="text-align:left; padding-left:15px; font-weight:500; cursor:pointer; color:#333;" 
-                        onclick="complaintManager.openModal(${item.compId})">
+                    <td><span class="badge badge-gray" style="background:#eee; color:#555;">${catMap[item.category] || item.category}</span></td>
+                    <td style="text-align:left; font-weight:500; cursor:pointer;" onclick="complaintManager.openModal(${item.compId})">
                         ${item.title}
                     </td>
-                    <td>${item.userName}</td>
+                    <td>${item.userName} <span style="font-size:0.8rem; color:#888;">(${item.userId})</span></td>
                     <td style="color:#666;">${item.regDate}</td>
                     <td>${statusBadge}</td>
                     <td>
@@ -112,43 +77,10 @@ const complaintManager = (function() {
                 </tr>
             `;
         }).join('');
-
-        renderPagination(data.length);
-    }
-
-    // === 하단 페이징 버튼 생성 함수 ===
-    function renderPagination(totalCount) {
-        const container = document.getElementById('paginationWrapper');
-        if (!container) return;
-
-        // ★ 수정: 데이터가 0개일 때만 숨기고, 1페이지면 [1] 버튼 표시 유지
-        if (totalCount === 0) {
-            container.innerHTML = ''; 
-            return; 
-        }
-
-        const totalPages = Math.ceil(totalCount / rowsPerPage);
-
-        let html = `<button class="btn btn-secondary btn-xs" ${currentPage === 1 ? 'disabled' : `onclick="complaintManager.goToPage(${currentPage - 1})"`}>&lt;</button> `;
-
-        for (let i = 1; i <= totalPages; i++) {
-            const activeClass = i === currentPage ? 'btn-primary' : 'btn-secondary';
-            html += `<button class="btn ${activeClass} btn-xs" onclick="complaintManager.goToPage(${i})">${i}</button> `;
-        }
-
-        html += `<button class="btn btn-secondary btn-xs" ${currentPage === totalPages ? 'disabled' : `onclick="complaintManager.goToPage(${currentPage + 1})"`}>&gt;</button>`;
-        
-        container.innerHTML = html;
-    }
-
-    // === 페이지 이동 함수 ===
-    function goToPage(page) {
-        currentPage = page;
-        searchTable(true);
     }
 
     /* =========================================
-       3. Modal Logic
+       Modal Logic (상세 및 답변)
        ========================================= */
     function openModal(id) {
         const item = complaintList.find(d => d.compId === id);
@@ -156,46 +88,70 @@ const complaintManager = (function() {
 
         const catMap = { 'FACILITY': '시설보수', 'NOISE': '층간소음', 'PARKING': '주차문제', 'ETC': '기타' };
 
+        // 데이터 꽂아넣기
         document.getElementById('targetCompId').value = item.compId; 
         document.getElementById('modalCategory').innerText = catMap[item.category] || item.category;
-        document.getElementById('modalUserName').innerText = item.userName; 
+        document.getElementById('modalUserName').innerText = `${item.userName} (${item.userId})`; 
         document.getElementById('modalRegDate').innerText = item.regDate;
-        document.getElementById('modalContent').innerText = item.content;
+        document.getElementById('modalContent').innerText = item.content; // 줄바꿈(\n) 유지를 위해 innerText 사용
         
         document.getElementById('modalReply').value = item.reply || ''; 
-        document.getElementById('modalCompStatus').value = item.compStatus;
+        
+        // ★ UX 향상: 관리자가 '대기' 상태인 민원을 열면, 처리 상태를 '접수'로 자동 세팅해줍니다!
+        const statusSelect = document.getElementById('modalCompStatus');
+        if(item.compStatus === 'WAIT' || item.compStatus === null) {
+            statusSelect.value = 'PENDING';
+        } else {
+            statusSelect.value = item.compStatus;
+        }
 
         const modal = document.getElementById('complaintModal');
-        // ★ 수정: admin.css 표준 모달 방식으로 변경
-        if(modal) modal.style.display = 'flex';
+        if(modal) modal.style.display = 'flex'; // admin.css 표준 모달 노출 방식
     }
 
     function closeModal() {
         const modal = document.getElementById('complaintModal');
-        // ★ 수정: admin.css 표준 모달 방식으로 변경
         if(modal) modal.style.display = 'none';
     }
 
     function saveComplaint() {
-        const id = parseInt(document.getElementById('targetCompId').value);
-        const replyText = document.getElementById('modalReply').value;
-        const statusText = document.getElementById('modalCompStatus').value;
-        
-        const item = complaintList.find(d => d.compId === id);
-        if(item) {
-            // [실제 연동 시 여기서 AJAX 요청 전송]
-            item.reply = replyText;
-            item.compStatus = statusText;
-            
-            alert("답변 및 상태가 저장되었습니다.");
-            closeModal();
-            updateStats();
-            searchTable(true); // 저장 후 현재 페이지 유지
+        const id = document.getElementById('targetCompId').value;
+        const reply = document.getElementById('modalReply').value.trim();
+        const status = document.getElementById('modalCompStatus').value;
+
+        // ★ 유효성 검사: 처리 완료를 누르면서 답변을 안 쓰면 경고!
+        if(status === 'COMPLETED' && reply === '') {
+            alert("처리 완료 상태로 변경하려면 입주민에게 전달할 답변을 입력해주세요.");
+            document.getElementById('modalReply').focus();
+            return;
         }
+
+        if(!confirm("민원 처리 상태 및 답변을 저장하시겠습니까?")) return;
+
+        // 백엔드 AdminComplaintController 의 saveReply 로 POST 요청
+        fetch('/admin/reply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `compId=${id}&replyContent=${encodeURIComponent(reply)}&status=${status}`
+        })
+        .then(res => res.text())
+        .then(data => {
+            if(data === 'success') {
+                alert("답변이 정상적으로 저장되었습니다.");
+                location.reload(); // 저장 완료 시 페이지 새로고침하여 리스트 갱신
+            } else {
+                alert("저장 중 서버 오류가 발생했습니다: " + data);
+            }
+        })
+        .catch(err => {
+            console.error("Fetch Error:", err);
+            alert("서버 통신 중 문제가 발생했습니다.");
+        });
     }
 
+    // 외부에서 접근 가능한 함수들만 노출
     return { 
-        openModal, closeModal, saveComplaint, searchTable, goToPage 
+        searchTable, openModal, closeModal, saveComplaint 
     };
 
 })();
