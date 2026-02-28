@@ -189,6 +189,6 @@
     </script>
     
     <script src="<c:url value='/js/admin/admin_common.js'/>"></script>
-    <script src="<c:url value='/js/admin/community_manage.js'/>"></script>
+    <script src="<c:url value='/js/admin/res_manage.js'/>"></script>
 </body>
 </html>
