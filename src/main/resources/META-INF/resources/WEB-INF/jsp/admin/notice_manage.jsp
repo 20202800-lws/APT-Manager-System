@@ -58,7 +58,7 @@
                     
                     <div style="width: 10px;"></div>
                     
-                    <button class="btn btn-dark" onclick="noticeManager.openModal()">
+                    <button class="btn btn-dark" onclick="noticeManager.openModal('create')">
                         <i class="fa-solid fa-pen-to-square"></i> 공지 등록
                     </button>
                 </div>
@@ -112,7 +112,7 @@
             </button>
         </div>
         
-        <form id="noticeForm" action="<c:url value='/admin/notice/write_pro'/>" method="post">
+        <form id="noticeForm" action="<c:url value='/admin/notice/write_pro'/>" method="post" enctype="multipart/form-data">
             <div class="modal-body">
                 <input type="hidden" id="modalNoticeId" name="noticeId">
 
@@ -124,14 +124,21 @@
 
                     <div style="display:flex; gap:20px; align-items:center; padding:15px; background:#f8f9fa; border-radius:8px; border:1px solid #eee;">
                         <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
-                            <input type="checkbox" id="checkImportant" name="isImportant" value="true" style="transform:scale(1.2); accent-color:var(--danger);">
+                            <input type="checkbox" id="checkImportant" name="important" value="true" style="transform:scale(1.2); accent-color:var(--danger);">
+                            <input type="hidden" name="_important" value="on">
                             <span style="font-weight:600; color:var(--danger);">[필독] 상단 고정</span>
                         </label>
                         <div style="width:1px; height:20px; background:#ddd;"></div>
                         <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
-                            <input type="checkbox" id="checkVisible" name="isVisible" value="true" checked style="transform:scale(1.2);">
+                            <input type="checkbox" id="checkVisible" name="visible" value="true" checked style="transform:scale(1.2);">
+                            <input type="hidden" name="_visible" value="on">
                             <span style="font-weight:600; color:#333;">바로 공개하기</span>
                         </label>
+                    </div>
+
+                    <div>
+                        <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">첨부 파일 (엑셀, 한글, PDF, 사진 등)</label>
+                        <input type="file" class="form-input" name="uploadFiles" multiple style="width:100%; padding:10px; background:#fff;">
                     </div>
 
                     <div>
@@ -166,7 +173,6 @@
         </c:forEach>
     </c:if>
 
-    // 통계 데이터 직접 바인딩 (이제 화면에서 JS를 통하지 않고 JSTL로 바로 뿌려주므로 보조용으로만 남겨둡니다)
     window.serverStats = {
         total: ${status.total != null ? status.total : 0},
         important: ${status.importantCount != null ? status.importantCount : 0},

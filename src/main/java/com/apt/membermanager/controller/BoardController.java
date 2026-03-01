@@ -7,11 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -19,6 +21,7 @@ import com.apt.membermanager.beans.BoardListBean;
 import com.apt.membermanager.beans.BoardViewBean;
 import com.apt.membermanager.beans.CommentViewBean;
 import com.apt.membermanager.dto.BoardWriteDto;
+import com.apt.membermanager.dto.ReportDto;
 import com.apt.membermanager.entity.Attachment;
 import com.apt.membermanager.service.BoardService;
 import com.apt.membermanager.service.CommentService;
@@ -32,7 +35,6 @@ public class BoardController {
 
     private final BoardService boardService;
     private final CommentService commentService;
-    // ★ 우리가 만든 첨부파일 로직 무조건 사수!
     private final AttachmentRepository attachmentRepository;
 
     public BoardController(BoardService boardService, CommentService commentService, AttachmentRepository attachmentRepository) {
@@ -41,9 +43,6 @@ public class BoardController {
         this.attachmentRepository = attachmentRepository;
     }
 
-    // ==========================================
-    // 1. 자유게시판 (Free)
-    // ==========================================
     @GetMapping("/free")
     public String searchFreeList(
             @RequestParam(value="searchType", required = false, defaultValue = "title") String searchType,
@@ -55,7 +54,6 @@ public class BoardController {
         boolean anonymous = false; 
         Pageable pageable = PageRequest.of(page, 10, Sort.by("boardId").descending());
         
-        // ★ 상대방 브랜치의 searchType 파라미터 적용
         Page<BoardListBean> paging = boardService.searchByBoardPaging(loginId, anonymous, searchType, keyword, pageable);
         
         model.addAttribute("paging", paging);
@@ -83,18 +81,14 @@ public class BoardController {
         BoardViewBean bean = boardService.getPost(id, currentId);
         List<CommentViewBean> commentView = commentService.getCommentList(id, currentId);
         
-        // ★ 우리 브랜치의 자유게시판 사진 가져오기 로직 사수!
         List<Attachment> attachments = attachmentRepository.findByRefTableAndRefId("BOARD", id);
         
         model.addAttribute("post", bean);
         model.addAttribute("comments", commentView); 
-        model.addAttribute("attachments", attachments); // 사진 전송
+        model.addAttribute("attachments", attachments); 
         return "board/free_view";
     }
 
-    // ==========================================
-    // 2. 익명게시판 (Anon)
-    // ==========================================
     @GetMapping("/anon")
     public String searchAnonList(
             @RequestParam(value="searchType", required = false, defaultValue = "title") String searchType,
@@ -106,7 +100,6 @@ public class BoardController {
         boolean anonymous = true; 
         Pageable pageable = PageRequest.of(page, 10, Sort.by("boardId").descending());
         
-        // ★ 상대방 브랜치의 searchType 파라미터 적용
         Page<BoardListBean> paging = boardService.searchByBoardPaging(loginId, anonymous, searchType, keyword, pageable);
         
         model.addAttribute("paging", paging);
@@ -116,7 +109,6 @@ public class BoardController {
         return "board/anon_list"; 
     }
 
-    // ★ 상대 브랜치에서 실수로 삭제한 글쓰기 화면 렌더링 매핑 복구!
     @GetMapping("/anon/write")
     public String anonWrite() { 
         return "board/anon_write"; 
@@ -135,24 +127,19 @@ public class BoardController {
         BoardViewBean bean = boardService.getPost(id, currentId);
         List<CommentViewBean> commentView = commentService.getCommentList(id, currentId);
         
-        // ★ 우리 브랜치의 익명게시판 사진 가져오기 로직 사수!
         List<Attachment> attachments = attachmentRepository.findByRefTableAndRefId("BOARD", id);
         
         model.addAttribute("post", bean);
         model.addAttribute("comments", commentView);
-        model.addAttribute("attachments", attachments); // 사진 전송
+        model.addAttribute("attachments", attachments);
         return "board/anon_view";
     }
 
-    // ==========================================
-    // 3. 공통 삭제 로직 (다른 브랜치 기능 추가)
-    // ==========================================
     @PostMapping("/delete")
     public String deletePost(@RequestParam("boardId") Long boardId, Principal principal) {
         String currentId = (principal != null) ? principal.getName() : "";
         boolean state = boardService.deletePost(boardId, currentId);
         
-        // 삭제 후 돌아갈 게시판 카테고리 결정 (익명게시판인지 자유게시판인지)
         String category;
         if (state) {
             category = "anon";
@@ -161,5 +148,26 @@ public class BoardController {
         }
         
         return "redirect:/board/" + category;
+    }
+
+    // ==========================================
+    // ★ [추가됨] 게시글 신고 접수 (AJAX 통신)
+    // ==========================================
+    @PostMapping("/report")
+    public ResponseEntity<String> reportPost(@RequestBody ReportDto dto, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body("로그인이 필요한 서비스입니다.");
+        }
+
+        try {
+            String reporterId = principal.getName();
+            boardService.reportPost(reporterId, dto);
+            return ResponseEntity.ok("신고가 정상적으로 접수되었습니다.");
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            // 중복 신고, 본인 글 신고 등의 예외 메시지를 그대로 클라이언트에 전달
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        }
     }
 }

@@ -4,37 +4,26 @@
 
 const noticeManager = (function() {
 
-    // 1. 데이터 초기화 (JSP 전역 변수에서 호출)
     let noticeList = window.globalNoticeList || [];
 
-    // 2. 초기 실행
     document.addEventListener('DOMContentLoaded', () => {
-        // 서버에서 받은 데이터를 화면에 뿌려줍니다.
         renderTable(); 
 
-        // 모달 외부 클릭 시 닫기
         const modal = document.getElementById('noticeModal');
         window.addEventListener('click', (event) => {
             if (event.target === modal) closeModal();
         });
     });
 
-    /* =========================================
-       로직 함수
-       ========================================= */
-
-    // 검색 및 필터링 (서버로 GET 요청)
     function searchTable() {
         const keywordInput = document.getElementById('searchKeyword');
         const keyword = keywordInput ? keywordInput.value.trim() : '';
         const filterEl = document.getElementById('searchType');
         const filter = filterEl ? filterEl.value : 'title';
 
-        // 검색 시 1페이지(0번 인덱스)로 초기화하여 서버에 요청
         location.href = `?page=0&searchInput=${encodeURIComponent(keyword)}&searchType=${filter}`;
     }
 
-    // 테이블 렌더링 (서버가 준 1페이지 분량의 데이터만 렌더링)
     function renderTable() {
         const tbody = document.getElementById('noticeTableBody');
         if (!tbody) return;
@@ -50,7 +39,6 @@ const noticeManager = (function() {
             const titlePrefix = item.isImportant ? '<span style="color:var(--danger); font-weight:700; margin-right:5px;">[필독]</span>' : '';
             const statusBadge = item.isVisible ? '<span class="badge badge-success">공개</span>' : '<span class="badge badge-secondary">비공개</span>';
             
-            // content가 줄바꿈이 있을 경우 스크립트 에러 방지를 위해 이스케이프 된 데이터를 사용해야 합니다.
             return `
                 <tr>
                     <td>${item.noticeId}</td>
@@ -66,26 +54,20 @@ const noticeManager = (function() {
         }).join('');
     }
 
-    /* =========================================
-       모달 및 데이터 저장 (CRUD)
-       ========================================= */
-       
-    // 모달 열기 (등록/수정)
     function openModal(type, id = null) {
         const modal = document.getElementById('noticeModal');
         if (!modal) return;
         
         if (type === 'create') {
-            document.getElementById('modalTitle').innerText = '공지사항 등록';
-            document.getElementById('noticeForm').reset(); // 폼 초기화
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-bullhorn"></i> 공지사항 등록';
+            document.getElementById('noticeForm').reset(); 
             document.getElementById('modalNoticeId').value = ''; 
-            document.getElementById('checkVisible').checked = true; // 기본값
-            // action 경로 작성 컨트롤러로 세팅
+            document.getElementById('checkVisible').checked = true; 
+            
             document.getElementById('noticeForm').action = "/admin/notice/write_pro";
         } else {
-            document.getElementById('modalTitle').innerText = '공지사항 수정';
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> 공지사항 수정';
             
-            // 기존 데이터를 폼에 채워넣기
             const item = noticeList.find(n => n.noticeId === id);
             if (item) {
                 document.getElementById('modalNoticeId').value = item.noticeId;
@@ -94,13 +76,12 @@ const noticeManager = (function() {
                 document.getElementById('checkImportant').checked = item.isImportant;
                 document.getElementById('checkVisible').checked = item.isVisible;
                 
-                // TODO: 수정 기능 백엔드 개발 시 주석 해제 후 경로 변경
-                // document.getElementById('noticeForm').action = "/admin/notice/edit_pro";
-                alert("수정 기능은 현재 백엔드 API 연동이 필요합니다."); 
+                // ★ [핵심 수정] action 경로를 수정(edit_pro)으로 완벽하게 변경합니다.
+                document.getElementById('noticeForm').action = "/admin/notice/edit_pro";
             }
         }
 
-        modal.style.display = 'flex'; // admin.css 표준
+        modal.style.display = 'flex'; 
     }
 
     function closeModal() {
@@ -108,7 +89,6 @@ const noticeManager = (function() {
         if (modal) modal.style.display = 'none';
     }
 
-    // 폼 전송 전 유효성 검사
     function saveNotice() {
         const titleInput = document.getElementById('inputTitle').value.trim();
         const contentInput = document.getElementById('inputContent').value.trim();
@@ -126,16 +106,9 @@ const noticeManager = (function() {
             return;
         }
 
-        // 브라우저 기본 form 전송(submit) 실행 -> 컨트롤러로 이동
         form.submit(); 
     }
 
-    // 외부 노출
-    return {
-        searchTable,
-        openModal,
-        closeModal,
-        saveNotice
-    };
+    return { searchTable, openModal, closeModal, saveNotice };
 
 })();

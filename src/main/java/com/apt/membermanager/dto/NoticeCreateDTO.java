@@ -1,5 +1,7 @@
 package com.apt.membermanager.dto;
 
+import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,12 +13,17 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NoticeCreateDTO {
-	
-	// ★ 버그 방지: 공지사항에 제목이 빠지면 안 되죠! 제목에도 빈칸 방지 어노테이션을 추가했습니다.
-	@NotBlank(message = "제목을 입력하세요")
-	private String title;
-	
-	@NotBlank(message = "내용을 입력하세요")
-	private String content;
+    
+    private Long noticeId; 
 
+    @NotBlank(message = "제목을 입력하세요")
+    private String title;
+    
+    @NotBlank(message = "내용을 입력하세요")
+    private String content;
+
+    // ★ [버그 해결 핵심] boolean 변수명은 'is'를 빼야 스프링이 제대로 값을 받습니다!
+    private boolean important; 
+    
+    private List<MultipartFile> uploadFiles;
 }
