@@ -5,10 +5,10 @@ CREATE DATABASE IF NOT EXISTS apt_management;
 USE apt_management;
 
 -- ==========================================
--- 2. 테이블 생성 (최신 ERD 구조 100% 반영)
+-- 2. 테이블 생성 (신고 시스템 및 학부모 피드 포함 100% 통합본)
 -- ==========================================
 
--- 1. 사용자 (USERS) - 모든 테이블의 최상위 부모
+-- 1. 사용자 (USERS)
 CREATE TABLE USERS (
     user_id VARCHAR(50) PRIMARY KEY COMMENT '아이디',
     user_pw VARCHAR(255) NOT NULL COMMENT '비밀번호',
@@ -23,7 +23,7 @@ CREATE TABLE USERS (
     approval_status TINYINT(1) DEFAULT 0 COMMENT '승인여부(0:대기,1:승인)',
     join_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
     withdrawal_date DATETIME COMMENT '탈퇴일시',
-    profile_img VARCHAR(255) DEFAULT NULL COMMENT '프로필 이미지 경로' -- ★ [추가됨] 프로필 사진 저장용
+    profile_img VARCHAR(255) DEFAULT NULL COMMENT '프로필 이미지 경로'
 );
 
 -- 2. 시설 정보 (FACILITY)
@@ -62,7 +62,7 @@ CREATE TABLE MANAGE_FEE (
 CREATE TABLE FEE_DETAIL (
     detail_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '상세번호',
     fee_id BIGINT NOT NULL COMMENT '관리비번호',
-    item_name VARCHAR(50) NOT NULL COMMENT '항목명(전기,수도,일반관리비 등)',
+    item_name VARCHAR(50) NOT NULL COMMENT '항목명',
     amount INT NOT NULL COMMENT '금액',
     FOREIGN KEY (fee_id) REFERENCES MANAGE_FEE(fee_id) ON DELETE CASCADE
 );
@@ -78,7 +78,7 @@ CREATE TABLE FEE_LOG (
     FOREIGN KEY (fee_id) REFERENCES MANAGE_FEE(fee_id) ON DELETE CASCADE
 );
 
--- 7. 통합 게시판 (BOARD) - 자유, 익명 등 통합
+-- 7. 통합 게시판 (BOARD)
 CREATE TABLE BOARD (
     board_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '게시글번호',
     user_id VARCHAR(50) COMMENT '작성자',
@@ -89,60 +89,76 @@ CREATE TABLE BOARD (
     views INT DEFAULT 0 COMMENT '조회수',
     like_count INT DEFAULT 0 COMMENT '좋아요수',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
+    report_count INT DEFAULT 0 COMMENT '신고누적횟수',
+    post_status VARCHAR(20) DEFAULT 'ACTIVE' COMMENT '상태(ACTIVE, BLIND)',
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
--- 8. 댓글 (COMMENT) - 대댓글 구조 포함
+-- 8. 댓글 (COMMENT)
 CREATE TABLE COMMENT (
     reply_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '댓글번호',
     board_id BIGINT NOT NULL COMMENT '게시글ID',
     user_id VARCHAR(50) COMMENT '작성자',
     content TEXT COMMENT '내용',
     anonymous TINYINT(1) DEFAULT 0 COMMENT '익명여부',
-    parent_id BIGINT DEFAULT NULL COMMENT '부모댓글ID(NULL이면 최상위)',
-    depth INT DEFAULT 0 COMMENT '계층(0:댓글, 1:대댓글)',
+    parent_id BIGINT DEFAULT NULL COMMENT '부모댓글ID',
+    depth INT DEFAULT 0 COMMENT '계층',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
     FOREIGN KEY (board_id) REFERENCES BOARD(board_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL,
     FOREIGN KEY (parent_id) REFERENCES COMMENT(reply_id) ON DELETE CASCADE
 );
 
--- 9. 학부모 의견 피드 (PARENT_OPINION)
+-- 9. 게시글 신고 내역 (REPORT) - [신규]
+CREATE TABLE REPORT (
+    report_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '신고번호',
+    board_id BIGINT NOT NULL COMMENT '대상 게시글번호',
+    reporter_id VARCHAR(50) NOT NULL COMMENT '신고자 아이디',
+    reason VARCHAR(100) NOT NULL COMMENT '신고 사유',
+    detail TEXT COMMENT '상세 내용',
+    reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '신고일시',
+    FOREIGN KEY (board_id) REFERENCES BOARD(board_id) ON DELETE CASCADE,
+    FOREIGN KEY (reporter_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_report (board_id, reporter_id)
+) COMMENT '게시글 신고 관리 테이블';
+
+-- 10. 학부모 의견 피드 (PARENT_OPINION) - [복구]
 CREATE TABLE PARENT_OPINION (
     opinion_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '의견번호',
     user_id VARCHAR(50) NOT NULL COMMENT '작성자',
-    content TEXT NOT NULL COMMENT '내용(텍스트)',
+    content TEXT NOT NULL COMMENT '내용',
     like_count INT DEFAULT 0 COMMENT '좋아요수',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- 10. 학부모 의견 피드 댓글 (PARENT_REPLY)
+-- 11. 학부모 의견 댓글 (PARENT_REPLY) - [복구]
 CREATE TABLE PARENT_REPLY (
     reply_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '댓글번호',
     opinion_id BIGINT NOT NULL COMMENT '의견번호',
     user_id VARCHAR(50) NOT NULL COMMENT '작성자',
     content VARCHAR(500) NOT NULL COMMENT '내용',
     parent_id BIGINT DEFAULT NULL COMMENT '부모댓글ID',
-    depth INT DEFAULT 0 COMMENT '계층(0:댓글, 1:대댓글)',
+    depth INT DEFAULT 0 COMMENT '계층',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
     FOREIGN KEY (opinion_id) REFERENCES PARENT_OPINION(opinion_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES PARENT_REPLY(reply_id) ON DELETE CASCADE
 );
 
--- 11. 공지사항 (NOTICE)
+-- 12. 공지사항 (NOTICE)
 CREATE TABLE NOTICE (
     notice_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '공지번호',
     writer_id VARCHAR(50) COMMENT '작성자',
     title VARCHAR(200) COMMENT '제목',
     content TEXT COMMENT '내용',
     views INT DEFAULT 0 COMMENT '조회수',
+    is_pinned TINYINT(1) DEFAULT 0 COMMENT '상단고정여부',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
     FOREIGN KEY (writer_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
--- 12. 민원 게시판 (COMPLAINT)
+-- 13. 민원 게시판 (COMPLAINT)
 CREATE TABLE COMPLAINT (
     comp_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '민원번호',
     user_id VARCHAR(50) COMMENT '작성자',
@@ -152,13 +168,13 @@ CREATE TABLE COMPLAINT (
     reply TEXT COMMENT '관리자 답변',
     phone VARCHAR(20) COMMENT '비상연락처',
     comp_status VARCHAR(20) DEFAULT 'WAIT' COMMENT '상태',
-    secret TINYINT(1) DEFAULT 1 COMMENT '비밀글(0:공개,1:비밀)',
+    secret TINYINT(1) DEFAULT 1 COMMENT '비밀글',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
     receipt_date DATETIME COMMENT '접수일',
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
--- 13. 어린이집 알림장 (DAYCARE_NOTICE)
+-- 14. 어린이집 알림장 (DAYCARE_NOTICE)
 CREATE TABLE DAYCARE_NOTICE (
     notice_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '알림장번호',
     category VARCHAR(50) COMMENT '분류',
@@ -170,7 +186,7 @@ CREATE TABLE DAYCARE_NOTICE (
     FOREIGN KEY (writer_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
--- 14. 차량 정보 (VEHICLE)
+-- 15. 차량 정보 (VEHICLE)
 CREATE TABLE VEHICLE (
     car_number VARCHAR(20) PRIMARY KEY COMMENT '차량번호',
     user_id VARCHAR(50) COMMENT '소유주',
@@ -180,7 +196,7 @@ CREATE TABLE VEHICLE (
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- 15. 방문 차량 예약 (VISIT_VEHICLE)
+-- 16. 방문 차량 예약 (VISIT_VEHICLE)
 CREATE TABLE VISIT_VEHICLE (
     visit_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '방문증번호',
     user_id VARCHAR(50) COMMENT '초대자',
@@ -192,20 +208,20 @@ CREATE TABLE VISIT_VEHICLE (
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- 16. 시설 예약 (FACILITY_RES) - ★ 최신 유연한 구조로 교체 완료
+-- 17. 시설 예약 (FACILITY_RES)
 CREATE TABLE FACILITY_RES (
     res_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '예약번호',
     user_id VARCHAR(50) COMMENT '예약자',
-    facility_type VARCHAR(50) COMMENT '시설 종류(수영장, 스크린골프 등)',
-    detail_info VARCHAR(200) COMMENT '상세 내역(3번 타석, A타입 등)',
-    reserve_date VARCHAR(100) COMMENT '이용 날짜 및 기간',
+    facility_type VARCHAR(50) COMMENT '시설 종류',
+    detail_info VARCHAR(200) COMMENT '상세 내역',
+    reserve_date VARCHAR(100) COMMENT '이용 기간',
     price VARCHAR(50) COMMENT '결제 금액',
     res_status VARCHAR(20) DEFAULT '예약완료' COMMENT '상태',
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '신청일',
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );
 
--- 17. 프로그램 신청 (PROGRAM_APPLY)
+-- 18. 프로그램 신청 (PROGRAM_APPLY)
 CREATE TABLE PROGRAM_APPLY (
     apply_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '신청번호',
     prog_id BIGINT COMMENT '강습번호',
@@ -216,7 +232,7 @@ CREATE TABLE PROGRAM_APPLY (
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- 18. 첨부파일 (ATTACHMENTS)
+-- 19. 첨부파일 (ATTACHMENTS)
 CREATE TABLE ATTACHMENTS (
     file_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '파일ID',
     ref_table VARCHAR(50) COMMENT '참조테이블명',
@@ -228,25 +244,25 @@ CREATE TABLE ATTACHMENTS (
     reg_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '등록일'
 );
 
--- 19. 알림 (NOTIFICATIONS)
+-- 20. 알림 (NOTIFICATIONS)
 CREATE TABLE NOTIFICATIONS (
     noti_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '알림ID',
     user_id VARCHAR(50) COMMENT '수신자',
     message VARCHAR(500) COMMENT '내용',
-    read_state TINYINT(1) DEFAULT 0 COMMENT '읽음여부(0:안읽음,1:읽음)',
+    read_state TINYINT(1) DEFAULT 0 COMMENT '읽음여부',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '발송일',
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- 20. 시스템 활동 로그 (SYSTEM_LOG) - 관리자 감사용
+-- 21. 시스템 활동 로그 (SYSTEM_LOG)
 CREATE TABLE SYSTEM_LOG (
     log_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '로그번호',
-    admin_id VARCHAR(50) COMMENT '처리자(관리자) ID',
+    admin_id VARCHAR(50) COMMENT '처리자 ID',
     module_name VARCHAR(50) NOT NULL COMMENT '작업 메뉴',
     action_type VARCHAR(20) NOT NULL COMMENT '작업 유형',
     target_id VARCHAR(100) COMMENT '대상이 된 식별자',
     action_desc TEXT NOT NULL COMMENT '상세 작업 내용',
-    ip_address VARCHAR(50) COMMENT '처리자 접속 IP',
+    ip_address VARCHAR(50) COMMENT '처리자 IP',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '처리 일시',
     FOREIGN KEY (admin_id) REFERENCES USERS(user_id) ON DELETE SET NULL
 );

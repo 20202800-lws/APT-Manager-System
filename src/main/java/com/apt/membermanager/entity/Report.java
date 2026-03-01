@@ -1,30 +1,44 @@
 package com.apt.membermanager.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import java.time.LocalDateTime;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Getter @Setter
-@Table(name = "REPORT")
+@Table(name = "REPORT", uniqueConstraints = {
+        @UniqueConstraint(name = "unique_report", columnNames = {"board_id", "reporter_id"})
+})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Report {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "report_id")
     private Long reportId;
 
-    @ManyToOne
-    @JoinColumn(name = "reporter_id")
-    private User reporter; // 신고자
+    // 신고 대상 게시글 (N:1 관계)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", nullable = false)
+    private Board board;
 
-    private String targetType; // BOARD, COMMENT
-    private Long targetId;     // 글번호
+    // 신고자 (N:1 관계)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporter_id", nullable = false)
+    private User reporter;
 
+    @Column(name = "reason", length = 100, nullable = false)
     private String reason;
-    private String status;
+
+    @Column(name = "detail", columnDefinition = "TEXT")
+    private String detail;
 
     @CreationTimestamp
-    private LocalDateTime reportDate;
+    @Column(name = "reg_date", updatable = false)
+    private LocalDateTime regDate;
 }

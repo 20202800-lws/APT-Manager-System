@@ -39,7 +39,6 @@
                     </tr>
                 </thead>
                 <tbody id="boardBody">
-                    <%-- 백엔드에서 넘어온 데이터(paging.content) 반복 출력 --%>
                     <c:choose>
                         <c:when test="${empty paging.content}">
                             <tr>
@@ -48,12 +47,30 @@
                         </c:when>
                         <c:otherwise>
                             <c:forEach var="notice" items="${paging.content}">
-                                <%-- ★ 500 에러 유발 코드(isImportant) 제거 및 전체 줄 클릭 가능하도록 수정 --%>
-                                <tr onclick="location.href='/notice/notice_view?id=${notice.noticeId}'" style="cursor:pointer;">
-                                    <td>${notice.noticeId}</td>
-                                    <td class="title-cell" style="text-align:left; padding-left:15px;">
+                                <%-- ★ 핵심 수정: 상단 고정(isImportant) 여부에 따라 배경색을 다르게 줍니다. --%>
+                                <tr onclick="location.href='/notice/notice_view?id=${notice.noticeId}'" 
+                                    style="cursor:pointer; ${notice.isImportant ? 'background-color:#fff5f5;' : ''}">
+                                    
+                                    <td>
+                                        <%-- 상단 고정이면 번호 대신 '공지' 뱃지 출력 --%>
+                                        <c:choose>
+                                            <c:when test="${notice.isImportant}">
+                                                <span style="background-color:#e74c3c; color:white; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:bold;">공지</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${notice.noticeId}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    
+                                    <td class="title-cell" style="text-align:left; padding-left:15px; ${notice.isImportant ? 'font-weight:700;' : ''}">
+                                        <%-- 상단 고정이면 제목 앞에 [필독] 텍스트 추가 --%>
+                                        <c:if test="${notice.isImportant}">
+                                            <span style="color:#e74c3c; margin-right:5px;">🚨 [필독]</span>
+                                        </c:if>
                                         ${notice.title}
                                     </td>
+                                    
                                     <td style="color:#888;">${notice.regDate}</td>
                                 </tr>
                             </c:forEach>
@@ -64,7 +81,6 @@
 
             <div class="search-area" style="margin-top: 30px; display: flex; justify-content: center;">
                 <form action="/notice/notice_list" method="GET" style="display:flex; gap:8px;">
-                    <%-- ★ 우리가 백엔드에 추가한 기능을 100% 활용하기 위한 검색 조건 셀렉트 박스 추가! --%>
                     <select name="searchType" style="padding:10px; border-radius:6px; border:1px solid #ddd;">
                         <option value="title" ${searchType == 'title' ? 'selected' : ''}>제목</option>
                         <option value="content" ${searchType == 'content' ? 'selected' : ''}>내용</option>
@@ -75,15 +91,11 @@
             </div>
             
             <div class="pagination board-footer" style="margin-top: 20px; text-align: center;">
-				<%-- 전체 페이지가 0보다 클 때만 페이징 표시 --%>
 				<c:if test="${paging.totalPages > 0}">
-				    
-				    <%-- 이전 페이지 버튼 (★ searchType 파라미터 추가) --%>
 				    <c:if test="${paging.hasPrevious()}">
 				        <span class="page-link" onclick="location.href='?page=${paging.number - 1}&searchType=${searchType}&keyword=${keyword}'" style="cursor:pointer; padding:5px 10px;">&laquo;</span>
 				    </c:if>
 
-				    <%-- 페이지 번호들 (★ searchType 파라미터 추가) --%>
 				    <c:forEach var="i" begin="0" end="${paging.totalPages > 0 ? paging.totalPages - 1 : 0}">
 				        <span class="page-number ${i == paging.number ? 'active' : ''}" 
 				              onclick="location.href='?page=${i}&searchType=${searchType}&keyword=${keyword}'" style="cursor:pointer; padding:5px 10px; border:1px solid #eee; margin:0 3px;">
@@ -91,11 +103,9 @@
 				        </span>
 				    </c:forEach>
 
-				    <%-- 다음 페이지 버튼 (★ searchType 파라미터 추가) --%>
 				    <c:if test="${paging.hasNext()}">
 				        <span class="page-link" onclick="location.href='?page=${paging.number + 1}&searchType=${searchType}&keyword=${keyword}'" style="cursor:pointer; padding:5px 10px;">&raquo;</span>
 				    </c:if>
-				    
 				</c:if>
             </div>
         </div>
