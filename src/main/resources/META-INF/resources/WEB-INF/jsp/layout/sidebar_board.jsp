@@ -4,15 +4,21 @@
 <aside class="sidebar">
     <h2>게시판</h2>
     <ul class="lnb">
-        <li class="${param.activeMenu == 'free' ? 'active' : ''}" onclick="location.href='<c:url value="/board/free"/>'">자유게시판</li>
-        <li class="${param.activeMenu == 'anon' ? 'active' : ''}" onclick="location.href='<c:url value="/board/anon"/>'">익명게시판</li>
-        <li class="${param.activeMenu == 'comp' ? 'active' : ''}" onclick="location.href='<c:url value="/board/comp"/>'">민원게시판</li>
+        <li class="${param.activeMenu == 'free' ? 'active' : ''}" onclick="location.href='<c:url value="/board/free"/>'">
+            <i class="fa-solid fa-comments"></i> 자유게시판
+        </li>
+        <li class="${param.activeMenu == 'anon' ? 'active' : ''}" onclick="location.href='<c:url value="/board/anon"/>'">
+            <i class="fa-solid fa-user-secret"></i> 익명게시판
+        </li>
+        <li class="${param.activeMenu == 'comp' ? 'active' : ''}" onclick="location.href='<c:url value="/board/comp"/>'">
+            <i class="fa-solid fa-circle-exclamation"></i> 민원게시판
+        </li>
 
         <c:set var="isKidsMenu" value="${param.activeMenu == 'daycare_notice' || param.activeMenu == 'daycare_gallery' || param.activeMenu == 'daycare_parent'}" />
 
         <li style="margin-top:10px; padding:0; background:none; border:none;">
             <div class="sub-toggle-btn" onclick="toggleKidsMenu()">
-                <span>어린이집</span>
+                <span><i class="fa-solid fa-children"></i> 어린이집</span>
                 <span id="kidsArrow" style="font-size:12px; transition: transform 0.3s ease; display: inline-block; transform: ${isKidsMenu ? 'rotate(180deg)' : 'rotate(0deg)'};">▼</span>
             </div>
 
