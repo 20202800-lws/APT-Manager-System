@@ -21,10 +21,9 @@ public class Notice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long noticeId;
 
-    // ★ 성능 최적화: 무조건 FetchType.LAZY(지연 로딩)를 써야 서버가 느려지지 않습니다!
     @ManyToOne(fetch = FetchType.LAZY) 
     @JoinColumn(name = "writer_id")
-    private User writer; // 작성자(관리자)
+    private User writer; 
 
     private String title;
 
@@ -37,4 +36,8 @@ public class Notice {
 
     @CreationTimestamp
     private LocalDateTime regDate;
+
+    // ★ [신규 추가] 상단 고정 여부 (0: 일반, 1: 상단고정)
+    @Column(name = "is_pinned", columnDefinition = "TINYINT(1) DEFAULT 0")
+    private boolean isPinned;
 }

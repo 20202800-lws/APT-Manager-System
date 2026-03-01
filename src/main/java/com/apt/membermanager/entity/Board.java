@@ -42,4 +42,13 @@ public class Board {
 
     @CreationTimestamp
     private LocalDateTime regDate;
+
+    // ★ [추가됨] 신고 관련 필드
+    @Builder.Default
+    @Column(name = "report_count")
+    private Integer reportCount = 0;
+
+    @Builder.Default
+    @Column(name = "post_status", length = 20)
+    private String postStatus = "ACTIVE"; // ACTIVE: 정상, BLIND: 숨김
 }
