@@ -4,15 +4,21 @@
 <aside class="sidebar">
     <h2>마이페이지</h2>
     <ul class="lnb">
-        <li class="${param.activeMenu == 'info_view' ? 'active' : ''}" onclick="location.href='<c:url value="/mypage/info_view"/>'">내 정보</li>
-        <li class="${param.activeMenu == 'info_edit' ? 'active' : ''}" onclick="location.href='<c:url value="/mypage/info_edit"/>'">정보 수정</li>
-        <li class="${param.activeMenu == 'fee_view' ? 'active' : ''}" onclick="location.href='<c:url value="/mypage/fee_view"/>'">관리비</li>
+        <li class="${param.activeMenu == 'info_view' ? 'active' : ''}" onclick="location.href='<c:url value="/mypage/info_view"/>'">
+            <i class="fa-solid fa-user-gear"></i> 내 정보
+        </li>
+        <li class="${param.activeMenu == 'info_edit' ? 'active' : ''}" onclick="location.href='<c:url value="/mypage/info_edit"/>'">
+            <i class="fa-solid fa-user-pen"></i> 정보 수정
+        </li>
+        <li class="${param.activeMenu == 'fee_view' ? 'active' : ''}" onclick="location.href='<c:url value="/mypage/fee_view"/>'">
+            <i class="fa-solid fa-file-invoice-dollar"></i> 관리비 조회
+        </li>
         
         <c:set var="isActMenu" value="${param.activeMenu == 'act_reply' || param.activeMenu == 'act_posts'}" />
         
         <li style="margin-top:10px; padding:0; background:none; border:none;">
             <div class="sub-toggle-btn" onclick="toggleActMenu()">
-                <span>활동 내역</span>
+                <span><i class="fa-solid fa-clock-rotate-left"></i> 활동 내역</span>
                 <span id="actArrow" style="font-size:12px; transition: transform 0.3s ease; display: inline-block; transform: ${isActMenu ? 'rotate(180deg)' : 'rotate(0deg)'};">▼</span>
             </div>
 

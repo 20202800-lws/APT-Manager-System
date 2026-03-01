@@ -1,4 +1,3 @@
-<!-- 평면도 -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="ko">
@@ -13,7 +12,7 @@
 	    <jsp:param name="pageTitle" value="평면도" />
 	</jsp:include>
 
-    <div class="container">
+    <div class="page-wrapper container">
 		<jsp:include page="../layout/sidebar_intro.jsp">
 		    <jsp:param name="activeMenu" value="floor_plan" />
 		</jsp:include>
@@ -33,9 +32,9 @@
                     <button class="type-btn" onclick="changePlan('84C', this)">84C</button>
                 </div>
 
-                <div class="img-box">
-                    <img id="planImg" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200" alt="평면도">
-                    <h4 id="planTitle">59㎡ A TYPE</h4>
+                <div class="img-box" style="margin-top: 20px; text-align: center;">
+                    <img id="planImg" src="/images/logo/59A.png" alt="평면도" style="max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #eee;">
+                    <h4 id="planTitle" style="margin-top:15px; color:#1a0b2e;">59㎡ A TYPE</h4>
                 </div>
             </section>
         </main>
