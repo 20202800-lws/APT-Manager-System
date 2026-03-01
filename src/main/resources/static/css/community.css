@@ -50,3 +50,42 @@
     .img-box { height: 250px; }
     .room-type-grid { grid-template-columns: 1fr; }
 }
+
+/* ==========================================
+   수영장 전용 자동 이미지 슬라이더 (3장 기준)
+============================================= */
+
+/* 슬라이더 전체 컨테이너 */
+.pool-slider {
+    width: 100%;
+    height: 100%; /* 부모 .img-box의 높이 400px을 따름 */
+    position: relative;
+    overflow: hidden;
+}
+
+/* 개별 슬라이드 이미지 */
+.pool-slide {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0; /* 기본적으로 숨김 */
+    object-fit: cover;
+    transition: opacity 1s ease-in-out; /* 부드러운 전환 효과 */
+    animation: poolSlideShow 15s infinite; /* 5초씩 3장 = 총 15초 무한반복 */
+}
+
+/* 자동 슬라이드 애니메이션 (3장 기준 로직) */
+@keyframes poolSlideShow {
+    0% { opacity: 0; }
+    5% { opacity: 1; }   /* 1초(5%) 동안 페이드 인 */
+    33.33% { opacity: 1; } /* 4초(약 28%) 동안 유지 */
+    38.33% { opacity: 0; } /* 1초(5%) 동안 페이드 아웃 */
+    100% { opacity: 0; }
+}
+
+/* 각 이미지별 애니메이션 지연 시간 (타이밍 조절) */
+.pool-slide:nth-child(1) { animation-delay: 0s; opacity: 1; }
+.pool-slide:nth-child(2) { animation-delay: 5s; }
+.pool-slide:nth-child(3) { animation-delay: 10s; }
