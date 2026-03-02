@@ -1,19 +1,13 @@
 /* =========================================
-   /js/daycare/daycare_gallery.js - 활동 갤러리 전용
+   /js/daycare/daycare_gallery.js - 실제 DB 연동 (Fetch API)
    ========================================= */
 
 let currentPage = 1;
 const itemsPerPage = 9; // 갤러리는 3x3=9개씩 보여주면 예쁩니다.
-
-// 임시 데이터 (백엔드 연동 전 화면 확인용)
-let boardData = [
-    { id: 3, title: "봄맞이 딸기농장 체험학습 🍓", author: "햇님반 선생님", date: "2026.04.10", hits: 85, thumb: "https://images.unsplash.com/photo-1596431336582-8959f23cc723?w=500&auto=format&fit=crop" },
-    { id: 2, title: "즐거운 체육활동 시간 🏃‍♂️", author: "체육 선생님", date: "2026.03.25", hits: 52, thumb: "https://images.unsplash.com/photo-1519340082725-b873a436be3c?w=500&auto=format&fit=crop" },
-    { id: 1, title: "어린이집 오리엔테이션 풍경", author: "원장님", date: "2026.02.15", hits: 120, thumb: "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=500&auto=format&fit=crop" }
-];
+let boardData = []; // 진짜 데이터를 담을 빈 배열
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderList();
+    loadGalleries(); // 화면 열리면 데이터 로드
     
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -23,7 +17,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/* 갤러리 카드 렌더링 */
+/* 1. 백엔드에서 갤러리 데이터 가져오기 */
+function loadGalleries() {
+    fetch('/api/daycare/galleries')
+        .then(res => res.json())
+        .then(data => {
+            boardData = data;
+            renderList();
+        })
+        .catch(err => console.error("갤러리 로드 에러:", err));
+}
+
+/* 2. 갤러리 카드 렌더링 */
 function renderList() {
     const pagedData = boardData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     const wrapper = document.getElementById('galleryWrapper');
@@ -34,7 +39,7 @@ function renderList() {
              onmouseover="this.style.transform='translateY(-5px)'" 
              onmouseout="this.style.transform='translateY(0)'">
              
-            <div style="height: 200px; overflow: hidden;">
+            <div style="height: 200px; overflow: hidden; background-color:#f8f9fa;">
                 <img src="${p.thumb}" alt="썸네일" style="width:100%; height:100%; object-fit:cover;">
             </div>
             
@@ -51,12 +56,12 @@ function renderList() {
     renderPaginationUI(boardData.length);
 }
 
-/* 상세보기 페이지 이동 */
+/* 3. 상세보기 페이지 이동 */
 function showDetail(id) {
     location.href = '/daycare/gallery/view?id=' + id;
 }
 
-/* 페이징 및 검색 (기존과 동일) */
+/* 4. 페이징 및 검색 로직 */
 function renderPaginationUI(total) {
     const totalPages = Math.ceil(total / itemsPerPage);
     const pBox = document.getElementById('paginationBox'); 
@@ -71,9 +76,10 @@ function movePage(p) { currentPage = p; renderList(); }
 
 function searchPost() {
     const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-    if (!keyword) { renderList(); return; }
+    if (!keyword) { loadGalleries(); return; }
+    
     const filtered = boardData.filter(post => post.title.toLowerCase().includes(keyword));
-    // 임시 검색 렌더링 (동일 로직 생략)
-    boardData = filtered; // 프로토타입용 야매(?) 처리
+    boardData = filtered;
+    currentPage = 1;
     renderList();
 }
