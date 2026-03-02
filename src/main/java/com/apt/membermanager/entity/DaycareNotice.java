@@ -7,27 +7,33 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @Table(name = "DAYCARE_NOTICE")
 public class DaycareNotice {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long noticeId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long noticeId;
 
-    private String category;
-    private String title;
+	private String category;
+	private String title;
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    private String content;
+	@Lob
+	@Column(columnDefinition = "TEXT")
+	private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "writer_id")
-    private User writer;
+	@ManyToOne
+	@JoinColumn(name = "writer_id")
+	private User writer;
 
-    private Integer views = 0;
+	private Integer views = 0;
 
-    @CreationTimestamp
-    private LocalDateTime regDate;
+	@CreationTimestamp
+	private LocalDateTime regDate;
+
+	// ★ 상단 공지 여부 추가
+	@Column(name = "is_top", columnDefinition = "boolean default false")
+	private Boolean isTop = false;
+
 }

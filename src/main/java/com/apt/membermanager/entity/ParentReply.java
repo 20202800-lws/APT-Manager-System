@@ -8,27 +8,23 @@ import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Getter @Setter
-@Table(name = "PARENT_BOARD")
-public class ParentBoard {
+@Table(name = "PARENT_REPLY")
+public class ParentReply {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long boardId;
+    private Long replyId;
 
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "opinion_id", nullable = false)
+    private ParentOpinion opinion;
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    private String content;
-
-    @ManyToOne
-    @JoinColumn(name = "writer_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User writer;
 
-    private Integer views = 0;
-    
-    @Column(length = 1)
-    private String isSecret;
+    @Column(length = 500, nullable = false)
+    private String content;
 
     @CreationTimestamp
     private LocalDateTime regDate;
