@@ -25,12 +25,14 @@ public class MemberBean {
     private String genderDigit;
     private String userRole;
     private boolean approvalStatus;
+    private boolean parentRoleApply; // ★ 학부모 신청 여부 추가
     private String status;
     private String joinDate;
     private String withdrawalDate;
     
 	public MemberBean(String userId, String userPw, String userName, String email, String phone, String dong,
-			String ho, String birthdate, String genderDigit, String userRole, boolean approvalStatus, LocalDateTime join_date,LocalDateTime withdrawal_date) {
+			String ho, String birthdate, String genderDigit, String userRole, boolean approvalStatus, 
+            boolean parentRoleApply, LocalDateTime join_date, LocalDateTime withdrawal_date) {
 		super();
 		this.userId = userId;
 		this.userPw = userPw;
@@ -43,6 +45,7 @@ public class MemberBean {
 		this.genderDigit = genderDigit;
 		this.userRole = userRole;
 		this.approvalStatus = approvalStatus;
+        this.parentRoleApply = parentRoleApply; // ★ 매핑
 		
 		if ("ADMIN".equals(userRole)) {
 	        this.status = "ADM";
@@ -52,21 +55,15 @@ public class MemberBean {
 	        this.status = "WAIT";
 	    }
 		
-		
 		this.joinDate = (join_date != null) ? join_date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")): null;
 		this.withdrawalDate = (withdrawal_date != null) ? withdrawal_date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")): null;
 	}
     
 	public static MemberBean fromMember(User user) {
-    	return new MemberBean(user.getUsername(),user.getPassword(),user.getRealName(),user.getEmail(),
-    			user.getPhone(),user.getDong(),user.getHo(),user.getBirthDate(),
-    			user.getGenderDigit(),user.getUserRole(),user.isApprovalStatus(),user.getJoinDate(),user.getWithdrawalDate());
+    	return new MemberBean(user.getUsername(), user.getPassword(), user.getRealName(), user.getEmail(),
+    			user.getPhone(), user.getDong(), user.getHo(), user.getBirthDate(),
+    			user.getGenderDigit(), user.getUserRole(), user.isApprovalStatus(), 
+                user.isParentRoleApply(), // ★ 엔티티에서 가져옴
+                user.getJoinDate(), user.getWithdrawalDate());
     }
-
-	
-
-	
-	
-	
-    
 }

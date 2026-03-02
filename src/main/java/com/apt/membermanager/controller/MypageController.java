@@ -37,45 +37,40 @@ public class MypageController {
 	@GetMapping("/info_view")
 	public String infoView(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser == null)
-			return "redirect:/member/login";
+		if (loginUser == null) return "redirect:/member/login";
 
-		if (loginUser.getJoinDate() != null) {
+        // ★ DB에서 최신 유저 정보를 다시 조회하여 세션과 화면을 동기화합니다. (신청 상태 즉각 반영)
+        User currentUser = userRepository.findById(loginUser.getUserId()).orElse(loginUser);
+
+		if (currentUser.getJoinDate() != null) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm");
-			model.addAttribute("formattedJoinDate", loginUser.getJoinDate().format(formatter));
+			model.addAttribute("formattedJoinDate", currentUser.getJoinDate().format(formatter));
 		} else {
 			model.addAttribute("formattedJoinDate", "정보 없음");
 		}
 		model.addAttribute("myVehicle", "등록된 차량 없음");
-		model.addAttribute("userInfo", loginUser);
+		model.addAttribute("userInfo", currentUser); // 최신 정보로 모델에 담기
 		return "mypage/info_view";
 	}
 
 	@PostMapping("/api/toggle-alert")
 	@ResponseBody
-	public ResponseEntity<String> toggleAlert(@RequestParam String type, @RequestParam boolean status,
-			HttpSession session) {
+	public ResponseEntity<String> toggleAlert(@RequestParam String type, @RequestParam boolean status, HttpSession session) {
 		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser == null)
-			return ResponseEntity.status(401).body("로그인 필요");
+		if (loginUser == null) return ResponseEntity.status(401).body("로그인 필요");
 		User user = userRepository.findById(loginUser.getUserId()).orElse(null);
-		if (user == null)
-			return ResponseEntity.badRequest().body("회원 오류");
+		if (user == null) return ResponseEntity.badRequest().body("회원 오류");
 		return ResponseEntity.ok("success");
 	}
 
 	@GetMapping("/info_edit")
 	public String infoEdit(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser == null)
-			return "redirect:/member/login";
+		if (loginUser == null) return "redirect:/member/login";
 		model.addAttribute("loginMember", loginUser);
 		return "mypage/info_edit";
 	}
 
-	// ==========================================
-	// 3. 내 정보 수정
-	// ==========================================
 	@PostMapping("/info_edit")
 	public String updateInfo(@RequestParam(value = "profileFile", required = false) MultipartFile profileFile,
 			@RequestParam(value = "currentPw", required = false) String currentPw,
@@ -85,13 +80,10 @@ public class MypageController {
 			RedirectAttributes rttr) {
 
 		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser == null)
-			return "redirect:/member/login";
+		if (loginUser == null) return "redirect:/member/login";
 
 		try {
-			User user = userRepository.findById(loginUser.getUserId())
-					.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
-
+			User user = userRepository.findById(loginUser.getUserId()).orElseThrow(() -> new RuntimeException("회원 정보 없음"));
 			List<String> changedItems = new ArrayList<>();
 
 			if (newPw != null && !newPw.trim().isEmpty()) {
@@ -115,8 +107,7 @@ public class MypageController {
 				String projectPath = System.getProperty("user.dir");
 				String uploadDir = projectPath + "/apt_upload/";
 				File dir = new File(uploadDir);
-				if (!dir.exists())
-					dir.mkdirs();
+				if (!dir.exists()) dir.mkdirs();
 
 				String savedFileName = UUID.randomUUID().toString() + "_" + profileFile.getOriginalFilename();
 				profileFile.transferTo(new File(uploadDir + savedFileName));
@@ -141,32 +132,23 @@ public class MypageController {
 			if (changedItems.isEmpty()) {
 				rttr.addFlashAttribute("msg", "변경된 내용이 없습니다.");
 			} else {
-				String msg = String.join(", ", changedItems) + " 정보가 성공적으로 변경되었습니다.";
-				rttr.addFlashAttribute("msg", msg);
+				rttr.addFlashAttribute("msg", String.join(", ", changedItems) + " 정보가 성공적으로 변경되었습니다.");
 			}
-
 		} catch (Exception e) {
 			log.error("정보 수정 실패: {}", e.getMessage());
 			rttr.addFlashAttribute("msg", "수정 중 오류가 발생했습니다.");
 			return "redirect:/mypage/info_edit";
 		}
-
 		return "redirect:/mypage/info_view";
 	}
 
-	// ==========================================
-	// 4. 관리비 상세 조회
-	// ==========================================
 	@GetMapping("/fee_view")
 	public String feeView(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser == null)
-			return "redirect:/member/login";
+		if (loginUser == null) return "redirect:/member/login";
 
 		try {
-			List<ManageFee> feeList = manageFeeRepository
-					.findByDongAndHoOrderByUseYearDescUseMonthDesc(loginUser.getDong(), loginUser.getHo());
-
+			List<ManageFee> feeList = manageFeeRepository.findByDongAndHoOrderByUseYearDescUseMonthDesc(loginUser.getDong(), loginUser.getHo());
 			Map<String, Object> realFeeData = new LinkedHashMap<>();
 
 			for (ManageFee fee : feeList) {
@@ -177,8 +159,7 @@ public class MypageController {
 				feeInfo.put("rawTotal", fee.getTotalCost() != null ? fee.getTotalCost() : 0);
 				feeInfo.put("total", String.format("%,d", fee.getTotalCost() != null ? fee.getTotalCost() : 0));
 				feeInfo.put("due", fee.getUseYear() + "." + monthStr + ".28");
-				feeInfo.put("status",
-						fee.getPaymentStatus() != null && fee.getPaymentStatus() == 1 ? "paid" : "unpaid");
+				feeInfo.put("status", fee.getPaymentStatus() != null && fee.getPaymentStatus() == 1 ? "paid" : "unpaid");
 
 				List<Map<String, Object>> items = new ArrayList<>();
 				if (fee.getDetails() != null) {
@@ -194,32 +175,26 @@ public class MypageController {
 
 				Map<String, Object> graphs = new HashMap<>();
 				int currentTotal = fee.getTotalCost() != null ? fee.getTotalCost() : 0;
-				graphs.put("total", Map.of("data", Arrays.asList(180000, 190000, 185000, 195000, 200000, currentTotal),
-						"unit", "원"));
+				graphs.put("total", Map.of("data", Arrays.asList(180000, 190000, 185000, 195000, 200000, currentTotal), "unit", "원"));
 				graphs.put("electric", Map.of("data", Arrays.asList(200, 210, 190, 220, 250, 240), "unit", "kWh"));
 				graphs.put("heating", Map.of("data", Arrays.asList(50, 55, 60, 80, 120, 110), "unit", "㎥"));
 				feeInfo.put("graphs", graphs);
 
 				realFeeData.put(key, feeInfo);
 			}
-
 			ObjectMapper mapper = new ObjectMapper();
-			String jsonFeeData = mapper.writeValueAsString(realFeeData);
-			model.addAttribute("jsonFeeData", jsonFeeData);
-
+			model.addAttribute("jsonFeeData", mapper.writeValueAsString(realFeeData));
 		} catch (Exception e) {
 			log.error("관리비 데이터 로드 실패: {}", e.getMessage());
 			model.addAttribute("jsonFeeData", "{}");
 		}
-
 		return "mypage/fee_view";
 	}
 
 	@GetMapping("/act_posts")
 	public String actPosts(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser == null)
-			return "redirect:/member/login";
+		if (loginUser == null) return "redirect:/member/login";
 		model.addAttribute("myPosts", java.util.Collections.emptyList());
 		return "mypage/act_posts";
 	}
@@ -227,47 +202,56 @@ public class MypageController {
 	@GetMapping("/act_reply")
 	public String actReply(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser == null)
-			return "redirect:/member/login";
+		if (loginUser == null) return "redirect:/member/login";
 		model.addAttribute("myReplies", java.util.Collections.emptyList());
 		return "mypage/act_reply";
 	}
 
-	// ==========================================
-	// ★ 7. 회원 탈퇴 처리 (POST)
-	// ==========================================
 	@PostMapping("/withdraw")
 	public String withdraw(HttpSession session, RedirectAttributes rttr) {
 		User loginUser = (User) session.getAttribute("loginMember");
 		if (loginUser != null) {
 			try {
-				// 1. DB에서 해당 유저 찾기
 				User user = userRepository.findById(loginUser.getUserId()).orElse(null);
-
 				if (user != null) {
-					// 2. 탈퇴일(withdrawalDate) 현재 시간으로 기록 (Soft Delete)
 					user.setWithdrawalDate(java.time.LocalDateTime.now());
-
-					// (선택사항) 탈퇴한 회원은 승인대기/정지 상태(false)로 전환하여 로그인 차단
 					user.setApprovalStatus(false);
-
-					userRepository.save(user); // DB 업데이트
+					userRepository.save(user);
 				}
-
-				// 3. 로그아웃 처리 (세션에서 로그인 정보 삭제)
 				session.removeAttribute("loginMember");
-
-				// 4. 홈화면으로 보낼 성공 메시지 세팅
 				rttr.addFlashAttribute("msg", "회원 탈퇴가 처리되었습니다. 그동안 이용해 주셔서 감사합니다.");
-
 			} catch (Exception e) {
 				log.error("회원 탈퇴 중 오류 발생: {}", e.getMessage());
 				rttr.addFlashAttribute("msg", "탈퇴 처리 중 오류가 발생했습니다. 관리자에게 문의하세요.");
 				return "redirect:/mypage/info_view";
 			}
 		}
-
-		// 5. 메인 홈 화면으로 이동!
 		return "redirect:/";
 	}
+
+    // ==========================================
+	// ★ 8. 학부모 권한 신청 처리
+	// ==========================================
+    @PostMapping("/apply_parent")
+    public String applyParent(HttpSession session, RedirectAttributes rttr) {
+        User loginUser = (User) session.getAttribute("loginMember");
+        if (loginUser != null) {
+            try {
+                User user = userRepository.findById(loginUser.getUserId()).orElse(null);
+                if (user != null) {
+                    user.setParentRoleApply(true); // 신청 상태를 true로 업데이트
+                    userRepository.save(user);
+                    
+                    // 세션의 유저 정보도 갱신해주어야 즉시 화면에 반영됨
+                    session.setAttribute("loginMember", user); 
+                    
+                    rttr.addFlashAttribute("msg", "학부모 권한 신청이 완료되었습니다. 관리자 승인 후 반영됩니다.");
+                }
+            } catch (Exception e) {
+                log.error("학부모 신청 중 오류 발생: {}", e.getMessage());
+                rttr.addFlashAttribute("msg", "신청 처리 중 오류가 발생했습니다.");
+            }
+        }
+        return "redirect:/mypage/info_view";
+    }
 }
