@@ -5,10 +5,10 @@ CREATE DATABASE IF NOT EXISTS apt_management;
 USE apt_management;
 
 -- ==========================================
--- 2. 테이블 생성 (신고 시스템 및 학부모 피드 포함 100% 통합본)
+-- 2. 테이블 생성 (신고 시스템, 어린이집 및 학부모 기능 포함 통합본)
 -- ==========================================
 
--- 1. 사용자 (USERS)
+-- 1. 사용자 (USERS) - ★ 학부모 권한 신청 여부(parent_role_apply) 추가됨
 CREATE TABLE USERS (
     user_id VARCHAR(50) PRIMARY KEY COMMENT '아이디',
     user_pw VARCHAR(255) NOT NULL COMMENT '비밀번호',
@@ -21,6 +21,7 @@ CREATE TABLE USERS (
     birth_date VARCHAR(20) COMMENT '생년월일',
     gender_digit CHAR(1) COMMENT '성별코드',
     approval_status TINYINT(1) DEFAULT 0 COMMENT '승인여부(0:대기,1:승인)',
+    parent_role_apply TINYINT(1) DEFAULT 0 COMMENT '학부모 권한 신청 여부(0:미신청, 1:신청중)',
     join_date DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
     withdrawal_date DATETIME COMMENT '탈퇴일시',
     profile_img VARCHAR(255) DEFAULT NULL COMMENT '프로필 이미지 경로'
@@ -109,7 +110,7 @@ CREATE TABLE COMMENT (
     FOREIGN KEY (parent_id) REFERENCES COMMENT(reply_id) ON DELETE CASCADE
 );
 
--- 9. 게시글 신고 내역 (REPORT) - [신규]
+-- 9. 게시글 신고 내역 (REPORT)
 CREATE TABLE REPORT (
     report_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '신고번호',
     board_id BIGINT NOT NULL COMMENT '대상 게시글번호',
@@ -122,7 +123,7 @@ CREATE TABLE REPORT (
     UNIQUE KEY unique_report (board_id, reporter_id)
 ) COMMENT '게시글 신고 관리 테이블';
 
--- 10. 학부모 의견 피드 (PARENT_OPINION) - [복구]
+-- 10. 학부모 의견 피드 (PARENT_OPINION)
 CREATE TABLE PARENT_OPINION (
     opinion_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '의견번호',
     user_id VARCHAR(50) NOT NULL COMMENT '작성자',
@@ -132,7 +133,7 @@ CREATE TABLE PARENT_OPINION (
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
 );
 
--- 11. 학부모 의견 댓글 (PARENT_REPLY) - [복구]
+-- 11. 학부모 의견 댓글 (PARENT_REPLY)
 CREATE TABLE PARENT_REPLY (
     reply_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '댓글번호',
     opinion_id BIGINT NOT NULL COMMENT '의견번호',

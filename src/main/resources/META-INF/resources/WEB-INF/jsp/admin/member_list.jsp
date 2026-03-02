@@ -13,11 +13,9 @@
 <body>
 
 <div class="admin-container">
-    
     <jsp:include page="../layout/admin_sidebar.jsp" />
 
     <main class="main-content">
-        
         <div class="content-header">
             <h2>회원 관리</h2>
             <p class="subtitle">입주민 가입 승인 및 권한 설정</p>
@@ -66,6 +64,10 @@
                     </c:choose>
                 </h3>
                 <div class="section-actions">
+                    <button class="btn btn-primary" style="margin-right: 10px; background-color: #10b981; border: none;" onclick="adminMember.openTeacherModal()">
+                        <i class="fa-solid fa-plus"></i> 선생님 계정 생성
+                    </button>
+                    
                     <select class="form-select" id="searchType">
                         <option value="kwName" ${not empty kwName ? 'selected' : ''}>이름</option>
                         <option value="kwAddress" ${not empty kwAddress ? 'selected' : ''}>동/호수</option>
@@ -74,7 +76,6 @@
 
                     <c:set var="currentKeyword" value="${not empty kwName ? kwName : (not empty kwAddress ? kwAddress : kwPhone)}" />
                     <input type="text" class="form-input" id="keyword" placeholder="검색어 입력" value="${currentKeyword}" onkeyup="if(window.event.keyCode==13){adminMember.searchTable()}">
-                    
                     <button class="btn btn-primary" onclick="adminMember.searchTable()"><i class="fa-solid fa-search"></i></button>
                 </div>
             </div>
@@ -90,27 +91,21 @@
                     </tr>
                 </thead>
                 <tbody id="memberTableBody">
-                    </tbody>
+                </tbody>
             </table>
 
             <div id="paginationWrapper" style="margin-top:20px; text-align:center;">
                 <c:if test="${paging.totalPages > 1}">
-                    <button class="btn btn-secondary btn-xs" ${!paging.hasPrevious() ? 'disabled' : ''} 
-                            onclick="location.href='?page=${paging.number-1}&tab=${tab}&kwName=${kwName}&kwAddress=${kwAddress}&kwPhone=${kwPhone}'">&lt;</button>
-                    
+                    <button class="btn btn-secondary btn-xs" ${!paging.hasPrevious() ? 'disabled' : ''} onclick="location.href='?page=${paging.number-1}&tab=${tab}&kwName=${kwName}&kwAddress=${kwAddress}&kwPhone=${kwPhone}'">&lt;</button>
                     <c:forEach var="i" begin="0" end="${paging.totalPages - 1}">
                         <c:if test="${i >= paging.number - 5 && i <= paging.number + 5}">
-                            <button class="btn ${i == paging.number ? 'btn-primary' : 'btn-secondary'} btn-xs" 
-                                    onclick="location.href='?page=${i}&tab=${tab}&kwName=${kwName}&kwAddress=${kwAddress}&kwPhone=${kwPhone}'">${i + 1}</button>
+                            <button class="btn ${i == paging.number ? 'btn-primary' : 'btn-secondary'} btn-xs" onclick="location.href='?page=${i}&tab=${tab}&kwName=${kwName}&kwAddress=${kwAddress}&kwPhone=${kwPhone}'">${i + 1}</button>
                         </c:if>
                     </c:forEach>
-
-                    <button class="btn btn-secondary btn-xs" ${!paging.hasNext() ? 'disabled' : ''} 
-                            onclick="location.href='?page=${paging.number+1}&tab=${tab}&kwName=${kwName}&kwAddress=${kwAddress}&kwPhone=${kwPhone}'">&gt;</button>
+                    <button class="btn btn-secondary btn-xs" ${!paging.hasNext() ? 'disabled' : ''} onclick="location.href='?page=${paging.number+1}&tab=${tab}&kwName=${kwName}&kwAddress=${kwAddress}&kwPhone=${kwPhone}'">&gt;</button>
                 </c:if>
             </div>
         </div>
-
     </main>
 </div>
 
@@ -118,13 +113,11 @@
     <div class="modal-container">
         <div class="modal-header">
             <h3><i class="fa-solid fa-user-gear"></i> 회원 상세 정보</h3>
-            <button class="modal-close-btn" onclick="adminMember.closeModal()">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <button class="modal-close-btn" onclick="adminMember.closeModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        
         <div class="modal-body">
-            <input type="hidden" id="modalUserId"> <div style="display:flex; flex-direction:column; gap:15px;">
+            <input type="hidden" id="modalUserId"> 
+            <div style="display:flex; flex-direction:column; gap:15px;">
                 <div style="display:flex; gap:15px;">
                     <div style="flex:1;">
                         <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">이름</label>
@@ -134,12 +127,13 @@
                         <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">회원 권한 (상태)</label>
                         <select class="form-select" id="modalApprovalStatus" style="width:100%;">
                             <option value="WAIT">가입 대기</option>
-                            <option value="ACT">입주민 (승인됨)</option>
+                            <option value="USER">입주민 (승인됨)</option>
+                            <option value="PARENT">학부모</option>
+                            <option value="TEACHER">어린이집 선생님</option>
                             <option value="ADMIN">관리자</option>
                         </select>
                     </div>
                 </div>
-
                 <div style="display:flex; gap:15px;">
                     <div style="flex:1;">
                         <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">동</label>
@@ -150,42 +144,68 @@
                         <input type="text" class="form-input" id="modalHo" style="width:100%;">
                     </div>
                 </div>
-
                 <div>
                     <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">연락처</label>
                     <input type="text" class="form-input" id="modalPhone" style="width:100%;">
                 </div>
-
                 <div>
                     <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">이메일 (아이디)</label>
                     <input type="text" class="form-input" id="modalEmail" readonly style="width:100%; background:#f5f5f5; color:#888;">
                 </div>
-                
                 <div>
                     <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">가입일시</label>
                     <div id="modalJoinDate" style="color:#333; font-weight:500;"></div>
                 </div>
             </div>
         </div>
-
         <div class="modal-footer space-between">
-            <button class="btn btn-secondary" style="color:var(--danger); border-color:var(--danger); background:#fff;" 
-                    onclick="adminMember.deleteMember()">
+            <button class="btn btn-secondary" style="color:var(--danger); border-color:var(--danger); background:#fff;" onclick="adminMember.deleteMember()">
                 <i class="fa-solid fa-user-xmark"></i> 강제 탈퇴
             </button>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-secondary" onclick="adminMember.closeModal()">취소</button>
-                <button class="btn btn-primary" id="modalSaveBtn" onclick="adminMember.saveMember()">
-                    <i class="fa-solid fa-check"></i> 정보 저장
-                </button>
+                <button class="btn btn-primary" id="modalSaveBtn" onclick="adminMember.saveMember()"><i class="fa-solid fa-check"></i> 정보 저장</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div id="teacherModal" class="modal-overlay">
+    <div class="modal-container" style="max-width:420px;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-chalkboard-user"></i> 선생님 계정 직접 생성</h3>
+            <button class="modal-close-btn" onclick="adminMember.closeTeacherModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex; flex-direction:column; gap:18px;">
+                <div>
+                    <label style="font-size:0.9rem; font-weight:700; color:#333; margin-bottom:8px; display:block;">아이디 (이메일 필수)</label>
+                    <input type="email" class="form-input" id="t_userId" style="width:100%; height:45px;" placeholder="예: teacher01@apt.com">
+                </div>
+                <div>
+                    <label style="font-size:0.9rem; font-weight:700; color:#333; margin-bottom:8px; display:block;">비밀번호</label>
+                    <input type="password" class="form-input" id="t_userPw" style="width:100%; height:45px;" placeholder="8자 이상, 숫자/특수문자 포함">
+                </div>
+                <div>
+                    <label style="font-size:0.9rem; font-weight:700; color:#333; margin-bottom:8px; display:block;">선생님 실명</label>
+                    <input type="text" class="form-input" id="t_userName" style="width:100%; height:45px;" placeholder="예: 김선생">
+                </div>
+                
+                <div>
+                    <label style="font-size:0.9rem; font-weight:700; color:#333; margin-bottom:8px; display:block;">휴대전화</label>
+                    <input type="text" class="form-input" id="t_phone" maxlength="13" style="width:100%; height:45px;" placeholder="예: 010-1234-5678" oninput="adminMember.autoHyphenPhone(this)">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+            <button class="btn btn-secondary" style="margin-right:10px; height:45px; width:80px;" onclick="adminMember.closeTeacherModal()">취소</button>
+            <button class="btn btn-primary" style="background-color:#10b981; border:none; height:45px; width:120px; font-weight:bold;" onclick="adminMember.createTeacher()">계정 생성</button>
         </div>
     </div>
 </div>
 
 <script>
     window.globalMemberList = [];
-
     <c:if test="${not empty paging.content}">
         <c:forEach var="member" items="${paging.content}">
             window.globalMemberList.push({
@@ -196,9 +216,9 @@
                 phone: '${member.phone}',
                 email: '${member.email}',
                 joinDate: '${member.joinDate}',
-                // 백엔드 tab 분류와 일치하도록 상태값 재정의
-                approvalStatus: '${member.userRole}' === 'ADMIN' ? 'ADMIN' : 
-                               ('${member.status}' === 'true' || '${member.status}' === 'ACT' ? 'ACT' : 'WAIT')
+                approvalStatus: '${member.approvalStatus}' === 'false' ? 'WAIT' : '${member.userRole}',
+                // ★ DB의 신청 여부 값을 자바스크립트로 넘김
+                parentRoleApply: ${member.parentRoleApply != null ? member.parentRoleApply : false}
             });
         </c:forEach>
     </c:if>
