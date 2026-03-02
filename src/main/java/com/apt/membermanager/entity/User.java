@@ -58,27 +58,22 @@ public class User implements UserDetails {
     @Column(name = "profile_img")
     private String profileImg;
 
-    // 시큐리티는 이 메소드로 비밀번호를 가져감
     @Override
-    public String getPassword() {
-        return this.userPw;
-    }
+    public String getPassword() { return this.userPw; }
     
-    // 시큐리티는 이 메소드로 아이디를 가져감 
     @Override
-    public String getUsername() {
-        return this.userId;
-    }
+    public String getUsername() { return this.userId; }
     
-    // 프론트엔드(JSP)에서 실제 이름을 가져올 때 사용 (시큐리티 메서드와의 충돌 방지)
-    public String getRealName() {
-        return this.userName;
-    }
+    public String getRealName() { return this.userName; }
     
-    // DB의 TINYINT(1)을 자바의 Boolean(true/false)으로 자동 변환
     @Column(name = "approval_status")
     @ColumnDefault("false")
     private boolean approvalStatus; 
+    
+    // ★ 학부모 권한 신청 여부 필드 추가
+    @Column(name = "parent_role_apply")
+    @ColumnDefault("false")
+    private boolean parentRoleApply; 
 
     @CreationTimestamp
     @Column(name = "join_date", updatable = false)

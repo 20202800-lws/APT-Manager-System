@@ -23,12 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @RequestMapping("/admin")
-@RequiredArgsConstructor // ★ 생성자 대신 롬복으로 통일!
+@RequiredArgsConstructor
 public class AdminMemberController {
 	
 	private final MemberService memberService;
 
-	// 2. 입주민(회원) 관리 목록
     @GetMapping("/member_list")
     public String memberList(
             @RequestParam(defaultValue = "ALL") String tab,
@@ -38,10 +37,7 @@ public class AdminMemberController {
             @PageableDefault(size = 10, sort = "joinDate", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) { 
         
-        // 검색 필터를 포함한 회원 목록 조회
         Page<MemberBean> paging = memberService.getMemberList(tab, kwName, kwAddress, kwPhone, pageable);
-        
-        // 대시보드용 회원 상태 통계 (전체, 대기, 승인 등)
         Map<String, Long> status = memberService.getMemberStatus();
         
         model.addAttribute("paging", paging); 
@@ -54,17 +50,59 @@ public class AdminMemberController {
         return "admin/member_list"; 
     }
     
-    // 3. 입주민 가입 승인 처리 (Ajax)
     @PostMapping(value = "/member/approve", produces = "text/plain;charset=UTF-8")
     @ResponseBody
     public String approveMember(@RequestParam("userId") String userId) {
         try {
-            log.info("회원 승인 요청 - ID: {}", userId);
-            // 기본 권한을 USER로 부여하며 승인 상태로 변경
             memberService.approveMember(userId, "USER");
             return "success";
         } catch (Exception e) {
             log.error("회원 승인 중 오류 발생: ", e);
+            return "error: " + e.getMessage();
+        }
+    }
+
+    @PostMapping(value = "/member/update", produces = "text/plain;charset=UTF-8")
+    @ResponseBody
+    public String updateMember(@RequestParam("userId") String userId,
+                               @RequestParam("userName") String userName,
+                               @RequestParam("dong") String dong,
+                               @RequestParam("ho") String ho,
+                               @RequestParam("phone") String phone,
+                               @RequestParam("userRole") String userRole) {
+        try {
+            memberService.updateMember(userId, userName, dong, ho, phone, userRole);
+            return "success";
+        } catch (Exception e) {
+            log.error("회원 수정 중 오류 발생: ", e);
+            return "error: " + e.getMessage();
+        }
+    }
+
+    @PostMapping(value = "/member/delete", produces = "text/plain;charset=UTF-8")
+    @ResponseBody
+    public String deleteMember(@RequestParam("userId") String userId) {
+        try {
+            memberService.deleteMember(userId);
+            return "success";
+        } catch (Exception e) {
+            log.error("회원 삭제 중 오류 발생: ", e);
+            return "error: " + e.getMessage();
+        }
+    }
+
+    // ★ 선생님 계정 직접 생성 API
+    @PostMapping(value = "/member/create-teacher", produces = "text/plain;charset=UTF-8")
+    @ResponseBody
+    public String createTeacher(@RequestParam("userId") String userId,
+                                @RequestParam("userPw") String userPw,
+                                @RequestParam("userName") String userName,
+                                @RequestParam("phone") String phone) {
+        try {
+            memberService.createTeacher(userId, userPw, userName, phone);
+            return "success";
+        } catch (Exception e) {
+            log.error("선생님 계정 생성 중 오류: ", e);
             return "error: " + e.getMessage();
         }
     }
