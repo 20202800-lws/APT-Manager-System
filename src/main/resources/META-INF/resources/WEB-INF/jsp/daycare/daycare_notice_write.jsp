@@ -29,6 +29,15 @@
                         <input type="text" name="title" placeholder="학부모님들께 안내할 공지 제목을 입력하세요" required 
                                style="width:100%; padding:12px; border:1px solid #ddd; border-radius:6px; font-size:16px;">
                     </div>
+					
+					<div class="form-group" style="margin-bottom: 20px; background-color:#fffbea; padding:15px; border-radius:8px; border:1px solid #ffe4b5;">
+					    <label style="display:block; font-weight:bold; margin-bottom:8px; color:#b45309;">📌 상단 공지 설정</label>
+					    <label style="display:flex; align-items:center; cursor:pointer;">
+					        <input type="checkbox" name="isTop" value="true" style="width:20px; height:20px; margin-right:10px; cursor:pointer;">
+					        <span style="font-size:15px; color:#333;">이 공지사항을 목록 최상단에 고정합니다. (중요 공지용)</span>
+					    </label>
+					    <input type="hidden" name="_isTop" value="on">
+					</div>
                     
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label style="display:block; font-weight:bold; margin-bottom:8px;">공지 내용</label>

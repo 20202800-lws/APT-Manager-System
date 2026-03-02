@@ -3,7 +3,6 @@ package com.apt.membermanager.service;
 import com.apt.membermanager.entity.Attachment;
 import com.apt.membermanager.repository.AttachmentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,9 +18,8 @@ public class FileService {
 
     private final AttachmentRepository attachmentRepository;
 
-    // application.properties에 설정할 저장 경로 (없으면 기본값 사용)
-    @Value("${file.upload-dir:C:/membermanager/upload/}")
-    private String uploadDir;
+    // ★ 기존 @Value 하드코딩 방식을 지우고, 운영체제 상관없이 프로젝트 폴더 내부를 바라보도록 통일!
+    private final String uploadDir = System.getProperty("user.dir") + "/apt_upload/";
 
     // 파일 저장 (게시판, 민원 등에서 호출)
     @Transactional

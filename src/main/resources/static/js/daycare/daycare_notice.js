@@ -1,19 +1,13 @@
 /* =========================================
-   /js/daycare/daycare_notice.js - 어린이집 공지사항 전용
+   /js/daycare/daycare_notice.js - 실제 DB 연동 (Fetch API)
    ========================================= */
 
 let currentPage = 1;
 const itemsPerPage = 10;
-
-// 임시 데이터 (백엔드 연동 전 화면 확인용)
-let boardData = [
-    { id: 3, title: "이번 주 금요일 어린이집 소풍 안내", author: "햇님반 선생님", date: "2026.02.24", hits: 42 },
-    { id: 2, title: "3월 식단표 안내해 드립니다.", author: "영양사", date: "2026.02.20", hits: 85 },
-    { id: 1, title: "어린이집 신입 원아 오리엔테이션 안내", author: "원장님", date: "2026.02.15", hits: 120 }
-];
+let boardData = []; // 서버에서 받아올 진짜 데이터를 담을 빈 배열
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderList();
+    loadNotices(); // 화면이 열리면 가장 먼저 백엔드에 데이터를 요청함
     
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -23,14 +17,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/* 게시글 목록 렌더링 */
+/* 1. 백엔드에서 공지사항 데이터 가져오기 */
+function loadNotices() {
+    fetch('/api/daycare/notices')
+        .then(res => res.json())
+        .then(data => {
+            boardData = data; // 서버가 준 진짜 데이터로 배열 채우기
+            renderList();     // 화면에 그리기
+        })
+        .catch(err => console.error("공지사항 로드 에러:", err));
+}
+
+/* 2. 게시글 목록 렌더링 */
 function renderList() {
     const pagedData = boardData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const tbody = document.getElementById('boardBody');
     
-    document.getElementById('boardBody').innerHTML = pagedData.map(p => `
-        <tr onclick="showDetail(${p.id})" style="cursor:pointer;">
-            <td><span style="background:#ef4444; color:white; padding:2px 8px; border-radius:10px; font-size:12px; font-weight:bold;">공지</span></td>
-            <td class="title-cell" style="text-align:left; padding-left:15px; font-weight:600;">${p.title}</td>
+    tbody.innerHTML = pagedData.map(p => `
+        <tr onclick="showDetail(${p.id})" style="cursor:pointer; background-color: ${p.isTop ? '#fffbea' : 'transparent'};">
+            <td>${p.isTop ? '<span style="background:#ef4444; color:white; padding:2px 8px; border-radius:10px; font-size:12px; font-weight:bold;">공지</span>' : p.id}</td>
+            <td class="title-cell" style="text-align:left; padding-left:15px; font-weight:${p.isTop ? 'bold' : 'normal'};">${p.title}</td>
             <td>${p.author}</td>
             <td>${p.date}</td>
             <td>${p.hits}</td>
@@ -40,13 +46,12 @@ function renderList() {
     renderPaginationUI(boardData.length);
 }
 
-/* ★ 상세보기 페이지로 실제 URL 이동! */
+/* 3. 상세보기 페이지로 실제 URL 이동 */
 function showDetail(id) {
-    // 백엔드 연동 시 게시글 번호(id)를 달고 view 페이지로 넘어갑니다.
     location.href = '/daycare/notice/view?id=' + id;
 }
 
-/* 페이징 및 검색 로직 */
+/* 4. 페이징 및 검색 로직 */
 function renderPaginationUI(total) {
     const totalPages = Math.ceil(total / itemsPerPage);
     const pBox = document.getElementById('paginationBox'); 
@@ -64,19 +69,10 @@ function movePage(p) {
 
 function searchPost() {
     const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-    if (!keyword) { renderList(); return; }
+    if (!keyword) { loadNotices(); return; } // 검색어 없으면 전체 다시 로드
 
     const filtered = boardData.filter(post => post.title.toLowerCase().includes(keyword));
-
-    document.getElementById('boardBody').innerHTML = filtered.map(p => `
-        <tr onclick="showDetail(${p.id})" style="cursor:pointer;">
-            <td>공지</td>
-            <td class="title-cell" style="text-align:left; padding-left:15px; font-weight:600;">${p.title}</td>
-            <td>${p.author}</td>
-            <td>${p.date}</td>
-            <td>${p.hits}</td>
-        </tr>
-    `).join('') || '<tr><td colspan="5" style="padding:50px; color:#999; text-align:center;">검색 결과가 없습니다.</td></tr>';
-    
-    document.getElementById('paginationBox').innerHTML = '';
+    boardData = filtered; // 필터링된 결과로 덮어쓰고
+    currentPage = 1;
+    renderList(); // 다시 그리기
 }
