@@ -3,7 +3,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>세대안내 | APARTNERS</title>
+    <title>단지안내 | APARTNERS</title>
     <link rel="stylesheet" href="/css/intro.css">
     <link rel="stylesheet" href="/css/layout.css">
 </head>
@@ -13,9 +13,9 @@
     </jsp:include>
 	
     <div class="page-wrapper container">
-		<jsp:include page="../layout/sidebar_intro.jsp">
-		    <jsp:param name="activeMenu" value="guide" />
-		</jsp:include>
+        <jsp:include page="../layout/sidebar_intro.jsp">
+            <jsp:param name="activeMenu" value="guide" />
+        </jsp:include>
 
         <main class="content-area">
             <section id="guide" class="tab-content active">
@@ -39,7 +39,7 @@
                         <h4 style="margin-bottom:10px; color:#1a0b2e;">🧸 단지 내 어린이집</h4>
                         <img src="/images/logo/child1.png" alt="어린이집" style="width:100%; border-radius:12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                     </div>
-  			    </div>
+                </div>
             </section>
         </main>
     </div>

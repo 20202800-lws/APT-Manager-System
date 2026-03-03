@@ -28,10 +28,10 @@
 
             <div class="facility-section active" style="margin-top: 0;">
                 <div class="content-grid">
-					<div class="img-box" style="height: auto; box-shadow: none; overflow: visible;">
-					    <img id="mainGymImg" src="/images/logo/health3.png" alt="헬스장" 
-					         style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
-					</div>
+                    <div class="img-box" style="height: auto; box-shadow: none; overflow: visible;">
+                        <img id="mainGymImg" src="/images/logo/health3.png" alt="헬스장" 
+                             style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
+                    </div>
                     <div class="info-box">
                         <h3><i class="fa-solid fa-dumbbell" style="color: #1a0b2e; margin-right: 8px;"></i>프리미엄 피트니스 공간</h3>
                         <p>최고급 유산소 및 웨이트 머신이 구비되어 있습니다. 입주민의 건강한 삶을 위한 최적의 환경을 제공합니다.</p>

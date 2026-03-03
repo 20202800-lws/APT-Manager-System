@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/layout.css">
     <link rel="stylesheet" href="/css/community.css">
-    
 </head>
 
 <body>
@@ -29,11 +28,11 @@
 
             <div class="facility-section active" style="margin-top: 0;">
                 <div class="content-grid">
-					<div class="img-box" style="height: auto; box-shadow: none; overflow: visible;">
-					    <img id="mainPoolImg" src="/images/logo/swimming2.jpg" alt="수영장 전경" 
-					         style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
-					</div>
+                    <div class="img-box" style="height: auto; box-shadow: none; overflow: visible;">
+                        <img id="mainPoolImg" src="/images/logo/swimming2.jpg" alt="수영장 전경" 
+                             style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
                     </div>
+                    
                     <div class="info-box">
                         <h3><i class="fa-solid fa-person-swimming" style="color: #1a0b2e; margin-right: 8px;"></i>25m 4레인 정규 풀</h3>
                         <p>강습이 가능하고 유아풀이 있어 가족 단위로 사용할 수 있는 넓고 쾌적한 실내 수영장입니다.</p>
@@ -63,13 +62,13 @@
                                     <td>강습 (주3회)</td>
                                     <td>40,000원/월</td>
                                     <td>새벽 / 저녁 타임</td>
-                                
-                                <td>초/중/상급</td>
+                                    <td>초/중/상급</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
+                
                 <div class="notice-list">
                     <p class="important">※ 수영모 착용 필수 (캡모자 불가)</p>
                     <p>※ 신장 130cm 미만 어린이는 반드시 보호자와 동반 입수해야 합니다.</p>
