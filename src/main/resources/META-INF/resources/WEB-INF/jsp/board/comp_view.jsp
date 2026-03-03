@@ -43,6 +43,7 @@
                     </div>
 
                     <h2 style="margin:0;">${not empty post.title ? post.title : '제목 없음'}</h2>
+                    
                     <div style="color:#888; font-size:14px; margin-top:10px;">
                         작성자: <span style="font-weight:700;">${writerName}</span> | 날짜: <span>${post.regDate}</span>
                     </div>

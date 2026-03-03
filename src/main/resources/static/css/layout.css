@@ -7,11 +7,7 @@
 	--transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-body,
-h1,
-ul,
-li,
-p {
+body, h1, ul, li, p {
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -24,6 +20,8 @@ body {
 	color: #333;
 	line-height: 1.6;
 	overflow-x: hidden;
+    /* ★ 핵심 추가: 고정 헤더(80px)만큼 본문을 아래로 내림 */
+    padding-top: 80px; 
 }
 
 /* [2] 헤더 스타일 */
@@ -36,10 +34,9 @@ header {
 	align-items: flex-start;
 	justify-content: space-between;
 	padding: 20px 30px;
-	/* 수정된 여백 */
-	z-index: 500;
+	z-index: 500; /* 모달(10001)보다 낮게 설정하여 모달이 위로 뜨게 함 */
 
-	background: rgba(0, 0, 0, 0.2);
+	background: rgba(0, 0, 0, 0.6); /* 가독성을 위해 배경색 농도 살짝 조절 */
 	backdrop-filter: blur(8px);
 	border-bottom: 1px solid rgba(100, 100, 100, 0.3);
 	color: white;
@@ -49,7 +46,7 @@ header {
 }
 
 header:hover {
-	height: 300px;
+	height: 300px; /* 메가 메뉴 효과 */
 	background: rgba(11, 11, 46, 0.98);
 }
 
@@ -62,53 +59,42 @@ header.scrolled:hover {
 	height: 300px;
 }
 
-/* [수정된 로고 스타일] */
+/* [로고 스타일] */
 .logo {
     cursor: pointer;
-    display: flex;          /* 아이콘과 텍스트를 한 줄로 배치 */
-    align-items: center;    /* ★핵심: 수직 방향으로 완벽하게 중앙 정렬 */
-    gap: 12px;              /* 아이콘과 텍스트 사이에 시원한 간격 추가 */
-    
-    /* 텍스트 스타일 강화 */
-    font-size: 28px;        /* 기존보다 키워서 존재감 UP */
-    font-weight: 900;       /* 더 두껍게 해서 임팩트 강화 */
-    letter-spacing: 0.5px;  /* 자간을 살짝 넓혀서 고급스러운 느낌 */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
     white-space: nowrap;
-    
-    /* 기존에 있던 margin-top은 제거합니다. align-items가 해결해 줍니다! */
+    text-decoration: none;
+    color: white;
 }
 
-/* [수정된 로고 이미지 스타일] */
 .logo img {
-    height: 42px; /* 헤더 높이(80px)에 맞춰서 이미지 크기도 시원하게 키움 */
+    height: 42px;
     width: auto;
-    display: block; /* 이미지 하단의 미세한 여백 제거 */
-    
-    /* 혹시 이미지가 너무 밝아서 잘 안 보인다면 아래 필터 효과를 고려해 보세요 */
-    /* filter: brightness(0) invert(1); -> 이미지를 강제로 흰색으로 만듦 */
-    
+    display: block;
     transition: var(--transition); 
 }
 
+/* [네비게이션 메뉴] */
 .nav-container {
 	display: flex;
 	gap: 50px;
-	/* 수정된 간격 */
 	margin-top: 5px;
 	position: absolute;
-	/* 주변 요소들의 크기에 영향을 받지 않고 공중에 띄움 */
 	left: 50%;
-	/* 화면의 절반(50%) 위치로 이동 */
 	transform: translateX(-50%);
-	/* 자신의 넓이의 절반만큼 왼쪽으로 당겨서 완벽한 정중앙을 맞춤 */
 }
 
 .nav-column {
 	text-align: center;
 }
 
-/* 메뉴 스타일 */
-.nav-column>a {
+.nav-column > a {
 	color: white;
 	text-decoration: none;
 	font-size: 16px;
@@ -119,7 +105,7 @@ header.scrolled:hover {
 	white-space: nowrap;
 }
 
-.nav-column:hover>a {
+.nav-column:hover > a {
 	color: var(--accent-color);
 }
 
@@ -152,7 +138,7 @@ header:hover .sub-menu {
 	transform: translateX(5px);
 }
 
-/* 우측 상단 버튼 */
+/* [우측 상단 메뉴 (로그인 등)] */
 .nav-right {
 	font-size: 14px;
 	display: flex;
@@ -176,6 +162,7 @@ header:hover .sub-menu {
 .nav-right span {
 	opacity: 0.5;
 	font-size: 12px;
+    color: white;
 }
 
 /* [3] 푸터 스타일 */
@@ -193,28 +180,27 @@ footer {
 	color: var(--accent-color);
 }
 
-/* 서브 비주얼(이미지 배너) 영역 설정 */
+/* [4] 서브 비주얼 (배너) 스타일 */
 .sub-visual {
     position: relative;
     width: 100%;
-    height: 350px; /* 원하시는 이미지 높이로 조절하세요 */
-    /* ↓ 실제 사용할 아파트 배경 이미지 경로로 바꿔주세요! */
-    background-image: url('/images/intro/intro_bg.jpg'); 
+    height: 350px;
+    background-image: url('/images/logo/garden2.png'); 
     background-size: cover;
     background-position: center;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    animation: moveBackground 10s infinite alternate ease-in-out;
 }
 
-/* 이미지 위에 어두운 막을 씌워 흰 글씨가 잘 보이게 함 */
 .sub-visual-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.4); 
 }
 
-/* 중앙 타이틀 텍스트 설정 */
 .sub-visual-text {
     position: relative;
     z-index: 1;
@@ -227,34 +213,30 @@ footer {
     font-weight: 700;
     margin: 0;
     letter-spacing: 2px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* 글씨 그림자 추가 */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* =========================================
-   게시판/공지사항 전용 서브 비주얼 (intro보다 더 큼)
-========================================= */
+/* 게시판용 대형 배너 */
 .board-visual {
     position: relative;
     width: 100%;
-    /* intro(350px)보다 100px 더 넉넉하게 키움! */
     height: 450px; 
-    /* ↓ 실제 사용할 조경/공원 배경 이미지 경로로 바꿔주세요! */
-    background-image: url('/images/board/board_bg.jpg'); 
+	overflow: hidden;
+    background-image: url('/images/logo/skyRounge.png'); 
     background-size: cover;
     background-position: center;
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: moveBackground 10s infinite alternate ease-in-out;
 }
 
-/* 글씨가 묻히지 않게 얇은 검은 막 씌우기 */
 .board-visual-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.35); 
 }
 
-/* 타이틀 텍스트 설정 */
 .board-visual-text {
     position: relative;
     z-index: 1;
@@ -263,7 +245,6 @@ footer {
 }
 
 .board-visual-text h2 {
-    /* 캡처본처럼 폰트도 조금 더 큼직하게! */
     font-size: 50px; 
     font-weight: 700;
     margin: 0;
@@ -271,9 +252,13 @@ footer {
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* =========================================
-   공통 사이드바 (LNB) 통합 표준 스타일 (오리지널 미세 라운딩)
-========================================= */
+/* 배경 줌인 애니메이션 */
+@keyframes moveBackground {
+    0% { transform: scale(1.0); }
+    100% { transform: scale(1.1); }
+}
+
+/* [5] 공통 레이아웃 & 사이드바 */
 .page-wrapper {
     display: flex;
     gap: 50px; 
@@ -288,70 +273,56 @@ footer {
     flex-shrink: 0;
 }
 
-/* 사이드바 큰 제목 */
 .sidebar h2 {
     font-size: 24px;
     font-weight: 800;
     color: #222;
     text-align: left;
     padding-bottom: 15px;
-    /* ★ 핵심 수정: 0이었던 하단 여백을 15px로 늘려서 숨통을 틔워줍니다! */
     margin-bottom: 15px; 
     border-bottom: 3px solid #1a0b2e; 
 }
 
-/* 메뉴 리스트 뼈대 */
 .sidebar .lnb {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-/* 개별 메뉴 아이템 */
 .sidebar .lnb li {
     text-align: left;
     padding: 16px 20px;
-    margin-bottom: 0; /* 버튼들 사이 여백 없이 딱 붙임 */
-    border-bottom: 1px solid #eee; /* 연한 가로선 */
+    border-bottom: 1px solid #eee;
     font-size: 16px;
     font-weight: 500;
     color: #555;
     cursor: pointer;
-    border-radius: 6px; /* ★ 핵심: 완전 직각이 아닌 미세한 둥근 모서리 */
+    border-radius: 6px;
     transition: all 0.2s;
 }
 
-/* 마지막 메뉴는 하단 선 제거 */
 .sidebar .lnb li:last-child {
     border-bottom: none;
 }
 
-/* 마우스 올렸을 때 */
 .sidebar .lnb li:hover {
     background-color: #f8f9fa;
     color: #1a0b2e;
 }
 
-/* ★ 현재 위치 (Active) 스타일 */
 .sidebar .lnb li.active {
-    background-color: #1a0b2e; /* 메인 컬러 배경 */
+    background-color: #1a0b2e;
     color: #ffffff;
     font-weight: 700;
-    border-bottom: none; /* active 시 하단 선 제거로 깔끔하게 */
-    border-radius: 6px; /* ★ 핵심: 배경색의 모서리도 부드럽게 둥글림 */
+    border-bottom: none;
 }
 
-/* =========================================
-   공통 본문 영역 (우측 콘텐츠 확장)
-========================================= */
 .content-area {
-    flex: 1; /* 남은 우측 공간을 100% 꽉 채워서 넓게 쓰라는 마법의 코드 */
-    min-width: 0; /* 테이블이나 내용이 길어져도 레이아웃 밖으로 튀어나가지 않게 방어 */
+    flex: 1;
+    min-width: 0;
 }
 
-/* =========================================
-   공통 사이드바 아코디언 (서브 메뉴) 스타일
-========================================= */
+/* 사이드바 아코디언 (서브 메뉴) */
 .sub-toggle-btn {
     padding: 16px 20px;
     color: #555;
@@ -363,15 +334,18 @@ footer {
     border-radius: 6px;
     transition: all 0.2s;
 }
+
 .sub-toggle-btn:hover {
     background-color: #f8f9fa;
     color: #1a0b2e;
 }
+
 .sub-menu-list {
     list-style: none;
     padding-left: 0;
     margin-top: 5px;
 }
+
 .sub-menu-item {
     padding: 12px 15px 12px 45px !important;
     color: #888;
@@ -382,7 +356,9 @@ footer {
     margin-bottom: 4px;
     display: block;
     transition: all 0.2s;
+    text-decoration: none;
 }
+
 .sub-menu-item::before {
     content: "";
     position: absolute;
@@ -392,51 +368,44 @@ footer {
     width: 2px;
     background-color: #e2e8f0;
 }
+
 .sub-menu-item:hover {
     color: #1a0b2e !important;
     font-weight: 700;
     background-color: #f8fafc !important;
 }
+
 .sub-menu-item.active {
     color: #ffffff !important;
     font-weight: 700;
     background-color: #1a0b2e !important;
 }
+
 .sub-menu-item.active::before {
     background-color: transparent !important;
 }
 
-/* =========================================
-   [반응형 헤더] 화면 크기에 따른 겹침 방지 설정
-========================================= */
-
-/* 1. 화면 폭이 1300px 이하일 때: 메뉴 간격을 줄여서 공간 확보 */
+/* [6] 반응형 미디어 쿼리 */
 @media screen and (max-width: 1300px) {
     .nav-container { gap: 25px; }
     .nav-column > a { font-size: 15px; }
 }
 
-/* 2. 화면 폭이 1100px 이하일 때 (본격적인 겹침 발생 구간): 강제 중앙정렬 해제 */
 @media screen and (max-width: 1100px) {
     .nav-container {
-        position: relative; /* absolute(강제 고정) 해제 -> 겹침 원천 차단! */
+        position: relative;
         left: 0;
         transform: none;
-        flex: 1; /* 빈 공간을 자연스럽게 채우도록 변경 */
-        justify-content: center; /* 그 안에서 안전하게 가운데 정렬 */
+        flex: 1;
+        justify-content: center;
         gap: 15px;
     }
-    .logo img { height: 35px; } /* 로고 크기도 살짝 축소 */
+    .logo img { height: 35px; }
 }
 
-/* 3. 화면 폭이 950px 이하일 때 (태블릿/모바일 진입): 긴 환영 텍스트 숨김 */
 @media screen and (max-width: 950px) {
     header { padding: 15px 20px; }
     .nav-column > a { font-size: 14px; margin-bottom: 25px; }
     .nav-container { gap: 10px; }
-    
-    /* 자리 차지를 가장 많이 하는 "ㅇㅇ동 ㅇㅇ호 환영합니다" 텍스트를 모바일에선 숨깁니다. */
-    .nav-right .welcome-text {
-        display: none !important; 
-    }
+    .nav-right .welcome-text { display: none !important; }
 }
