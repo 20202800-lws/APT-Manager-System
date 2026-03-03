@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="/css/layout.css">
 </head>
 <body>
-	<jsp:include page="../layout/header_intro.jsp">
-	    <jsp:param name="pageTitle" value="평면도" />
-	</jsp:include>
+    <jsp:include page="../layout/header_intro.jsp">
+        <jsp:param name="pageTitle" value="평면도" />
+    </jsp:include>
 
     <div class="page-wrapper container">
-		<jsp:include page="../layout/sidebar_intro.jsp">
-		    <jsp:param name="activeMenu" value="floor_plan" />
-		</jsp:include>
+        <jsp:include page="../layout/sidebar_intro.jsp">
+            <jsp:param name="activeMenu" value="floor_plan" />
+        </jsp:include>
 
         <main class="content-area">
             <section id="floorPlan" class="tab-content active">

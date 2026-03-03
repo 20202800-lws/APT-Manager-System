@@ -59,17 +59,19 @@
     <div class="nav-right">
         <c:choose>
             <c:when test="${not empty sessionScope.loginMember}">
-                <%-- ★ welcome-text 클래스 추가 --%>
+                <%-- ★ 스타일 적용을 위한 welcome-text 클래스 --%>
                 <span class="welcome-text" style="font-weight: bold; margin-right: 10px;">
                     ${sessionScope.loginMember.dong}동 ${sessionScope.loginMember.ho}호
                     ${sessionScope.loginMember.realName}님 환영합니다.
                 </span>
+                
                 <c:if test="${sessionScope.loginMember.userRole == 'ADMIN'}">
                     <a href="/admin/main">관리자 페이지</a>
                 </c:if>
                 <c:if test="${sessionScope.loginMember.userRole != 'ADMIN'}">
                     <a href="/mypage/info_view">마이페이지</a>
                 </c:if>
+                
                 <span>|</span>
                 <a href="/member/logout">로그아웃</a>
             </c:when>
@@ -84,7 +86,7 @@
 </header>
 
 <div class="sub-visual">
-    <div class="sub-visual-overlay"></div>
+    <div class="sub-visual-overlay">	</div>
     <div class="sub-visual-text">
         <h2>${empty param.pageTitle ? '아파트 소개' : param.pageTitle}</h2>
     </div>

@@ -1,16 +1,21 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-    <h3 style="margin-bottom:20px;">게시글 보기</h3>
-    <div class="content-box">
-        <div style="text-align:right; margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-            <button class="btn-sub" onclick="showList()">목록으로</button>
-            
-            <button class="btn-danger" style="margin-left:5px; background-color:#ff9800; border-color:#ff9800;" onclick="openReportModal()">🚨 신고</button>
-            
+<div class="content-box" style="border:none; box-shadow:none; padding:0; margin-top:30px;">
+    <div style="text-align:right; border-top:1px solid #eee; padding-top:20px;">
+        <button type="button" class="btn-sub" onclick="location.href='<c:url value="/board/${boardType}"/>'">목록으로</button>
+        
+        <button type="button" class="btn-danger" style="margin-left:5px; background-color:#ff9800; border-color:#ff9800;" onclick="openReportModal()">🚨 신고</button>
+        
+        <c:if test="${post.owner || loginMember.userRole == 'ADMIN'}">
             <span id="myButtons">
-                <button class="btn-main" style="margin-left:5px;">수정</button>
-                <button class="btn-danger" onclick="deletePost()" style="margin-left:5px;">삭제</button>
+                <button type="button" class="btn-main" style="margin-left:5px;" onclick="location.href='<c:url value="/board/${boardType}/edit?id=${post.boardId}"/>'">수정</button>
+                <form action="<c:url value='/board/delete'/>" method="post" style="display:inline-block; margin-left:5px;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                    <input type="hidden" name="boardId" value="${post.boardId}">
+                    <button type="submit" class="btn-danger">삭제</button>
+                </form>
             </span>
-        </div>
+        </c:if>
     </div>
 </div>
 
@@ -43,27 +48,23 @@
         </div>
     </div>
 </div>
+
 <script>
-    // 1. 모달창 열기
     function openReportModal() {
         document.getElementById('reportModal').style.display = 'flex';
     }
 
-    // 2. 모달창 닫기 (입력했던 내용도 싹 초기화)
     function closeReportModal() {
         document.getElementById('reportModal').style.display = 'none';
         document.getElementById('reportDetail').value = ''; 
         document.getElementById('reportReason').selectedIndex = 0;
     }
 
-    // 3. 백엔드로 신고 데이터 전송 (AJAX)
     function submitReport() {
         const reason = document.getElementById('reportReason').value;
         const detail = document.getElementById('reportDetail').value.trim();
-        
-        // JSP EL 태그를 이용해 현재 보고 있는 게시글의 ID를 가져옴
-        // (주의: 상세 보기 화면에서 전달받은 객체 이름이 viewBean이 맞는지 확인 필요!)
-        const boardId = '${viewBean.boardId}'; 
+        // ★ 변수명을 post.boardId로 통일 (앞서 작업한 파일들과 일치시킴)
+        const boardId = '${post.boardId}'; 
 
         if (!detail) {
             alert('관리자가 확인할 수 있도록 상세 내용을 입력해주세요.');
@@ -75,7 +76,6 @@
             return;
         }
 
-        // 서버로 보낼 택배 상자(JSON) 조립
         const reportData = {
             boardId: boardId,
             reason: reason,
@@ -84,14 +84,11 @@
 
         fetch('/board/report', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(reportData)
         })
         .then(response => {
             if (!response.ok) {
-                // 백엔드에서 에러 메시지(예: "이미 신고한 글입니다")를 던지면 캐치
                 return response.text().then(text => { throw new Error(text) });
             }
             return response.text();
