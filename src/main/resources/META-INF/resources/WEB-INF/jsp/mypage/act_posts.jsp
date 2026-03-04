@@ -1,71 +1,67 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-	<!DOCTYPE html>
-	<html lang="ko">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html lang="ko">
 
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>마이페이지 - 활동내역/게시물</title>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-		<link rel="stylesheet" href="/css/layout.css">
-		<link rel="stylesheet" href="/css/mypage.css">
-	</head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 - 활동내역/게시물</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/mypage.css">
+</head>
 
-	<body>
-		<jsp:include page="../layout/header_intro.jsp">
-			<jsp:param name="pageTitle" value="마이페이지" />
-		</jsp:include>
+<body>
+    <jsp:include page="../layout/header_intro.jsp">
+        <jsp:param name="pageTitle" value="마이페이지" />
+    </jsp:include>
 
-		<div class="page-wrapper" style="min-height: calc(100vh - 80px);">
+    <div class="page-wrapper" style="min-height: calc(100vh - 80px);">
 
-			<jsp:include page="../layout/sidebar_mypage.jsp">
-				<jsp:param name="activeMenu" value="act_posts" />
-			</jsp:include>
+        <jsp:include page="../layout/sidebar_mypage.jsp">
+            <jsp:param name="activeMenu" value="act_posts" />
+        </jsp:include>
 
-			<main class="content-area">
-				<div class="page-header">
-					<h2>활동 내역</h2>
-				</div>
+        <main class="content-area">
+            <div class="page-header">
+                <h2>활동 내역</h2>
+            </div>
 
-				<div style="margin-top: 20px;">
-					<div class="activity-header"
-						style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
-						<h3 id="pageTitle" style="margin: 0;">📝 내가 쓴 게시물</h3>
-						<span class="count-txt">총 <strong id="totalCount" style="color:var(--primary-color);">${myPosts
-								!= null ? myPosts.size() : 0}</strong>건</span>
-					</div>
+            <div style="margin-top: 20px;">
+                <div class="activity-header"
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
+                    <h3 id="pageTitle" style="margin: 0;">📝 내가 쓴 게시물</h3>
+                    <span class="count-txt">총 <strong id="totalCount" style="color:var(--primary-color);">${myPosts != null ? myPosts.size() : 0}</strong>건</span>
+                </div>
 
-					<ul id="activityList" class="activity-list" style="list-style: none; padding: 0;">
+                <ul id="activityList" class="activity-list" style="list-style: none; padding: 0;">
 
-						<c:forEach var="post" items="${myPosts}">
-							<li class="list-item" style="border-bottom: 1px solid #eee; padding: 15px 0;">
-								<div class="item-info" style="display:flex; flex-direction:column; gap:5px;">
-									<span class="category"
-										style="font-size:12px; color:var(--primary-color); font-weight:bold;">[${post.category}]</span>
+                    <c:forEach var="post" items="${myPosts}">
+                        <li class="list-item" style="border-bottom: 1px solid #eee; padding: 15px 0;">
+                            <div class="item-info" style="display:flex; flex-direction:column; gap:5px;">
+                                <span class="category" style="font-size:12px; color:var(--primary-color); font-weight:bold;">[${post.category}]</span>
 
-									<a href="/board/detail?id=${post.boardId}" class="subject"
-										style="font-size: 16px; font-weight: bold;">${post.title}</a>
+                                <a href="${post.linkUrl}" class="subject" style="font-size: 16px; font-weight: bold; text-decoration: none; color: inherit;">${post.title}</a>
 
-									<span class="date" style="font-size: 13px; color: #888;">${post.regDate}</span>
-								</div>
-								<button class="btn-delete"
-									style="float: right; margin-top: -30px; background: #fee2e2; color: #ef4444; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">삭제</button>
-							</li>
-						</c:forEach>
+                                <span class="date" style="font-size: 13px; color: #888;">${post.regDate}</span>
+                            </div>
+                        </li>
+                    </c:forEach>
 
-						<c:if test="${empty myPosts}">
-							<li style="padding: 30px; text-align: center; color: #888; border-bottom: 1px solid #eee;">
-								작성한 게시물이 없습니다.
-							</li>
-						</c:if>
+                    <c:if test="${empty myPosts}">
+                        <li style="padding: 50px; text-align: center; color: #888; border-bottom: 1px solid #eee;">
+                            작성한 게시물이 없습니다.
+                        </li>
+                    </c:if>
 
-					</ul>
-				</div>
-			</main>
-		</div>
+                </ul>
+            </div>
+        </main>
+    </div>
 
-		<jsp:include page="../layout/footer.jsp" />
-		<script src="/js/mypage.js"></script>
-	</body>
+    <jsp:include page="../layout/footer.jsp" />
+    <script src="/js/mypage.js"></script>
+</body>
 
-	</html>
+</html>

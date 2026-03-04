@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 /* [1] 기본 초기화 및 변수 */
 :root {
 	--primary: #1a0b2e;
@@ -10,18 +12,14 @@
 	--success: #10b981;
 }
 
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	font-family: 'Pretendard', sans-serif;
-}
+/* ★ [삭제] layout.css의 초기화와 충돌하므로 제거했습니다. */
+/* * { margin: 0; padding: 0; ... } */
 
 body {
+    /* ★ [수정] padding을 제거하여 layout.css의 헤더 설정(80px)을 따르도록 함 */
 	background: var(--bg);
 	color: var(--text);
-	padding: 40px 20px;
-	line-height: 1.5;
+    /* padding: 40px 20px;  <-- 이 부분이 헤더를 가리는 원인이었습니다! 삭제함 */
 }
 
 a {
@@ -36,6 +34,8 @@ a {
 	display: flex;
 	gap: 30px;
 	align-items: flex-start;
+    /* (옵션) 헤더와 내용 사이에 약간의 여백이 더 필요하다면 아래 주석을 해제하세요 */
+    /* margin-top: 40px; */
 }
 
 /* 사이드바 스타일 */
@@ -115,7 +115,7 @@ a {
 	min-height: 600px;
 }
 
-/* [3] 헤더 영역 수정 */
+/* [3] 헤더 영역 수정 (페이지 내부 타이틀) */
 .activity-header {
 	display: flex;
 	justify-content: space-between;
@@ -378,7 +378,7 @@ a {
 }
 
 /* ==========================================
-   내 정보 3단 가로 레이아웃 (캡처본 완벽 구현)
+   내 정보 3단 가로 레이아웃
 ========================================== */
 .info-card {
     display: flex; 

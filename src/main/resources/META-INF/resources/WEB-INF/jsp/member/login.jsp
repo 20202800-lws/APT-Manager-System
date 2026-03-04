@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<!DOCTYPE html>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %> <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -21,21 +21,22 @@
                 <p>입주민 전용 서비스를 위해 로그인해주세요.</p>
             </div>
 
-            <form id="loginForm" action="/member/login" method="post">
-				<input type="hidden" id="serverMsg" value="${param.msg != null ? param.msg : msg}">
-				
+            <form id="loginForm" action="/member/login_proc" method="post">
+                <input type="hidden" id="serverMsg" value="${param.msg != null ? param.msg : msg}">
+                
                 <div class="input-group">
                     <input type="text" id="userId" name="userId" placeholder="아이디" required>
                 </div>
+        
                 <div class="input-group">
                     <input type="password" id="userPw" name="userPw" placeholder="비밀번호" required>
                 </div>
                 
-				<div class="find-links">
-				    <a href="/member/find_account?tab=id">아이디 찾기</a>
-				    <span>|</span>
-				    <a href="/member/find_account?tab=pw">비밀번호 찾기</a>
-				</div>
+                <div class="find-links">
+                    <a href="/member/find_account?tab=id">아이디 찾기</a>
+                    <span>|</span>
+                    <a href="/member/find_account?tab=pw">비밀번호 찾기</a>
+                </div>
 
                 <div class="btn-area">
                     <button type="submit" class="btn-login">로그인</button>

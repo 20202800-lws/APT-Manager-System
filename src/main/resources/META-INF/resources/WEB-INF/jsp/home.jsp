@@ -17,7 +17,7 @@
     <section class="hero">
         <div class="hero-slider">
             <a href="/intro/layout">
-                <img src="/images/logo/apart2.png" class="active" alt="아파트 전경 1" style="cursor: pointer;">
+                <img src="/images/logo/apart2.jpg" class="active" alt="아파트 전경 1" style="cursor: pointer;">
             </a>
             <a href="/intro/layout">
                 <img src="/images/logo/apart4.png" alt="아파트 전경 2" style="cursor: pointer;">
@@ -26,7 +26,7 @@
                 <img src="/images/logo/summer.png" alt="여름 조경" style="cursor: pointer;">
             </a>
             <a href="/intro/layout">
-                <img src="/images/logo/skyRounge.png" alt="스카이 라운지" style="cursor: pointer;">
+                <img src="/images/logo/skyLounge.png" alt="스카이 라운지" style="cursor: pointer;">
             </a>
         </div>
         <div class="hero-text">
