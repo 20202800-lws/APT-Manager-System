@@ -20,7 +20,7 @@ body {
 	color: #333;
 	line-height: 1.6;
 	overflow-x: hidden;
-    /* ★ 핵심 추가: 고정 헤더(80px)만큼 본문을 아래로 내림 */
+    /* 고정 헤더(80px)만큼 본문을 아래로 내림 */
     padding-top: 80px; 
 }
 
@@ -34,10 +34,11 @@ header {
 	align-items: flex-start;
 	justify-content: space-between;
 	padding: 20px 30px;
-	z-index: 500; /* 모달(10001)보다 낮게 설정하여 모달이 위로 뜨게 함 */
+	z-index: 500; 
 
-	background: rgba(0, 0, 0, 0.6); /* 가독성을 위해 배경색 농도 살짝 조절 */
-	backdrop-filter: blur(8px);
+    /* 마우스 오버 시 색상(진한 남색)과 동일하게 고정 */
+	background: rgba(11, 11, 46, 0.98); 
+	
 	border-bottom: 1px solid rgba(100, 100, 100, 0.3);
 	color: white;
 	overflow: hidden;
@@ -46,12 +47,12 @@ header {
 }
 
 header:hover {
-	height: 300px; /* 메가 메뉴 효과 */
+	height: 300px;
 	background: rgba(11, 11, 46, 0.98);
 }
 
 header.scrolled {
-	background: rgba(26, 11, 46, 0.95);
+	background: rgba(11, 11, 46, 0.98);
 	height: 80px;
 }
 
@@ -138,7 +139,7 @@ header:hover .sub-menu {
 	transform: translateX(5px);
 }
 
-/* [우측 상단 메뉴 (로그인 등)] */
+/* [우측 상단 메뉴] */
 .nav-right {
 	font-size: 14px;
 	display: flex;
@@ -181,31 +182,45 @@ footer {
 }
 
 /* [4] 서브 비주얼 (배너) 스타일 */
+
+/* ★ [수정] 아파트 소개용 배너 (이미지/텍스트 애니메이션 분리) */
 .sub-visual {
     position: relative;
     width: 100%;
     height: 350px;
-    background-image: url('/images/logo/garden2.png'); 
-    background-size: cover;
-    background-position: center;
+    /* 기존 background-image 제거하고 ::before로 이동 */
+    overflow: hidden; /* 이미지가 커져도 영역 밖으로 나가지 않음 */
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    animation: moveBackground 10s infinite alternate ease-in-out;
+}
+
+/* ★ 배경 이미지만 가상 요소로 분리하여 애니메이션 적용 */
+.sub-visual::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: url('/images/logo/garden2.png'); 
+    background-size: cover;
+    background-position: center;
+    z-index: -2; /* 가장 뒤로 */
+    animation: moveBackground 15s infinite alternate ease-in-out; 
 }
 
 .sub-visual-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.4); 
+    z-index: -1; /* 배경과 텍스트 사이 */
 }
 
 .sub-visual-text {
     position: relative;
-    z-index: 1;
+    z-index: 1; /* 가장 앞으로 */
     text-align: center;
     color: white;
+    /* 텍스트 고정 */
 }
 
 .sub-visual-text h2 {
@@ -216,30 +231,40 @@ footer {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* 게시판용 대형 배너 */
+
+/* ★ [수정] 게시판용 대형 배너 (이미지/텍스트 애니메이션 분리) */
 .board-visual {
     position: relative;
     width: 100%;
     height: 450px; 
-	overflow: hidden;
-    background-image: url('/images/logo/skyRounge.png'); 
-    background-size: cover;
-    background-position: center;
+	overflow: hidden; 
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: moveBackground 10s infinite alternate ease-in-out;
+}
+
+.board-visual::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: url('/images/logo/skyLounge.png'); 
+    background-size: cover;
+    background-position: center;
+    z-index: -2; 
+    animation: moveBackground 15s infinite alternate ease-in-out; 
 }
 
 .board-visual-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.35); 
+    z-index: -1; 
 }
 
 .board-visual-text {
     position: relative;
-    z-index: 1;
+    z-index: 1; 
     text-align: center;
     color: white;
 }
@@ -252,10 +277,10 @@ footer {
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* 배경 줌인 애니메이션 */
+/* 배경 줌인 애니메이션 (너무 과하지 않게 1.08배까지만 확대) */
 @keyframes moveBackground {
     0% { transform: scale(1.0); }
-    100% { transform: scale(1.1); }
+    100% { transform: scale(1.08); } 
 }
 
 /* [5] 공통 레이아웃 & 사이드바 */
