@@ -16,73 +16,9 @@ body {
 	display: flex;
 	flex-direction: column;
 	font-family: 'Pretendard', sans-serif;
-	padding-top: 90px;
 }
 
-/* --- 상단 헤더 --- */
-header {
-	position: fixed;
-	top: 0;
-	width: 100%;
-	height: 90px;
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	background: var(--primary-color);
-	padding: 30px 60px;
-	z-index: 10000;
-	color: white;
-	overflow: hidden;
-	transition: 0.4s ease;
-}
-
-header:hover {
-	height: 260px;
-	background: rgba(11, 11, 46, 0.98);
-}
-
-.logo {
-	font-size: 22px;
-	font-weight: 800;
-	color: #fff;
-	text-decoration: none;
-	cursor: pointer;
-}
-
-.nav-container {
-	display: flex;
-	gap: 60px;
-}
-
-.nav-column>a {
-	color: white;
-	font-size: 16px;
-	font-weight: 600;
-	text-decoration: none;
-	display: block;
-	margin-bottom: 25px;
-}
-
-.sub-menu {
-	list-style: none;
-	padding: 0;
-	opacity: 0;
-	transition: 0.3s;
-}
-
-header:hover .sub-menu {
-	opacity: 1;
-}
-
-.sub-menu a {
-	color: rgba(255, 255, 255, 0.6);
-	font-size: 14px;
-	text-decoration: none;
-	display: block;
-	margin-bottom: 12px;
-}
-
-/* --- 사이드바 --- */
+/* --- 사이드바 (기존 내용 유지) --- */
 .container {
 	flex: 1;
 	display: grid;
@@ -142,7 +78,7 @@ header:hover .sub-menu {
 	background: #f0f0f5;
 }
 
-/* --- 게시판 공통 --- */
+/* --- 게시판 공통 (기존 내용 유지) --- */
 #mainArea {
 	text-align: left;
 }

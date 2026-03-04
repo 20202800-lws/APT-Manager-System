@@ -1,10 +1,13 @@
 package com.apt.membermanager.controller;
 
+import com.apt.membermanager.dto.MyPostDto;
+import com.apt.membermanager.dto.MyReplyDto;
 import com.apt.membermanager.entity.User;
 import com.apt.membermanager.entity.ManageFee;
 import com.apt.membermanager.entity.FeeDetail;
 import com.apt.membermanager.repository.UserRepository;
 import com.apt.membermanager.repository.ManageFeeRepository;
+import com.apt.membermanager.service.MyPageService;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -33,14 +36,15 @@ public class MypageController {
 	private final UserRepository userRepository;
 	private final ManageFeeRepository manageFeeRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final MyPageService myPageService; // ★ MyPageService 주입 추가
 
 	@GetMapping("/info_view")
 	public String infoView(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
 		if (loginUser == null) return "redirect:/member/login";
 
-        // ★ DB에서 최신 유저 정보를 다시 조회하여 세션과 화면을 동기화합니다. (신청 상태 즉각 반영)
-        User currentUser = userRepository.findById(loginUser.getUserId()).orElse(loginUser);
+		// ★ DB에서 최신 유저 정보를 다시 조회하여 세션과 화면을 동기화합니다.
+		User currentUser = userRepository.findById(loginUser.getUserId()).orElse(loginUser);
 
 		if (currentUser.getJoinDate() != null) {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm");
@@ -49,7 +53,7 @@ public class MypageController {
 			model.addAttribute("formattedJoinDate", "정보 없음");
 		}
 		model.addAttribute("myVehicle", "등록된 차량 없음");
-		model.addAttribute("userInfo", currentUser); // 최신 정보로 모델에 담기
+		model.addAttribute("userInfo", currentUser); 
 		return "mypage/info_view";
 	}
 
@@ -191,19 +195,27 @@ public class MypageController {
 		return "mypage/fee_view";
 	}
 
+	// ★ [수정] 활동 내역 - 내가 쓴 게시물 DB 연동
 	@GetMapping("/act_posts")
 	public String actPosts(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
 		if (loginUser == null) return "redirect:/member/login";
-		model.addAttribute("myPosts", java.util.Collections.emptyList());
+		
+		// MyPageService를 통해 실제 DB 데이터 조회
+		List<MyPostDto> myPosts = myPageService.getMyPosts(loginUser);
+		model.addAttribute("myPosts", myPosts);
 		return "mypage/act_posts";
 	}
 
+	// ★ [수정] 활동 내역 - 내가 쓴 댓글 DB 연동
 	@GetMapping("/act_reply")
 	public String actReply(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
 		if (loginUser == null) return "redirect:/member/login";
-		model.addAttribute("myReplies", java.util.Collections.emptyList());
+		
+		// MyPageService를 통해 실제 DB 데이터 조회
+		List<MyReplyDto> myReplies = myPageService.getMyReplies(loginUser);
+		model.addAttribute("myReplies", myReplies);
 		return "mypage/act_reply";
 	}
 
@@ -229,29 +241,23 @@ public class MypageController {
 		return "redirect:/";
 	}
 
-    // ==========================================
-	// ★ 8. 학부모 권한 신청 처리
-	// ==========================================
-    @PostMapping("/apply_parent")
-    public String applyParent(HttpSession session, RedirectAttributes rttr) {
-        User loginUser = (User) session.getAttribute("loginMember");
-        if (loginUser != null) {
-            try {
-                User user = userRepository.findById(loginUser.getUserId()).orElse(null);
-                if (user != null) {
-                    user.setParentRoleApply(true); // 신청 상태를 true로 업데이트
-                    userRepository.save(user);
-                    
-                    // 세션의 유저 정보도 갱신해주어야 즉시 화면에 반영됨
-                    session.setAttribute("loginMember", user); 
-                    
-                    rttr.addFlashAttribute("msg", "학부모 권한 신청이 완료되었습니다. 관리자 승인 후 반영됩니다.");
-                }
-            } catch (Exception e) {
-                log.error("학부모 신청 중 오류 발생: {}", e.getMessage());
-                rttr.addFlashAttribute("msg", "신청 처리 중 오류가 발생했습니다.");
-            }
-        }
-        return "redirect:/mypage/info_view";
-    }
+	@PostMapping("/apply_parent")
+	public String applyParent(HttpSession session, RedirectAttributes rttr) {
+		User loginUser = (User) session.getAttribute("loginMember");
+		if (loginUser != null) {
+			try {
+				User user = userRepository.findById(loginUser.getUserId()).orElse(null);
+				if (user != null) {
+					user.setParentRoleApply(true); 
+					userRepository.save(user);
+					session.setAttribute("loginMember", user); 
+					rttr.addFlashAttribute("msg", "학부모 권한 신청이 완료되었습니다. 관리자 승인 후 반영됩니다.");
+				}
+			} catch (Exception e) {
+				log.error("학부모 신청 중 오류 발생: {}", e.getMessage());
+				rttr.addFlashAttribute("msg", "신청 처리 중 오류가 발생했습니다.");
+			}
+		}
+		return "redirect:/mypage/info_view";
+	}
 }
