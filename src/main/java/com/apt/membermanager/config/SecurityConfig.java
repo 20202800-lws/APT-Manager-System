@@ -29,12 +29,27 @@ public class SecurityConfig {
 						.passwordParameter("userPw")
 						.successHandler((request, response, authentication) -> {
 							User user = (User) authentication.getPrincipal();
-							if (!"ADMIN".equals(user.getUserRole()) && !user.isApprovalStatus()) {
-								request.getSession().invalidate();
-								String msg = URLEncoder.encode("관리자 승인 대기 중입니다.", "UTF-8");
-								response.sendRedirect("/member/login?error=true&msg=" + msg);
-								return;
+							
+							// ★ [수정됨] 관리자가 아닐 경우, 탈퇴자와 승인 대기자를 명확히 구분하여 처리
+							if (!"ADMIN".equals(user.getUserRole())) {
+								
+								// 1. 탈퇴한 회원인 경우 (withdrawalDate가 존재함)
+								if (user.getWithdrawalDate() != null) {
+									request.getSession().invalidate();
+									String msg = URLEncoder.encode("탈퇴한 회원입니다. (로그인 불가)", "UTF-8");
+									response.sendRedirect("/member/login?error=true&msg=" + msg);
+									return;
+								}
+								
+								// 2. 신규 가입 후 승인 대기 중인 경우
+								if (!user.isApprovalStatus()) {
+									request.getSession().invalidate();
+									String msg = URLEncoder.encode("관리자 승인 대기 중입니다.", "UTF-8");
+									response.sendRedirect("/member/login?error=true&msg=" + msg);
+									return;
+								}
 							}
+							
 							request.getSession().setAttribute("loginMember", user);
 							if ("ADMIN".equals(user.getUserRole())) {
 								response.sendRedirect("/admin/main");

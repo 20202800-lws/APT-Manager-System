@@ -2,9 +2,7 @@ package com.apt.membermanager.beans;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
 import com.apt.membermanager.entity.User;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,8 +23,8 @@ public class MemberBean {
     private String genderDigit;
     private String userRole;
     private boolean approvalStatus;
-    private boolean parentRoleApply; // ★ 학부모 신청 여부 추가
-    private String status;
+    private boolean parentRoleApply;
+    private String status; // ADM, ACT, WAIT, WDR
     private String joinDate;
     private String withdrawalDate;
     
@@ -45,9 +43,12 @@ public class MemberBean {
 		this.genderDigit = genderDigit;
 		this.userRole = userRole;
 		this.approvalStatus = approvalStatus;
-        this.parentRoleApply = parentRoleApply; // ★ 매핑
+        this.parentRoleApply = parentRoleApply;
 		
-		if ("ADMIN".equals(userRole)) {
+        // ★ [로직 수정] 탈퇴일이 존재하면 최우선으로 '탈퇴(WDR)' 상태 부여
+		if (withdrawal_date != null) {
+            this.status = "WDR";
+        } else if ("ADMIN".equals(userRole)) {
 	        this.status = "ADM";
 	    } else if (this.approvalStatus) {
 	        this.status = "ACT";
@@ -63,7 +64,7 @@ public class MemberBean {
     	return new MemberBean(user.getUsername(), user.getPassword(), user.getRealName(), user.getEmail(),
     			user.getPhone(), user.getDong(), user.getHo(), user.getBirthDate(),
     			user.getGenderDigit(), user.getUserRole(), user.isApprovalStatus(), 
-                user.isParentRoleApply(), // ★ 엔티티에서 가져옴
+                user.isParentRoleApply(), 
                 user.getJoinDate(), user.getWithdrawalDate());
     }
 }
