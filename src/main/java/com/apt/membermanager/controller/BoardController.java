@@ -42,6 +42,53 @@ public class BoardController {
         this.commentService = commentService;
         this.attachmentRepository = attachmentRepository;
     }
+    
+ // ==========================================
+    // ★ [추가됨] 자유게시판 수정 매핑
+    // ==========================================
+    @GetMapping("/free/edit")
+    public String freeEditForm(@RequestParam("id") Long id, Model model, Principal principal) {
+        String currentId = (principal != null) ? principal.getName() : "";
+        BoardViewBean post = boardService.getPost(id, currentId);
+        
+        // 작성자 본인이 아니면 수정 불가 (뷰 페이지로 튕겨냄)
+        if (!post.isOwner()) {
+            return "redirect:/board/free/view/" + id;
+        }
+        
+        model.addAttribute("post", post);
+        return "board/free_edit";
+    }
+
+    @PostMapping("/free/edit")
+    public String freeEditSubmit(@RequestParam("boardId") Long boardId, @Valid BoardWriteDto dto, Principal principal) {
+        // [주의] BoardService에 updateBoard 메서드가 구현되어 있어야 합니다!
+        boardService.updateBoard(boardId, dto);
+        return "redirect:/board/free/view/" + boardId;
+    }
+
+    // ==========================================
+    // ★ [추가됨] 익명게시판 수정 매핑
+    // ==========================================
+    @GetMapping("/anon/edit")
+    public String anonEditForm(@RequestParam("id") Long id, Model model, Principal principal) {
+        String currentId = (principal != null) ? principal.getName() : "";
+        BoardViewBean post = boardService.getPost(id, currentId);
+        
+        if (!post.isOwner()) {
+            return "redirect:/board/anon/view/" + id;
+        }
+        
+        model.addAttribute("post", post);
+        return "board/anon_edit";
+    }
+
+    @PostMapping("/anon/edit")
+    public String anonEditSubmit(@RequestParam("boardId") Long boardId, @Valid BoardWriteDto dto, Principal principal) {
+        // [주의] BoardService에 updateBoard 메서드가 구현되어 있어야 합니다!
+        boardService.updateBoard(boardId, dto);
+        return "redirect:/board/anon/view/" + boardId;
+    }
 
     @GetMapping("/free")
     public String searchFreeList(
