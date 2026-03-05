@@ -5,12 +5,14 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 
-@Getter @Setter
+// ★ @Getter, @Setter가 없으면 폼 데이터가 하나도 안 들어옵니다!
+@Getter 
+@Setter 
 public class VisitCarDto {
     private String carNumber;
     private String visitPurpose;
     
-    // String 대신 LocalDate를 쓰고, 넘어오는 문자열의 형태를 알려줍니다.
+    // ★ HTML의 <input type="date"> 값을 Java의 LocalDate로 안전하게 바꿔주는 마법의 코드
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate visitDate; 
+    private LocalDate visitDate;
 }

@@ -17,12 +17,37 @@
             font-family: 'Consolas', monospace; 
             font-weight: 700; 
             background: #f8f9fa; 
-            padding: 2px 8px; 
+            padding: 4px 10px; 
             border-radius: 4px; 
             border: 1px solid #ddd;
             letter-spacing: 1px;
+            font-size: 15px;
         }
         .admin-table th { transition: background 0.2s; }
+        
+        /* 탭 관련 CSS는 삭제하고 admin.css의 공통 스타일(tab-wrapper)을 사용합니다 */
+        
+        .stat-box {
+            display: flex; gap: 20px; margin-bottom: 30px;
+        }
+        .stat-card-custom {
+            flex: 1; background: #fff; padding: 25px; border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 20px;
+            border-left: 5px solid var(--primary);
+        }
+        .stat-card-custom.visitor { border-left-color: var(--success); }
+        .stat-card-custom.violation { border-left-color: var(--danger); }
+        .stat-icon {
+            width: 60px; height: 60px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 1.8rem;
+        }
+        .stat-icon.resident { background: #e0e7ff; color: var(--primary); }
+        .stat-icon.visitor { background: #dcfce7; color: var(--success); }
+        .stat-icon.violation { background: #fee2e2; color: var(--danger); }
+        
+        .stat-info h4 { margin: 0; color: #64748b; font-size: 0.9rem; margin-bottom: 5px; }
+        .stat-info .num { font-size: 1.8rem; font-weight: 800; color: #333; }
+        .stat-info .unit { font-size: 1rem; font-weight: 500; margin-left: 4px; }
     </style>
 </head>
 <body>
@@ -32,219 +57,109 @@
     <jsp:include page="../layout/admin_sidebar.jsp" />
 
     <main class="main-content">
-        
-        <div class="content-header">
-            <h2>주차 차량 관리</h2>
-            <p class="subtitle">입주민 및 방문 차량 등록/조회 및 불법 주차 단속</p>
-        </div>
+        <header class="top-header">
+            <div class="admin-info">
+                <i class="fa-solid fa-circle-user"></i> 최고관리자 님
+            </div>
+        </header>
 
-        <div class="stat-grid-container grid-3">
-            <div class="stat-card border-left-primary">
-                <h3>입주민 등록 차량</h3>
-                <div class="number text-primary" id="statResidentCount">0<span class="unit">대</span></div>
-            </div>
-            <div class="stat-card border-left-success">
-                <h3>금일 방문 예정</h3>
-                <div class="number text-success" id="statVisitorCount">0<span class="unit">대</span></div>
-            </div>
-            <div class="stat-card border-left-danger">
-                <h3>불법/위반 차량</h3>
-                <div class="number text-danger" id="statViolationCount">0<span class="unit">건</span></div>
-                <div class="desc">이번 달 누적 단속 건수</div>
-            </div>
-        </div>
+        <div class="content-body">
+            <h1 class="page-title">주차 차량 관리</h1>
 
-        <div class="tab-wrapper">
-            <div class="tab-container">
-                <div class="tab-highlighter" id="tabHighlighter"></div>
-                <button class="tab-btn active" onclick="parkingManager.filterTab('RESIDENT', 0)">입주민 차량</button>
-                <button class="tab-btn" onclick="parkingManager.filterTab('VISITOR', 1)">방문 차량</button>
-                <button class="tab-btn" onclick="parkingManager.filterTab('VIOLATION', 2)">단속/위반 차량</button>
-            </div>
-        </div>
-
-        <div class="content-box">
-            <div class="section-header">
-                <h3 class="section-title" id="tableTitle">입주민 차량 목록</h3>
-                <div class="section-actions">
-                    <input type="text" class="form-input" id="searchInput" placeholder="차량번호 또는 동/호수 검색" onkeyup="parkingManager.searchTable(true)" style="width: 250px;">
-                    <button class="btn btn-secondary" onclick="parkingManager.searchTable(true)"><i class="fa-solid fa-search"></i></button>
-                    
-                    <button class="btn btn-primary" id="btnRegResident" onclick="parkingManager.openModal('residentReg')">
-                        <i class="fa-solid fa-plus"></i> 차량 등록
-                    </button>
-                    <button class="btn btn-primary" id="btnRegVisitor" onclick="parkingManager.openModal('visitorReg')" style="display:none;">
-                        <i class="fa-solid fa-calendar-plus"></i> 방문 예약
-                    </button>
-                    <button class="btn btn-primary" id="btnRegViolation" onclick="parkingManager.openModal('violationReg')" style="display:none; background-color: var(--danger); border-color: var(--danger);">
-                        <i class="fa-solid fa-triangle-exclamation"></i> 단속 등록
-                    </button>
+            <div class="stat-box">
+                <div class="stat-card-custom resident">
+                    <div class="stat-icon resident"><i class="fa-solid fa-car-side"></i></div>
+                    <div class="stat-info">
+                        <h4>등록된 입주민 차량</h4>
+                        <div class="num" id="statResidentCount">0<span class="unit">대</span></div>
+                    </div>
+                </div>
+                <div class="stat-card-custom visitor">
+                    <div class="stat-icon visitor"><i class="fa-solid fa-id-badge"></i></div>
+                    <div class="stat-info">
+                        <h4>방문 승인 대기</h4>
+                        <div class="num" id="statVisitorCount" style="color:var(--success);">0<span class="unit">대</span></div>
+                    </div>
+                </div>
+                <div class="stat-card-custom violation">
+                    <div class="stat-icon violation"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="stat-info">
+                        <h4>미조치 위반/단속</h4>
+                        <div class="num" id="statViolationCount" style="color:var(--danger);">0<span class="unit">건</span></div>
+                    </div>
                 </div>
             </div>
 
-            <table class="admin-table">
-                <colgroup>
-                    <col width="10%"> <col width="15%"> <col width="20%"> <col width="15%"> <col width="20%"> <col width="10%"> <col width="10%">
-                </colgroup>
-                <thead id="dynamicTableHead">
-                </thead>
-                <tbody id="parkingTableBody">
-                </tbody>
-            </table>
+            <div class="tab-wrapper">
+                <div class="tab-container">
+                    <button class="tab-btn active" id="tab-RESIDENT" onclick="parkingManager.filterTab('RESIDENT')">입주민 차량</button>
+                    <button class="tab-btn" id="tab-VISITOR" onclick="parkingManager.filterTab('VISITOR')">방문 차량</button>
+                    <button class="tab-btn" id="tab-VIOLATION" onclick="parkingManager.filterTab('VIOLATION')">위반 차량</button>
+                </div>
+            </div>
 
-            <div id="paginationWrapper" style="margin-top:20px; text-align:center;"></div>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
+                    <h3 style="margin:0; font-size:1.2rem; color:#333;" id="tableTitle">입주민 차량 목록</h3>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="searchInput" placeholder="차량번호, 동/호수 검색" 
+                               style="padding:10px 15px; border:1px solid #ddd; border-radius:6px; outline:none; width:250px;"
+                               onkeyup="if(event.keyCode===13) parkingManager.searchTable(true)">
+                        <button class="btn btn-secondary" onclick="parkingManager.searchTable(true)"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
+                    </div>
+                </div>
+
+                <table class="admin-table">
+                    <thead id="dynamicTableHead">
+                    </thead>
+                    <tbody id="parkingTableBody">
+                    </tbody>
+                </table>
+
+                <div id="paginationWrapper" style="text-align:center; margin-top:30px; display:flex; justify-content:center; gap:5px;">
+                </div>
+            </div>
         </div>
-
     </main>
 </div>
 
-<div id="residentRegModal" class="modal-overlay">
+<div class="modal-overlay" id="detailModal">
     <div class="modal-container">
-        <div class="content-header" style="margin-bottom:15px; display:flex; justify-content:space-between;">
-            <h3 style="font-size:1.3rem;">입주민 차량 등록</h3>
-            <button onclick="parkingManager.closeModal('residentReg')" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+        <div class="modal-header">
+            <h3>차량 상세 정보</h3>
+            <button class="modal-close-btn" onclick="parkingManager.closeModal('detail')">&times;</button>
         </div>
-        <div class="modal-body form-grid" style="display:flex; flex-direction:column; gap:15px;">
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label class="info-label">동</label>
-                    <input type="text" class="form-input" id="regDong" placeholder="101">
-                </div>
-                <div style="flex:1;">
-                    <label class="info-label">호</label>
-                    <input type="text" class="form-input" id="regHo" placeholder="1502">
-                </div>
+        <div class="modal-body" style="font-size: 1.05rem;">
+            <div style="text-align:center; margin-bottom: 25px;">
+                <div class="badge badge-secondary" id="detailCategory" style="margin-bottom:10px; font-size:0.9rem;">분류</div>
+                <h2 style="margin:0; font-family:'Consolas'; font-size:2.2rem; letter-spacing:2px; color:var(--primary);" id="detailCarNumber">12가 3456</h2>
             </div>
-            <div>
-                <label class="info-label">차량번호</label>
-                <input type="text" class="form-input" id="regCarNumber" style="width:100%;" placeholder="예: 12가 3456">
-            </div>
-            <div>
-                <label class="info-label">소유주명</label>
-                <input type="text" class="form-input" id="regUserName" style="width:100%;">
-            </div>
-            <div>
-                <label class="info-label">연락처</label>
-                <input type="text" class="form-input" id="regPhone" style="width:100%;" placeholder="010-0000-0000">
-            </div>
+            
+            <table style="width:100%; line-height:2.2;">
+                <tr>
+                    <td style="width:100px; color:#666; font-weight:600;">상태</td>
+                    <td id="detailState" style="font-weight:700;">-</td>
+                </tr>
+                <tr>
+                    <td style="color:#666; font-weight:600;">상세정보</td>
+                    <td id="detailInfo">-</td>
+                </tr>
+                <tr>
+                    <td style="color:#666; font-weight:600;">관련일자</td>
+                    <td id="detailDate">-</td>
+                </tr>
+            </table>
         </div>
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-            <button class="btn btn-secondary" onclick="parkingManager.closeModal('residentReg')">취소</button>
-            <button class="btn btn-primary" onclick="alert('등록되었습니다!'); parkingManager.closeModal('residentReg');">등록하기</button>
-        </div>
-    </div>
-</div>
-
-<div id="visitorRegModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="content-header" style="margin-bottom:15px; display:flex; justify-content:space-between;">
-            <h3 style="font-size:1.3rem;">방문 차량 예약</h3>
-            <button onclick="parkingManager.closeModal('visitorReg')" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="modal-body form-grid" style="display:flex; flex-direction:column; gap:15px;">
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label class="info-label">방문 동</label>
-                    <input type="text" class="form-input" id="visitDong" placeholder="101">
-                </div>
-                <div style="flex:1;">
-                    <label class="info-label">방문 호</label>
-                    <input type="text" class="form-input" id="visitHo" placeholder="1502">
-                </div>
-            </div>
-            <div>
-                <label class="info-label">차량번호</label>
-                <input type="text" class="form-input" id="visitCarNumber" style="width:100%;" placeholder="차량번호 전체">
-            </div>
-            <div>
-                <label class="info-label">방문 목적</label>
-                <input type="text" class="form-input" id="visitPurpose" style="width:100%;" placeholder="예: 가전 설치, 친척 방문">
-            </div>
-            <div>
-                <label class="info-label">방문 일자</label>
-                <input type="date" class="form-input" id="visitDate" style="width:100%;">
-            </div>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-            <button class="btn btn-secondary" onclick="parkingManager.closeModal('visitorReg')">취소</button>
-            <button class="btn btn-primary" onclick="alert('예약되었습니다!'); parkingManager.closeModal('visitorReg');">예약하기</button>
-        </div>
-    </div>
-</div>
-
-<div id="violationRegModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="content-header" style="margin-bottom:15px; display:flex; justify-content:space-between;">
-            <h3 style="font-size:1.3rem;">위반 차량 단속 등록</h3>
-            <button onclick="parkingManager.closeModal('violationReg')" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="modal-body form-grid" style="display:flex; flex-direction:column; gap:15px;">
-            <div>
-                <label class="info-label">차량번호</label>
-                <input type="text" class="form-input" id="vioCarNumber" style="width:100%;" placeholder="예: 01바 9999">
-            </div>
-            <div>
-                <label class="info-label">위반 장소</label>
-                <input type="text" class="form-input" id="vioLocation" style="width:100%;" placeholder="예: 101동 앞 소방차 전용구역">
-            </div>
-            <div>
-                <label class="info-label">위반 사유 / 참고사항</label>
-                <input type="text" class="form-input" id="vioReason" style="width:100%;" placeholder="예: 주차금지구역 주차">
-            </div>
-            <div>
-                <label class="info-label">적발 일자</label>
-                <input type="date" class="form-input" id="vioDate" style="width:100%;">
-            </div>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-            <button class="btn btn-secondary" onclick="parkingManager.closeModal('violationReg')">취소</button>
-            <button class="btn btn-primary" style="background:var(--danger); border-color:var(--danger);" onclick="alert('단속 차량이 등록되었습니다!'); parkingManager.closeModal('violationReg');">등록하기</button>
-        </div>
-    </div>
-</div>
-
-<div id="detailModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="content-header" style="margin-bottom:15px; display:flex; justify-content:space-between;">
-            <h3 style="font-size:1.3rem;">차량 상세 정보</h3>
-            <button onclick="parkingManager.closeModal('detail')" style="border:none; background:none; cursor:pointer; font-size:1.2rem;"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <div class="complaint-info" style="background: white; border:none; padding:0;">
-            <div style="background:#f8f9fa; padding:20px; border-radius:10px; border:1px solid #eee;">
-                <div class="info-row">
-                    <span class="info-label">차량번호</span>
-                    <span class="info-value car-num-badge" id="detailCarNumber" style="font-size:1.2rem;"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">구분</span>
-                    <span class="info-value" id="detailCategory"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">상태</span>
-                    <span class="info-value" id="detailState"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">상세정보</span>
-                    <span class="info-value" id="detailInfo" style="color:#666;"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">등록/발생일</span>
-                    <span class="info-value" id="detailDate"></span>
-                </div>
-            </div>
-        </div>
-
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <div class="modal-footer">
             <button class="btn btn-secondary" onclick="parkingManager.closeModal('detail')">닫기</button>
-            <button class="btn btn-primary" style="background:var(--danger);" onclick="alert('데이터를 삭제/단속 처리합니다.');">삭제/단속</button>
+            <button class="btn btn-success" id="btnModalApprove" onclick="parkingManager.approveAction()" style="display:none;">승인 처리</button>
+            <button class="btn btn-danger" id="btnModalDelete" onclick="parkingManager.deleteAction()">삭제/단속</button>
         </div>
     </div>
 </div>
-
-<script src="<c:url value='/js/admin/admin_common.js'/>"></script>
 
 <script>
+    // JSP에서 EL로 받은 데이터를 JS 전역 변수에 저장
     window.globalParkingList = [];
 
     <c:if test="${not empty parkingList}">
@@ -273,7 +188,7 @@
     </c:if>
 </script>
 
-<script src="<c:url value='/js/admin/parking.js'/>"></script>
+<script src="<c:url value='/js/admin/parking_manage.js'/>"></script>
 
 </body>
 </html>
