@@ -18,9 +18,14 @@
 
     <main class="main-content">
 
-        <div class="content-header">
-            <h2>관리비/수납 변경 이력</h2>
-            <div class="subtitle">관리비, 수도요금 등 금전 관련 데이터의 수동 변경 이력을 관리합니다.</div>
+        <div class="content-header" style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <div>
+                <h2>관리비/수납 변경 이력</h2>
+                <div class="subtitle">관리비, 수도요금 등 금전 관련 데이터의 수동 변경 이력을 관리합니다.</div>
+            </div>
+            <button class="btn btn-secondary" onclick="location.href='/admin/fee_manage'">
+                <i class="fa-solid fa-file-invoice-dollar"></i> 관리비 관리로 돌아가기
+            </button>
         </div>
 
         <div class="content-box">

@@ -4,17 +4,13 @@
 
 const feeManager = (function() {
 
-    // 1. 데이터 초기화 (JSP 전역 변수에서 호출)
     let feeData = window.globalFeeList || [];
     let currentTab = 'all';
 
-    // 2. 페이징 관련 변수 설정
     let currentPage = 1;
     const rowsPerPage = 10;
 
-    // 3. 초기 실행 (DOM 로드 후)
     document.addEventListener('DOMContentLoaded', () => {
-        // 현재 연월을 YYYY-MM 형태로 기본 세팅
         const monthInput = document.getElementById('searchYearMonth'); 
         if(monthInput && !monthInput.value) {
             const today = new Date();
@@ -26,16 +22,14 @@ const feeManager = (function() {
         updateStats();        
         filterTab('all');
 
-        // 모달 외부 클릭 시 닫기
         const modal = document.getElementById('feeModal');
+        const regModal = document.getElementById('registerModal');
         window.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
+            if (e.target === regModal) closeRegisterModal();
         });
     });
 
-    /* =========================================
-       상단 통계 (월 관계없이 전체 기준, 필요시 월별로 수정 가능)
-       ========================================= */
     function updateStats() {
         const totalAmount = feeData.reduce((acc, cur) => acc + cur.totalCost, 0);
         document.getElementById('statTotalAmount').innerHTML = totalAmount.toLocaleString() + '<span style="font-size:1rem; color:#888; font-weight:400;">원</span>';
@@ -44,20 +38,20 @@ const feeManager = (function() {
         const unpaidAmount = unpaidItems.reduce((acc, cur) => acc + cur.totalCost, 0);
         
         document.getElementById('statUnpaidCount').innerText = unpaidItems.length;
-        document.getElementById('statUnpaidAmount') = '총 ' + unpaidAmount.toLocaleString() + '원';
+        
+        const unpaidAmountEl = document.getElementById('statUnpaidAmount');
+        if(unpaidAmountEl) {
+            unpaidAmountEl.innerText = '총 ' + unpaidAmount.toLocaleString() + '원';
+        }
 
         const paidCount = feeData.filter(d => d.paymentStatus === 1).length;
         const rate = feeData.length > 0 ? Math.round((paidCount / feeData.length) * 100) : 0;
         document.getElementById('statPaymentRate').innerHTML = rate + '<span style="font-size:1rem; color:#888; font-weight:400;">%</span>';
     }
 
-    /* =========================================
-       탭 전환 필터링
-       ========================================= */
     function filterTab(status) {
         currentTab = status;
 
-        // ★ 수정: 인덱스에 의존하지 않고 안전하게 active 클래스 제어
         const tabs = document.querySelectorAll('.tab-wrapper .tab-btn');
         tabs.forEach(btn => btn.classList.remove('active'));
         
@@ -68,17 +62,14 @@ const feeManager = (function() {
         const titles = { 'all': '전체 관리비 내역', 'unpaid': '미납 세대 목록', 'paid': '납부 완료 목록' };
         document.getElementById('listTitle').innerText = titles[status] || '관리비 내역';
 
-        searchTable(false); // 탭을 변경하면 1페이지로 초기화
+        searchTable(false); 
     }
 
-    /* =========================================
-       검색 및 페이징
-       ========================================= */
     function searchTable(isPageMove = false) {
         if (!isPageMove) currentPage = 1;
 
         const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
-        const selectedDate = document.getElementById('searchYearMonth').value; // 'YYYY-MM'
+        const selectedDate = document.getElementById('searchYearMonth').value; 
         
         let selYear = null, selMonth = null;
         if (selectedDate) {
@@ -86,16 +77,13 @@ const feeManager = (function() {
         }
 
         const filtered = feeData.filter(item => {
-            // 탭 필터
             if (currentTab === 'unpaid' && item.paymentStatus === 1) return false;
             if (currentTab === 'paid' && item.paymentStatus === 0) return false;
 
-            // 날짜 필터
             if (selYear && selMonth) {
                 if (item.useYear !== selYear || item.useMonth !== selMonth) return false;
             }
             
-            // 검색어 필터 (동/호수 혼합 검색)
             const unitStr = `${item.dong}-${item.ho}`; 
             if (keyword && !unitStr.includes(keyword) && !item.dong.includes(keyword) && !item.ho.includes(keyword)) return false;
 
@@ -114,21 +102,19 @@ const feeManager = (function() {
             return;
         }
 
-        // 페이징 자르기 처리
         const totalPages = Math.ceil(data.length / rowsPerPage);
         if (currentPage > totalPages) currentPage = totalPages || 1;
 
         const startIndex = (currentPage - 1) * rowsPerPage;
         const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
 
-        const today = new Date(); // 실제 오늘 날짜 적용
+        const today = new Date(); 
 
         tbody.innerHTML = paginatedData.map(item => {
             let statusBadge = '';
             let dateText = '';
             let btnHtml = '';
 
-            // 연체 로직 (매월 25일을 마감일로 간주)
             const dueDate = new Date(item.useYear, item.useMonth - 1, 25); 
             const isOverdue = (item.paymentStatus === 0 && today > dueDate);
 
@@ -161,12 +147,10 @@ const feeManager = (function() {
         renderPagination(data.length);
     }
 
-    // 하단 페이징 렌더링
     function renderPagination(totalCount) {
         const container = document.getElementById('paginationWrapper');
         if (!container) return;
 
-        // ★ 수정됨: 데이터가 0개일 때만 비우고, 1페이지라도 있으면 [1] 버튼 유지
         if (totalCount === 0) { 
             container.innerHTML = ''; 
             return; 
@@ -192,7 +176,7 @@ const feeManager = (function() {
     }
 
     /* =========================================
-       모달 창 제어 로직
+       상세 모달 (기존 유지)
        ========================================= */
     function openDetail(id) {
         const item = feeData.find(d => d.feeId === id);
@@ -222,7 +206,6 @@ const feeManager = (function() {
         } else {
             actionBtn.innerText = "납부 독촉 알림 발송";
             actionBtn.className = "btn btn-primary";
-            // [실제 연동 시 여기서 AJAX 요청 전송]
             actionBtn.onclick = () => {
                 alert(`[${item.dong}-${item.ho}] 세대로 알림이 발송되었습니다.`);
                 closeModal();
@@ -237,9 +220,74 @@ const feeManager = (function() {
         document.getElementById('feeModal').style.display = 'none';
     }
 
-    // 외부로 노출할 함수들 지정
-    return {
-        filterTab, searchTable, goToPage, openDetail, closeModal
-    };
+    /* =========================================
+       ★ 수동 부과 (등록) 모달 로직 추가
+       ========================================= */
+    function openRegisterModal() {
+        // 기본값 세팅 (이번달 기준)
+        const today = new Date();
+        document.getElementById('regYear').value = today.getFullYear();
+        document.getElementById('regMonth').value = today.getMonth() + 1; // 이번 달
+        
+        document.getElementById('regDong').value = '';
+        document.getElementById('regHo').value = '';
+        document.getElementById('regCommon').value = '';
+        document.getElementById('regElec').value = '';
+        document.getElementById('regWater').value = '';
+        document.getElementById('regEtc').value = '';
+
+        document.getElementById('registerModal').style.display = 'flex';
+    }
+
+    function closeRegisterModal() {
+        document.getElementById('registerModal').style.display = 'none';
+    }
+
+    // 서버로 데이터 전송 (자동 로그 저장됨)
+    function submitRegisterFee() {
+        const dong = document.getElementById('regDong').value.trim();
+        const ho = document.getElementById('regHo').value.trim();
+        const year = document.getElementById('regYear').value;
+        const month = document.getElementById('regMonth').value;
+
+        if(!dong || !ho || !year || !month) {
+            alert("동, 호수, 연도, 월을 모두 입력해주세요.");
+            return;
+        }
+
+        const data = {
+            dong: dong,
+            ho: ho,
+            useYear: parseInt(year),
+            useMonth: parseInt(month),
+            commonFee: parseInt(document.getElementById('regCommon').value) || 0,
+            elecFee: parseInt(document.getElementById('regElec').value) || 0,
+            waterFee: parseInt(document.getElementById('regWater').value) || 0,
+            etcFee: parseInt(document.getElementById('regEtc').value) || 0
+        };
+
+        fetch('/admin/fee/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if(!response.ok) {
+                return response.text().then(msg => { throw new Error(msg); });
+            }
+            return response.text();
+        })
+        .then(msg => {
+            alert(msg);
+            location.reload(); // 성공 시 새로고침하여 데이터 반영
+        })
+        .catch(error => {
+            alert("부과 실패: " + error.message);
+        });
+    }
+
+    return { filterTab, searchTable, goToPage, openDetail, closeModal, openRegisterModal, closeRegisterModal, submitRegisterFee };
 
 })();
