@@ -30,7 +30,7 @@
                 <div class="content-grid">
                     <div class="img-box" style="height: auto; box-shadow: none; overflow: visible;">
                         <img id="mainGymImg" src="/images/logo/health3.png" alt="헬스장" 
-                             style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
+                             style="max-width: 100%; height: 100%; border-radius: 12px;">
                     </div>
                     <div class="info-box">
                         <h3><i class="fa-solid fa-dumbbell" style="color: #1a0b2e; margin-right: 8px;"></i>프리미엄 피트니스 공간</h3>

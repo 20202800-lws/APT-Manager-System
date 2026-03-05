@@ -26,10 +26,10 @@ public class ParkingService {
     // 1. 내 차 관리 (입주민 차량)
     // ==========================================
 
-    // 내 차 목록 보기
+    // ★ 수정 완료: 먼저 등록한 차량이 위로 오도록 오름차순 정렬된 데이터 반환
+    @Transactional(readOnly = true)
     public List<Vehicle> getMyCarList(String userId) {
-        // (참고) 최신순으로 보고 싶다면 레포지토리에 findByUser_UserIdOrderByRegDateDesc 추가 추천!
-        return vehicleRepository.findByUser_UserId(userId);
+        return vehicleRepository.findByUser_UserIdOrderByRegDateAsc(userId);
     }
 
     // 내 차 등록하기
@@ -70,6 +70,7 @@ public class ParkingService {
     // ==========================================
 
     // 내가 신청한 방문 내역 보기
+    @Transactional(readOnly = true)
     public List<VisitVehicle> getMyVisitList(String userId) {
         return visitVehicleRepository.findByUser_UserIdOrderByVisitDateDesc(userId);
     }

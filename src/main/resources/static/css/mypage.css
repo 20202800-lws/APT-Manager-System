@@ -463,6 +463,8 @@ a {
 }
 
 .toggle-label {
+	flex : 1;
+	white-space: nowrap;
     font-weight: 500;
     color: #555;
 }
