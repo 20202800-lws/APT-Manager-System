@@ -11,14 +11,7 @@
 	--text-main: #333;
 }
 
-html,
-body {
-	margin: 0;
-	padding: 0;
-	font-family: 'Pretendard', sans-serif;
-	background: #fff;
-	color: var(--text-main);
-}
+/* ★ 충돌을 일으키던 html, body 설정 삭제 완료! (layout.css 설정을 그대로 따름) */
 
 /* --- 헤더 --- */
 .header {
