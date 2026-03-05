@@ -19,7 +19,10 @@ public class SecurityConfig {
 				// ★ [필수] FORWARD와 INCLUDE를 모두 허용해야 헤더가 정상 노출됩니다.
 				.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE).permitAll()
 				.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico", "/uploads/**").permitAll()
-				.requestMatchers("/", "/error", "/member/**").permitAll()
+				
+				// ★ [수정됨] 아파트 소개(/intro/**) 및 커뮤니티 시설(/facility/**) 로그인 없이 접근 허용!
+				.requestMatchers("/", "/error", "/member/**", "/intro/**", "/facility/**").permitAll()
+				
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				.anyRequest().authenticated())
 				.formLogin(login -> login
@@ -30,7 +33,7 @@ public class SecurityConfig {
 						.successHandler((request, response, authentication) -> {
 							User user = (User) authentication.getPrincipal();
 							
-							// ★ [수정됨] 관리자가 아닐 경우, 탈퇴자와 승인 대기자를 명확히 구분하여 처리
+							// 관리자가 아닐 경우, 탈퇴자와 승인 대기자를 명확히 구분하여 처리
 							if (!"ADMIN".equals(user.getUserRole())) {
 								
 								// 1. 탈퇴한 회원인 경우 (withdrawalDate가 존재함)
