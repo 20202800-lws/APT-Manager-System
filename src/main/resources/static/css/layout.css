@@ -35,10 +35,7 @@ header {
 	justify-content: space-between;
 	padding: 20px 30px;
 	z-index: 500; 
-
-    /* 마우스 오버 시 색상(진한 남색)과 동일하게 고정 */
 	background: rgba(11, 11, 46, 0.98); 
-	
 	border-bottom: 1px solid rgba(100, 100, 100, 0.3);
 	color: white;
 	overflow: hidden;
@@ -183,19 +180,19 @@ footer {
 
 /* [4] 서브 비주얼 (배너) 스타일 */
 
-/* ★ [수정] 아파트 소개용 배너 (이미지/텍스트 애니메이션 분리) */
+/* ★ [수정됨] 이미지 가림 버그 해결을 위해 z-index: 1 및 배경색 추가 */
 .sub-visual {
     position: relative;
     width: 100%;
     height: 350px;
-    /* 기존 background-image 제거하고 ::before로 이동 */
-    overflow: hidden; /* 이미지가 커져도 영역 밖으로 나가지 않음 */
+    overflow: hidden; 
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1; 
+    background-color: var(--primary-color); 
 }
 
-/* ★ 배경 이미지만 가상 요소로 분리하여 애니메이션 적용 */
 .sub-visual::before {
     content: "";
     position: absolute;
@@ -204,7 +201,7 @@ footer {
     background-image: url('/images/logo/garden2.png'); 
     background-size: cover;
     background-position: center;
-    z-index: -2; /* 가장 뒤로 */
+    z-index: -2; 
     animation: moveBackground 15s infinite alternate ease-in-out; 
 }
 
@@ -212,15 +209,14 @@ footer {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.4); 
-    z-index: -1; /* 배경과 텍스트 사이 */
+    z-index: -1; 
 }
 
 .sub-visual-text {
     position: relative;
-    z-index: 1; /* 가장 앞으로 */
+    z-index: 1; 
     text-align: center;
     color: white;
-    /* 텍스트 고정 */
 }
 
 .sub-visual-text h2 {
@@ -232,7 +228,7 @@ footer {
 }
 
 
-/* ★ [수정] 게시판용 대형 배너 (이미지/텍스트 애니메이션 분리) */
+/* ★ [수정됨] 게시판용 대형 배너도 동일하게 z-index: 1 추가 */
 .board-visual {
     position: relative;
     width: 100%;
@@ -241,6 +237,8 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1;
+    background-color: var(--primary-color);
 }
 
 .board-visual::before {
@@ -277,7 +275,6 @@ footer {
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* 배경 줌인 애니메이션 (너무 과하지 않게 1.08배까지만 확대) */
 @keyframes moveBackground {
     0% { transform: scale(1.0); }
     100% { transform: scale(1.08); } 

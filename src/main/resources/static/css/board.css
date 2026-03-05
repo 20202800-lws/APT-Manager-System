@@ -6,17 +6,7 @@
 	--bg-light: #f9f9fb;
 }
 
-html,
-body {
-	height: 100%;
-	margin: 0;
-}
-
-body {
-	display: flex;
-	flex-direction: column;
-	font-family: 'Pretendard', sans-serif;
-}
+/* ★ 충돌을 일으키던 html, body 설정 삭제 완료! (layout.css 설정을 그대로 따름) */
 
 /* --- 사이드바 (기존 내용 유지) --- */
 .container {
@@ -78,12 +68,11 @@ body {
 	background: #f0f0f5;
 }
 
-/* --- 게시판 공통 (기존 내용 유지) --- */
+/* --- 게시판 공통 --- */
 #mainArea {
 	text-align: left;
 }
 
-/* ★ 전체 왼쪽 정렬 강제 적용 */
 .board-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -115,8 +104,6 @@ body {
 	border: 1px solid #eee;
 	text-align: left;
 }
-
-/* ★ 본문 영역 왼쪽 정렬 강제 적용 */
 
 .form-group {
 	margin-bottom: 25px;
@@ -276,7 +263,7 @@ body {
 	margin-bottom: 10px;
 }
 
-/* --- 검색창 하단 및 버튼 (HEAD 내용 유지) --- */
+/* --- 검색창 하단 및 버튼 --- */
 .board-footer {
 	margin-top: 50px;
 	display: flex;
@@ -343,9 +330,8 @@ body {
 	cursor: pointer;
 }
 
-/* --- 신고 버튼 및 모달 전용 스타일 (origin 내용 병합) --- */
+/* --- 신고 버튼 및 모달 전용 스타일 --- */
 
-/* 신고 버튼 (게시물/댓글 내 배치용) */
 .btn-report-outline {
     background: none;
     border: 1px solid #ddd;
@@ -363,19 +349,17 @@ body {
     border-color: #f8d7da;
 }
 
-/* 모달 전체 배경 (오버레이) */
 .modal-overlay {
-    display: none; /* 기본 숨김 */
+    display: none; 
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* 배경 어둡게 */
-    z-index: 10001; /* 헤더보다 위 */
+    background: rgba(0, 0, 0, 0.6); 
+    z-index: 10001; 
     align-items: center;
     justify-content: center;
 }
 
-/* 모달 박스 컨텐츠 */
 .modal-content {
     background: #fff;
     width: 90%;
@@ -417,7 +401,6 @@ body {
     line-height: 1.5;
 }
 
-/* 신고 사유 라디오 버튼 리스트 */
 .report-list {
     display: flex;
     flex-direction: column;
@@ -437,7 +420,6 @@ body {
     height: 18px;
 }
 
-/* 기타 사유 텍스트 영역 */
 .report-textarea {
     width: 100%;
     height: 90px;
@@ -447,10 +429,9 @@ body {
     border-radius: 8px;
     font-size: 14px;
     resize: none;
-    display: none; /* 기타 선택 시에만 노출 */
+    display: none; 
 }
 
-/* 모달 하단 버튼 영역 */
 .modal-footer {
     padding: 15px 20px;
     background: #f9f9fb;
@@ -471,12 +452,11 @@ body {
     color: #666;
 }
 .btn-modal-submit {
-    background: #e74c3c; /* 강조색: 빨간색 */
+    background: #e74c3c; 
     border: none;
     color: white;
 }
 
-/* 애니메이션 */
 @keyframes modalSlideUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
