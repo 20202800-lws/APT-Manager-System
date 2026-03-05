@@ -30,7 +30,7 @@
                 <div class="content-grid">
                     <div class="img-box" style="height: auto; box-shadow: none; overflow: visible;">
                         <img id="mainPoolImg" src="/images/logo/swimming2.jpg" alt="수영장 전경" 
-                             style="width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s;">
+                             style="max-width: 100%; height: 100%; border-radius: 12px;">
                     </div>
                     
                     <div class="info-box">

@@ -39,10 +39,10 @@
         <h2 class="section-title">단지배치도</h2>
         <p class="section-desc">천안 브레인시티의 중심, 자연과 일상이 공존하는 쾌적한 단지 설계를 확인하세요.</p>
         <div class="image-container">
-            <a href="/intro/guide">
+            <a href="/intro/layout">
                 <img src="/images/logo/apart7.png" class="active" alt="단지 배치도 1" style="cursor: pointer;">
             </a>
-            <a href="/intro/guide">
+            <a href="/intro/layout">
                 <img src="/images/logo/apart6.png" alt="단지 배치도 2" style="cursor: pointer;">
             </a>
         </div>
