@@ -9,6 +9,8 @@ import com.apt.membermanager.repository.UserRepository;
 import com.apt.membermanager.repository.ManageFeeRepository;
 import com.apt.membermanager.service.MyPageService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+// ★ [신규 추가] 스프링 시큐리티 완벽 로그아웃을 위한 임포트
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -36,14 +43,13 @@ public class MypageController {
 	private final UserRepository userRepository;
 	private final ManageFeeRepository manageFeeRepository;
 	private final PasswordEncoder passwordEncoder;
-	private final MyPageService myPageService; // ★ MyPageService 주입 추가
+	private final MyPageService myPageService; 
 
 	@GetMapping("/info_view")
 	public String infoView(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
 		if (loginUser == null) return "redirect:/member/login";
 
-		// ★ DB에서 최신 유저 정보를 다시 조회하여 세션과 화면을 동기화합니다.
 		User currentUser = userRepository.findById(loginUser.getUserId()).orElse(loginUser);
 
 		if (currentUser.getJoinDate() != null) {
@@ -195,50 +201,58 @@ public class MypageController {
 		return "mypage/fee_view";
 	}
 
-	// ★ [수정] 활동 내역 - 내가 쓴 게시물 DB 연동
 	@GetMapping("/act_posts")
 	public String actPosts(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
 		if (loginUser == null) return "redirect:/member/login";
 		
-		// MyPageService를 통해 실제 DB 데이터 조회
 		List<MyPostDto> myPosts = myPageService.getMyPosts(loginUser);
 		model.addAttribute("myPosts", myPosts);
 		return "mypage/act_posts";
 	}
 
-	// ★ [수정] 활동 내역 - 내가 쓴 댓글 DB 연동
 	@GetMapping("/act_reply")
 	public String actReply(HttpSession session, Model model) {
 		User loginUser = (User) session.getAttribute("loginMember");
 		if (loginUser == null) return "redirect:/member/login";
 		
-		// MyPageService를 통해 실제 DB 데이터 조회
 		List<MyReplyDto> myReplies = myPageService.getMyReplies(loginUser);
 		model.addAttribute("myReplies", myReplies);
 		return "mypage/act_reply";
 	}
 
+	// ★ [최종 수정] 회원 탈퇴 로직 (Spring Security 공식 로그아웃 적용)
 	@PostMapping("/withdraw")
-	public String withdraw(HttpSession session, RedirectAttributes rttr) {
-		User loginUser = (User) session.getAttribute("loginMember");
-		if (loginUser != null) {
-			try {
-				User user = userRepository.findById(loginUser.getUserId()).orElse(null);
-				if (user != null) {
-					user.setWithdrawalDate(java.time.LocalDateTime.now());
-					user.setApprovalStatus(false);
-					userRepository.save(user);
+	public String withdraw(HttpServletRequest request, HttpServletResponse response, RedirectAttributes rttr) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			User loginUser = (User) session.getAttribute("loginMember");
+			if (loginUser != null) {
+				try {
+					// 1. DB에서 회원 탈퇴 상태로 변경
+					User user = userRepository.findById(loginUser.getUserId()).orElse(null);
+					if (user != null) {
+						user.setWithdrawalDate(java.time.LocalDateTime.now());
+						user.setApprovalStatus(false);
+						userRepository.save(user);
+					}
+					
+					// 2. ★ 스프링 시큐리티 공식 로그아웃 핸들러 호출 
+					// (세션 무효화, 쿠키 삭제, 인증 객체 완전 삭제를 동시에 처리)
+					Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+					if (auth != null) {
+						new SecurityContextLogoutHandler().logout(request, response, auth);
+					}
+					
+					rttr.addFlashAttribute("msg", "회원 탈퇴가 완료되었습니다. 안전하게 로그아웃 처리되었습니다.");
+				} catch (Exception e) {
+					log.error("회원 탈퇴 중 오류 발생: {}", e.getMessage());
+					rttr.addFlashAttribute("msg", "탈퇴 처리 중 오류가 발생했습니다. 관리자에게 문의하세요.");
+					return "redirect:/mypage/info_view";
 				}
-				session.removeAttribute("loginMember");
-				rttr.addFlashAttribute("msg", "회원 탈퇴가 처리되었습니다. 그동안 이용해 주셔서 감사합니다.");
-			} catch (Exception e) {
-				log.error("회원 탈퇴 중 오류 발생: {}", e.getMessage());
-				rttr.addFlashAttribute("msg", "탈퇴 처리 중 오류가 발생했습니다. 관리자에게 문의하세요.");
-				return "redirect:/mypage/info_view";
 			}
 		}
-		return "redirect:/";
+		return "redirect:/"; // 메인 홈으로 깔끔하게 리다이렉트
 	}
 
 	@PostMapping("/apply_parent")

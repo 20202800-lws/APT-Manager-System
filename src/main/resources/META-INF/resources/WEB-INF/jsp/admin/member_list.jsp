@@ -67,13 +67,11 @@
                     <button class="btn btn-primary" style="margin-right: 10px; background-color: #10b981; border: none;" onclick="adminMember.openTeacherModal()">
                         <i class="fa-solid fa-plus"></i> 선생님 계정 생성
                     </button>
-                    
                     <select class="form-select" id="searchType">
                         <option value="kwName" ${not empty kwName ? 'selected' : ''}>이름</option>
                         <option value="kwAddress" ${not empty kwAddress ? 'selected' : ''}>동/호수</option>
                         <option value="kwPhone" ${not empty kwPhone ? 'selected' : ''}>연락처</option>
                     </select>
-
                     <c:set var="currentKeyword" value="${not empty kwName ? kwName : (not empty kwAddress ? kwAddress : kwPhone)}" />
                     <input type="text" class="form-input" id="keyword" placeholder="검색어 입력" value="${currentKeyword}" onkeyup="if(window.event.keyCode==13){adminMember.searchTable()}">
                     <button class="btn btn-primary" onclick="adminMember.searchTable()"><i class="fa-solid fa-search"></i></button>
@@ -131,6 +129,7 @@
                             <option value="PARENT">학부모</option>
                             <option value="TEACHER">어린이집 선생님</option>
                             <option value="ADMIN">관리자</option>
+                            <option value="WDR" disabled>탈퇴한 회원</option>
                         </select>
                     </div>
                 </div>
@@ -190,7 +189,6 @@
                     <label style="font-size:0.9rem; font-weight:700; color:#333; margin-bottom:8px; display:block;">선생님 실명</label>
                     <input type="text" class="form-input" id="t_userName" style="width:100%; height:45px;" placeholder="예: 김선생">
                 </div>
-                
                 <div>
                     <label style="font-size:0.9rem; font-weight:700; color:#333; margin-bottom:8px; display:block;">휴대전화</label>
                     <input type="text" class="form-input" id="t_phone" maxlength="13" style="width:100%; height:45px;" placeholder="예: 010-1234-5678" oninput="adminMember.autoHyphenPhone(this)">
@@ -216,8 +214,8 @@
                 phone: '${member.phone}',
                 email: '${member.email}',
                 joinDate: '${member.joinDate}',
-                approvalStatus: '${member.approvalStatus}' === 'false' ? 'WAIT' : '${member.userRole}',
-                // ★ DB의 신청 여부 값을 자바스크립트로 넘김
+                // ★ [JS 로직 수정] 상태가 WDR(탈퇴)이면 그대로 유지, 아니면 WAIT/ROLE 판단
+                approvalStatus: '${member.status}' === 'WDR' ? 'WDR' : ('${member.approvalStatus}' === 'false' ? 'WAIT' : '${member.userRole}'),
                 parentRoleApply: ${member.parentRoleApply != null ? member.parentRoleApply : false}
             });
         </c:forEach>
