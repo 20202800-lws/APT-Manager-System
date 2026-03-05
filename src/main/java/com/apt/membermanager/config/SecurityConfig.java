@@ -5,8 +5,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+
 import com.apt.membermanager.entity.User;
 import jakarta.servlet.DispatcherType;
+
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 @Configuration
@@ -70,8 +74,27 @@ public class SecurityConfig {
 						.logoutSuccessUrl("/")
 						.invalidateHttpSession(true)
 						.deleteCookies("JSESSIONID")
-						.permitAll());
+						.permitAll())
+				// 동시 접속 제어 설정 추가
+	            .sessionManagement(session -> {
+					try {
+						session
+						    .maximumSessions(1)             // 최대 허용 세션 수 1개
+						    .maxSessionsPreventsLogin(false) // false: 나중에 로그인한 사람이 우선(기존 세션 만료)
+						    .expiredUrl("/member/login?error=true&msg=" + URLEncoder.encode("다른 곳에서 로그인되어 접속이 종료되었습니다.", "UTF-8"));
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+	            );
+
 
 		return http.build();
-	}
+	}// 세션 생성 및 소멸 이벤트를 감지하기 위한 빈 등록
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+	
 }
