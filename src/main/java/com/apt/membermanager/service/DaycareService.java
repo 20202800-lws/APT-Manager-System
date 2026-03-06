@@ -27,6 +27,8 @@ public class DaycareService {
     private final DaycareGalleryRepository galleryRepository;
     private final ParentOpinionRepository parentOpinionRepository;
     private final AttachmentRepository attachmentRepository;
+    // ★ 신규 추가된 리포지토리 주입
+    private final GalleryCommentRepository galleryCommentRepository; 
 
     private final String uploadDir = System.getProperty("user.dir") + "/apt_upload/";
 
@@ -120,10 +122,60 @@ public class DaycareService {
         saveFiles(files, "DAYCARE_NOTICE", savedNotice.getNoticeId());
     }
 
+    public void updateNotice(Long noticeId, String title, String content, Boolean isTop, List<MultipartFile> files, User loginMember) {
+        DaycareNotice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항이 없습니다."));
+
+        if (!notice.getWriter().getUserId().equals(loginMember.getUserId()) && !"ADMIN".equals(loginMember.getUserRole())) {
+            throw new IllegalStateException("수정 권한이 없습니다.");
+        }
+
+        notice.setTitle(title);
+        notice.setContent(content);
+        notice.setIsTop(isTop);
+
+        if (files != null && !files.isEmpty() && !files.get(0).isEmpty()) {
+            List<Attachment> oldFiles = attachmentRepository.findByRefTableAndRefId("DAYCARE_NOTICE", noticeId);
+            if (!oldFiles.isEmpty()) {
+                attachmentRepository.deleteAll(oldFiles);
+            }
+            saveFiles(files, "DAYCARE_NOTICE", noticeId);
+        }
+    }
+
     public void saveGalleryWithFiles(DaycareGallery gallery, List<MultipartFile> files) {
         DaycareGallery savedGallery = galleryRepository.save(gallery);
         saveFiles(files, "DAYCARE_GALLERY", savedGallery.getGalleryId());
     }
+
+    // ==========================================
+    // ★ [신규 추가] 갤러리 댓글 등록 및 삭제 로직
+    // ==========================================
+    public void saveGalleryComment(Long postId, String content, User writer) {
+        DaycareGallery gallery = galleryRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 갤러리가 없습니다."));
+
+        GalleryComment comment = new GalleryComment();
+        comment.setGallery(gallery);
+        comment.setWriter(writer);
+        comment.setContent(content);
+
+        galleryCommentRepository.save(comment);
+    }
+
+    public void deleteGalleryComment(Long commentId, User loginMember) {
+        GalleryComment comment = galleryCommentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+
+        if (comment.getWriter().getUserId().equals(loginMember.getUserId()) ||
+            "ADMIN".equals(loginMember.getUserRole()) ||
+            "TEACHER".equals(loginMember.getUserRole())) {
+            galleryCommentRepository.delete(comment);
+        } else {
+            throw new IllegalStateException("삭제 권한이 없습니다.");
+        }
+    }
+    // ==========================================
 
     public void saveParentOpinion(String content, User writer) {
         ParentOpinion opinion = new ParentOpinion();

@@ -30,14 +30,13 @@ public class CommentService {
 	public void saveComment(CommentCreateDTO dto, String userId) {
 		Board board = boardRepository.findById(dto.getBoardId()).orElseThrow(()-> new RuntimeException("게시글이 존재하지 않습니다."));
 		User user = userRepository.findByUserId(userId).orElseThrow(()-> new RuntimeException("사용자를 찾을 수 없습니다."));
-		System.out.println(dto.getContent());
+		
 		Comment.CommentBuilder commentBuilder = Comment.builder()
 							.content(dto.getContent())
 							.board(board)
 							.user(user)
 							.anonymous(board.isAnonymous());
 							
-		
 		if (dto.getParentId() != null) {
 	        Comment parent = commentRepository.findById(dto.getParentId())
 	            .orElseThrow(() -> new RuntimeException("부모 댓글을 찾을 수 없습니다."));
@@ -50,30 +49,30 @@ public class CommentService {
 	
 	public List<CommentViewBean> getCommentList(Long boardId,String currentId){
 		List<Comment> rootsComments = commentRepository.findCommentsByBoard_BoardId(boardId);
-		
 		return rootsComments.stream().map(comment -> new CommentViewBean(comment, currentId)).toList();
 	}
 	
 	@Transactional
 	public void updateComment(CommentUpdateDTO dto,String currentId) {
-		// TODO Auto-generated method stub
 		Comment comment = commentRepository.findById(dto.getReplyId())
 		        .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
-		if (!comment.getUser().getUsername().equals(currentId)) {
+		
+		// ★ [에러 방어] getUser()가 null인 경우 체크 추가
+		if (comment.getUser() == null || !comment.getUser().getUserId().equals(currentId)) {
 	        throw new IllegalStateException("수정 권한이 없습니다.");
 	    }
 		comment.setContent(dto.getContent());
 	}
 	
 	public void deleteComment(Long reply_id, String currentId) {
-		// TODO Auto-generated method stub
 		Comment comment = commentRepository.findById(reply_id)
 		        .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
-		if (!comment.getUser().getUsername().equals(currentId)) {
+		
+		// ★ [에러 방어] getUser()가 null인 경우 체크 추가
+		if (comment.getUser() == null || !comment.getUser().getUserId().equals(currentId)) {
 	        throw new IllegalStateException("삭제 권한이 없습니다.");
 	    }
 		commentRepository.delete(comment);
-		
 	}
 	
 	@Transactional(readOnly = true)
@@ -82,10 +81,7 @@ public class CommentService {
 		List<Comment> entities = commentRepository.findByUser(user);
 		
 		return entities.stream()
-	            .map(entity -> {
-	                
-	                return new CommentViewBean(entity, loginId);
-	            })
+	            .map(entity -> new CommentViewBean(entity, loginId))
 	            .collect(Collectors.toList());
 	}
 }
