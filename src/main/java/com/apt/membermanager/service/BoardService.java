@@ -63,29 +63,21 @@ public class BoardService {
         return boardId;
     }
     
-    // ==========================================
-    // ★ [추가됨] 게시글 수정 로직
-    // ==========================================
     @Transactional
     public void updateBoard(Long boardId, BoardWriteDto dto) {
-        // 1. 기존 게시글 찾기
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
 
-        // 2. 제목과 내용 업데이트 (JPA 더티 체킹으로 자동 저장됨)
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
 
-        // 3. 사진 덮어쓰기 로직 (새로운 파일이 들어온 경우에만)
         if (dto.getUploadFiles() != null && !dto.getUploadFiles().isEmpty() && !dto.getUploadFiles().get(0).isEmpty()) {
             
-            // 기존 DB에 있던 첨부파일 기록 지우기
             List<Attachment> oldAttachments = attachmentRepository.findByRefTableAndRefId("BOARD", boardId);
             if (!oldAttachments.isEmpty()) {
                 attachmentRepository.deleteAll(oldAttachments);
             }
 
-            // 새로운 파일 저장
             try {
                 List<Attachment> newAttachments = fileHandler.storeFiles(dto.getUploadFiles(), "BOARD", boardId);
                 if (!newAttachments.isEmpty()) {
@@ -141,7 +133,9 @@ public class BoardService {
 	public boolean deletePost(Long boardId, String currentId) {
 		Board board = boardRepository.findById(boardId)
 		        .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
-		if (!board.getUser().getUserId().equals(currentId)) {
+		
+        // ★ [에러 완벽 방어] getUser()가 null인 경우 체크 추가
+		if (board.getUser() == null || !board.getUser().getUserId().equals(currentId)) {
 	        throw new IllegalStateException("삭제 권한이 없습니다.");
 	    }
 		boardRepository.delete(board);
@@ -156,7 +150,8 @@ public class BoardService {
         User reporter = userRepository.findById(reporterId)
                 .orElseThrow(() -> new IllegalArgumentException("신고자 정보가 없습니다."));
 
-        if (board.getUser().getUserId().equals(reporterId)) {
+        // ★ [에러 완벽 방어] getUser()가 null인 경우 체크 추가
+        if (board.getUser() != null && board.getUser().getUserId().equals(reporterId)) {
             throw new IllegalStateException("자신의 글은 신고할 수 없습니다.");
         }
 

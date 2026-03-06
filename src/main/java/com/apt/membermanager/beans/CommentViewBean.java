@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.apt.membermanager.entity.Board;
 import com.apt.membermanager.entity.Comment;
 
 import lombok.AllArgsConstructor;
@@ -30,19 +29,21 @@ public class CommentViewBean{
 	
 	private List<CommentViewBean> children = new ArrayList<>();
 	
-	public CommentViewBean(Comment comment,String currentId) {
-        // 1. 익명 여부에 따른 이름 결정
+	public CommentViewBean(Comment comment, String currentId) {
 		this.boardId = comment.getBoard().getBoardId();
-		this.owner = comment.getUser().getUsername().equals(currentId);
+		
+		// ★ [에러 완벽 방어] 작성자가 탈퇴해서 null인지 먼저 체크합니다.
+		boolean hasUser = (comment.getUser() != null);
+		
+		// getUsername() 대신 확실한 getUserId()를 사용합니다.
+		this.owner = hasUser && (currentId != null) && comment.getUser().getUserId().equals(currentId);
 		this.anonymous = comment.isAnonymous();
-        if (comment.isAnonymous()) {
-            this.author = "익명";
-            if(this.owner) {
-            	this.author = "익명(나)";	
-            }
-            
+		
+        if (this.anonymous) {
+            this.author = this.owner ? "익명(나)" : "익명";
         } else {
-            this.author = comment.getUser().getRealName();
+            // ★ 탈퇴한 회원일 경우 "(알 수 없음)"으로 안전하게 출력합니다.
+            this.author = hasUser ? comment.getUser().getRealName() : "(알 수 없음)";
         }
         
         this.replyId = comment.getReplyId();
@@ -56,12 +57,9 @@ public class CommentViewBean{
             }
         }
         
-        if(comment.getChildren() != null && !comment.getChildren().isEmpty())
-        {
+        if(comment.getChildren() != null && !comment.getChildren().isEmpty()) {
         	this.children = comment.getChildren().stream().map(child-> new CommentViewBean(child,currentId))
         			.collect(Collectors.toList());
         }
 	}
-	
-	
 }

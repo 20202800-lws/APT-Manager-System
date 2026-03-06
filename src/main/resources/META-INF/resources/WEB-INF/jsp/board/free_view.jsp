@@ -39,8 +39,7 @@
                             <i class="fa-regular fa-image"></i> 첨부된 사진</h5>
                         <c:forEach var="img" items="${attachments}">
                             <img src="<c:url value='${img.filePath}'/>" alt="${img.orgFileName}"
-                                 style="max-width:300px; max-height:300px; object-fit:contain; border-radius:8px; border:1px solid #e2e8f0; cursor:pointer;"
-                                 onclick="window.open(this.src)">
+                                 style="max-width:300px; max-height:300px; object-fit:contain; border-radius:8px; border:1px solid #e2e8f0; cursor:pointer;" onclick="window.open(this.src)">
                         </c:forEach>
                     </div>
                 </c:if>
@@ -86,7 +85,9 @@
                 <div style="text-align:right; margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
                     <button type="button" class="btn-sub" onclick="location.href='<c:url value="/board/free" />'">목록으로</button>
                     
-                    <button type="button" class="btn-danger" style="margin-left:5px; background-color:#ff9800; border-color:#ff9800;" onclick="openReportModal()">🚨 신고</button>
+                    <c:if test="${not post.owner}">
+                        <button type="button" class="btn-danger" style="margin-left:5px; background-color:#ff9800; border-color:#ff9800;" onclick="openReportModal()">🚨 신고</button>
+                    </c:if>
 
                     <c:if test="${post.owner || loginMember.userRole == 'ADMIN'}">
                         <span id="myButtons">
@@ -148,7 +149,7 @@
         function submitReport() {
             const reason = document.getElementById('reportReason').value;
             const detail = document.getElementById('reportDetail').value.trim();
-            const boardId = '${post.boardId}'; 
+            const boardId = '${post.boardId}';
 
             if (!detail) {
                 alert('관리자가 확인할 수 있도록 상세 내용을 입력해주세요.');
