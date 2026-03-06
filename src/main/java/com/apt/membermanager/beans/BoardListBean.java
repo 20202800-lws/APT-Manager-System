@@ -24,7 +24,6 @@ public class BoardListBean {
 	private int views;
 	private String regDate;
 	
-	// ★ JSP에서 사용할 댓글 수 변수! (replyCount가 아니라 commentCount 입니다)
 	private long commentCount = 0;
 	
 	private String category;
@@ -36,8 +35,8 @@ public class BoardListBean {
 	public BoardListBean(Board board, String currentId, long commentCount) {
 		this.boardId = board.getBoardId();
 		
-		// ★ 500 에러 철벽 방어: currentId가 null일 때(비로그인 등) 터지는 것을 막습니다!
-		this.owner = (currentId != null) && board.getUser().getUserId().equals(currentId);
+		// ★ [에러 완벽 방어] board.getUser()가 null 인지 먼저 체크하여 탈퇴한 회원 게시글 접근 시 500 에러를 방지합니다.
+		this.owner = (currentId != null) && (board.getUser() != null) && board.getUser().getUserId().equals(currentId);
 		
 		this.title = board.getTitle();
 		this.anonymous = board.isAnonymous();
@@ -50,7 +49,8 @@ public class BoardListBean {
 			this.category = "SECRET";
 			this.author = this.owner ? "익명(나)" : "익명";
 		} else { 
-		    this.author = board.getUser().getRealName(); 
+            // ★ 작성자가 탈퇴하여 null이 된 경우 안전하게 "알 수 없음"으로 표기합니다.
+		    this.author = board.getUser() != null ? board.getUser().getRealName() : "알 수 없음"; 
 		    this.category = "FREE";
 		}
 		
@@ -65,8 +65,6 @@ public class BoardListBean {
 	}
     // ============== [생성자 끝] ==============
 
-    // ★ 여기에 추가해야 합니다! (생성자 바깥, 클래스 내부)
-    // JSP의 ${board.replyCount} 호출을 받아주기 위한 Getter
     public long getReplyCount() {
         return this.commentCount;
     }

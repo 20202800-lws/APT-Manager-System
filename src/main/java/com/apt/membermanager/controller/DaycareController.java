@@ -48,6 +48,26 @@ public class DaycareController {
         return "daycare/daycare_notice_view";
     }
 
+    @GetMapping("/notice/edit")
+    public String noticeEditForm(@RequestParam("id") Long id, Model model) {
+        model.addAttribute("post", daycareService.getNoticeDetail(id));
+        return "daycare/daycare_notice_edit";
+    }
+
+    @PostMapping("/notice/edit")
+    public String noticeEditSubmit(@RequestParam("noticeId") Long noticeId,
+                                   @RequestParam("title") String title,
+                                   @RequestParam("content") String content,
+                                   @RequestParam(value = "isTop", defaultValue = "false") Boolean isTop,
+                                   @RequestParam(value = "uploadFiles", required = false) List<MultipartFile> files,
+                                   HttpSession session) {
+        
+        User loginMember = (User) session.getAttribute("loginMember");
+        daycareService.updateNotice(noticeId, title, content, isTop, files, loginMember);
+        
+        return "redirect:/daycare/notice/view?id=" + noticeId;
+    }
+
     @GetMapping("/gallery")
     public String galleryList(Model model) { 
         model.addAttribute("galleries", daycareService.getAllGalleries());
@@ -77,6 +97,28 @@ public class DaycareController {
         return "daycare/daycare_gallery_view";
     }
 
+    // ==========================================
+    // ★ [신규 추가] 갤러리 댓글 등록 및 삭제 기능
+    // ==========================================
+    @PostMapping("/gallery/comment")
+    public String addGalleryComment(@RequestParam("postId") Long postId,
+                                    @RequestParam("content") String content,
+                                    HttpSession session) {
+        User loginMember = (User) session.getAttribute("loginMember");
+        daycareService.saveGalleryComment(postId, content, loginMember);
+        return "redirect:/daycare/gallery/view?id=" + postId;
+    }
+
+    @PostMapping("/gallery/comment/delete")
+    public String deleteGalleryComment(@RequestParam("commentId") Long commentId,
+                                       @RequestParam("postId") Long postId,
+                                       HttpSession session) {
+        User loginMember = (User) session.getAttribute("loginMember");
+        daycareService.deleteGalleryComment(commentId, loginMember);
+        return "redirect:/daycare/gallery/view?id=" + postId;
+    }
+    // ==========================================
+
     @GetMapping("/parent")
     public String parentList(Model model) { 
         model.addAttribute("opinions", daycareService.getAllParentOpinions());
@@ -90,7 +132,6 @@ public class DaycareController {
         return "redirect:/daycare/parent";
     }
 
-    // ★ 수정 처리 추가
     @PostMapping("/parent/update")
     public String parentUpdate(@RequestParam("id") Long opinionId, 
                                @RequestParam("content") String content, 
