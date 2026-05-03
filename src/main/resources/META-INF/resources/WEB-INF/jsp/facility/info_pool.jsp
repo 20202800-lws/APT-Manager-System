@@ -42,7 +42,15 @@
                             <li><strong>운영시간:</strong> 06:00 ~ 21:00 (수질정화: 12:00 ~ 13:00)</li>
                             <li><strong>수질관리:</strong> 인공 해수풀 시스템</li>
                         </ul>
-                        <table class="price-table">
+                        
+                        <!-- ★ [수정됨] CSS 파일 수정 없이, JSP 내에서 테이블 스타일과 열 너비 고정 -->
+                        <table class="price-table" style="word-break: keep-all; line-height: 1.5;">
+                            <colgroup>
+                                <col style="width: 25%;">
+                                <col style="width: 25%;">
+                                <col style="width: 32%;">
+                                <col style="width: 18%;">
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <th>구분</th>
