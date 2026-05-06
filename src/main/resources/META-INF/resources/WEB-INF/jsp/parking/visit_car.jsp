@@ -67,15 +67,25 @@
                                         <td>${visit.visitPurpose}</td>
                                         <td>${visit.visitDate}</td>
                                         <td>
-                                            <span style="font-weight:600; color: ${visit.visitStatus == '예약완료' ? '#27ae60' : '#666'};">
+                                            <!-- ★ 상태별 색상 처리 (방문종료 추가) -->
+                                            <span style="font-weight:600; 
+                                                color: ${visit.visitStatus == '승인완료' ? '#27ae60' : 
+                                                         (visit.visitStatus == '기간만료(미승인)' ? '#e74c3c' : 
+                                                         (visit.visitStatus == '방문종료' ? '#7f8c8d' : '#f39c12'))};">
                                                 ${visit.visitStatus}
                                             </span>
                                         </td>
                                         <td>
-                                            <form action="/parking/visit/cancel" method="post" style="display:inline;" onsubmit="return confirm('이 예약을 취소하시겠습니까?');">
-                                                <input type="hidden" name="visitId" value="${visit.visitId}">
-                                                <button type="submit" class="btn-delete" style="border:1px solid #ddd; background:white; padding:4px 8px; border-radius:4px; cursor:pointer;">예약 취소</button>
-                                            </form>
+                                            <!-- ★ [UX 개선] 기간만료나 방문종료가 아닌 상태일 때만 취소 버튼 노출 -->
+                                            <c:if test="${visit.visitStatus == '승인대기' || visit.visitStatus == '승인완료'}">
+                                                <form action="/parking/visit/cancel" method="post" style="display:inline;" onsubmit="return confirm('이 예약을 취소하시겠습니까?');">
+                                                    <input type="hidden" name="visitId" value="${visit.visitId}">
+                                                    <button type="submit" class="btn-delete" style="border:1px solid #ddd; background:white; padding:4px 8px; border-radius:4px; cursor:pointer;">예약 취소</button>
+                                                </form>
+                                            </c:if>
+                                            <c:if test="${visit.visitStatus == '기간만료(미승인)' || visit.visitStatus == '방문종료'}">
+                                                <span style="color: #999; font-size: 13px;">-</span>
+                                            </c:if>
                                         </td>
                                     </tr>
                                 </c:forEach>
