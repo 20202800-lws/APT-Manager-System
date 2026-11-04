@@ -34,6 +34,7 @@ public class AdminNoticeController {
         return "admin/notice_write"; 
     }
     
+    // 공지사항 등록
     @PostMapping("/notice/write_pro")
     public String noticeWrite(NoticeCreateDTO dto, Principal principal) {
         log.info("관리자 공지사항 등록 - 작성자: {}, 제목: {}", principal.getName(), dto.getTitle());
@@ -41,11 +42,19 @@ public class AdminNoticeController {
         return "redirect:/admin/notice_manage";
     }
 
-    // ★ [신규 추가] 공지사항 수정 처리
+    // 공지사항 수정
     @PostMapping("/notice/edit_pro")
     public String noticeEdit(NoticeCreateDTO dto, Principal principal) {
         log.info("관리자 공지사항 수정 - 글번호: {}, 수정자: {}", dto.getNoticeId(), principal.getName());
         noticeService.updatePost(dto, principal.getName());
+        return "redirect:/admin/notice_manage";
+    }
+    
+    // 공지사항 삭제
+    @PostMapping("/notice/delete")
+    public String deleteNotice(@RequestParam("noticeId") Long noticeId, Principal principal) {
+    	log.info("관리자 공지사항 삭제 - 글번호: {}, 삭제요청자: {}", noticeId, principal.getName());
+        noticeService.deletePost(noticeId);
         return "redirect:/admin/notice_manage";
     }
     
