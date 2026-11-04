@@ -19,11 +19,14 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
     @Query("SELECT MIN(b.noticeId) FROM Notice b WHERE b.noticeId > :id")
     Long findNextId(@Param("id") Long id);
     
-    // 기존: 제목으로 검색
-    Page<Notice> findByTitleContaining(String searchKeyword, Pageable pageable);
+    // 1. 일반 조회용 (검색어가 없을 때)
+    Page<Notice> findByIsVisibleTrue(Pageable pageable);
 
-    // ★ 신규 추가: 내용으로 검색 (이 한 줄이 핵심입니다!)
-    Page<Notice> findByContentContaining(String searchKeyword, Pageable pageable);
+    // 2. 제목 검색용 (공개된 글 중에서만 검색)
+    Page<Notice> findByTitleContainingAndIsVisibleTrue(String searchKeyword, Pageable pageable);
+
+    // 3. 내용 검색용 (공개된 글 중에서만 검색)
+    Page<Notice> findByContentContainingAndIsVisibleTrue(String searchKeyword, Pageable pageable);
     
     long count();
 }

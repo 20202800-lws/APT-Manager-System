@@ -40,4 +40,7 @@ public class Notice {
     // ★ [신규 추가] 상단 고정 여부 (0: 일반, 1: 상단고정)
     @Column(name = "is_pinned", columnDefinition = "TINYINT(1) DEFAULT 0")
     private boolean isPinned;
+    
+    @Column(columnDefinition = "boolean default true")
+    private boolean isVisible = true;
 }

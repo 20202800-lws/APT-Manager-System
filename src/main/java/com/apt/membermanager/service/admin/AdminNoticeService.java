@@ -45,6 +45,7 @@ public class AdminNoticeService {
                             .writer(user)
                             .views(0)
                             .isPinned(DTO.isImportant())
+                            .isVisible(!DTO.isImportant())
                             .build();
                             
         Long noticeId = noticeRepository.save(notice).getNoticeId();
@@ -64,7 +65,7 @@ public class AdminNoticeService {
         return noticeId;
     }
 
-    // ★ [핵심 추가] 공지사항 수정 로직
+    // 공지사항 수정 로직
     @Transactional
     public void updatePost(NoticeCreateDTO dto, String loginMemberId) {
         Notice notice = noticeRepository.findById(dto.getNoticeId())
@@ -72,7 +73,8 @@ public class AdminNoticeService {
 
         notice.setTitle(dto.getTitle());
         notice.setContent(dto.getContent());
-        notice.setPinned(dto.isImportant()); // 상단 고정 여부 업데이트
+        notice.setPinned(dto.isImportant());
+        notice.setVisible(!dto.isHidden());
 
         // 추가된 첨부파일 저장
         try {
@@ -86,15 +88,20 @@ public class AdminNoticeService {
             throw new RuntimeException("공지사항 첨부파일 수정 중 오류가 발생했습니다.", e);
         }
     }
+    
+    // 공지사항 삭제 로직
+	public void deletePost(Long noticeId) {
+		noticeRepository.deleteById(noticeId);
+	}
 
     public Page<NoticeListBean> searchByNoticePaging(String loginId, String searchType, String keyword, Pageable pageable) {
         String searchKeyword = (keyword == null || keyword.trim().isEmpty()) ? "" : keyword.trim();
         Page<Notice> entitiesPage;
         
         if ("content".equals(searchType)) {
-            entitiesPage = noticeRepository.findByContentContaining(searchKeyword, pageable);
+            entitiesPage = noticeRepository.findByContentContainingAndIsVisibleTrue(searchKeyword, pageable);
         } else {
-            entitiesPage = noticeRepository.findByTitleContaining(searchKeyword, pageable);
+            entitiesPage = noticeRepository.findByTitleContainingAndIsVisibleTrue(searchKeyword, pageable);
         }
         
         List<NoticeListBean> list = entitiesPage.getContent().stream().map(entity -> {
@@ -130,4 +137,5 @@ public class AdminNoticeService {
 
         return bean;
     }
+
 }
