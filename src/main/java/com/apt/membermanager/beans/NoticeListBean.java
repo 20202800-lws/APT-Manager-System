@@ -51,7 +51,7 @@ public class NoticeListBean {
 		
 		// ★ [수정] DB의 isPinned 값을 실제로 화면에 반영하도록 변경!
 		this.isImportant = notice.isPinned(); 
-		this.isVisible = true;
+		this.isVisible = notice.isVisible();
 	}
 	
 	public boolean getIsImportant() { return this.isImportant; }

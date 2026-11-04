@@ -26,4 +26,6 @@ public class NoticeCreateDTO {
     private boolean important; 
     
     private List<MultipartFile> uploadFiles;
+    
+    private boolean hidden;
 }

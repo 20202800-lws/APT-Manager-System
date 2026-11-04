@@ -130,9 +130,9 @@
                         </label>
                         <div style="width:1px; height:20px; background:#ddd;"></div>
                         <label style="display:flex; align-items:center; cursor:pointer; gap:8px;">
-                            <input type="checkbox" id="checkVisible" name="visible" value="true" checked style="transform:scale(1.2);">
-                            <input type="hidden" name="_visible" value="on">
-                            <span style="font-weight:600; color:#333;">바로 공개하기</span>
+                            <input type="checkbox" id="checkHidden" name="hidden" value="true" checked style="transform:scale(1.2);">
+                            <input type="hidden" name="_hidden" value="on">
+                            <span style="font-weight:600; color:#333;">내용 숨기기</span>
                         </label>
                     </div>
 
@@ -143,7 +143,7 @@
 
                     <div>
                         <label style="font-size:0.85rem; font-weight:600; color:#666; margin-bottom:5px; display:block;">내용</label>
-                        <textarea class="form-input" id="inputContent" name="content" rows="12" placeholder="공지사항 내용을 입력하세요..." style="width:100%; resize:vertical; line-height:1.6;" required></textarea>
+                        <textarea class="form-input" id="inputContent" name="content" rows="15" placeholder="공지사항 내용을 입력하세요..." style="width:100%; min-height:300px; resize:vertical; line-height:1.6;" required></textarea>
                     </div>
                 </div>
             </div>
